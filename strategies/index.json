@@ -1,0 +1,33 @@
+{
+  "_note": "牛牛 AI 策略模板库 · 首批 3 个。23 个设计资产在 research/2026-10-18/templates-v1.clean.json，首批只上架这 3 个——其余 20 个未经回测，上架意味着要承担 23 份绩效口径与合规核对，首版扛不住。",
+  "version": "1.0.0",
+  "updated": "2026-10-18",
+  "engine_file": "ea/NiuNiuStrategy.mq5",
+  "engine_note": "三个模板共用同一个 EA，靠 InpStrategy 参数切换。改参数不需要改代码、不需要重新编译。",
+  "published": [
+    { "id": "NN-T01", "file": "NN-T01-trend-pullback.json", "name_zh": "趋势回撤", "strategy_value": 0, "magic": 810001, "evidence": "NOT_RUN" },
+    { "id": "NN-T02", "file": "NN-T02-range-breakout.json", "name_zh": "区间突破", "strategy_value": 1, "magic": 810002, "evidence": "NOT_RUN" },
+    { "id": "NN-T03", "file": "NN-T03-bounded-mean-reversion.json", "name_zh": "有界均值回归", "strategy_value": 2, "magic": 810003, "evidence": "NOT_RUN" }
+  ],
+  "backlog": {
+    "count": 20,
+    "source": "research/2026-10-18/templates-v1.clean.json",
+    "policy": "设计资产库，不上架。要上架必须逐个走完 lifecycle.gates_to_publish。"
+  },
+  "hard_vetoes": [
+    "不做无止损的模板",
+    "不做马丁 / 网格 / 逆势加仓",
+    "不做承诺收益率的模板",
+    "回测与模拟盘不得混在一张卡上展示",
+    "未回测的模板绩效字段必须是 null，不许填估算值"
+  ],
+  "portfolio_budget": {
+    "note": "同一账户跑多个模板时，合计风险控制在 2.5% 以内。Magic 只做逻辑隔离，不做风险隔离——余额、净值、保证金、回撤全部共享。",
+    "table": [
+      { "templates": 1, "risk_each_pct": 1.0 },
+      { "templates": "2-3", "risk_each_pct": "0.5-0.7" },
+      { "templates": "4-6", "risk_each_pct": "0.3-0.5" },
+      { "templates": "7+", "risk_each_pct": "0.2-0.3" }
+    ]
+  }
+}

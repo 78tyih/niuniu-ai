@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>牛牛AI × 浩驰（Fomalhaut MaaS）接入对接需求清单</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#fff;color:#16181C;font:15px/1.7 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;letter-spacing:.01em}
+.wrap{max-width:860px;margin:0 auto;padding:56px 28px 90px}
+header{border-bottom:1px solid #E7E8EB;padding-bottom:26px;margin-bottom:8px}
+.kicker{font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:#6E747C;margin:0 0 12px}
+h1{font-size:28px;line-height:1.3;margin:0 0 12px;font-weight:650}
+.sub{color:#6E747C;font-size:14px;margin:0}
+section{padding:30px 0;border-top:1px solid #E7E8EB}
+section:first-of-type{border-top:none}
+h2{font-size:18px;margin:0 0 4px;font-weight:640}
+h2 .n{color:#C9CCD2;font-variant-numeric:tabular-nums;margin-right:8px}
+p.lead{color:#6E747C;font-size:13.5px;margin:0 0 18px}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:6px}
+th{text-align:left;font-weight:600;color:#6E747C;font-size:12px;letter-spacing:.04em;border-bottom:1px solid #16181C;padding:8px 10px 8px 0}
+td{padding:9px 10px 9px 0;border-bottom:1px solid #E7E8EB;vertical-align:top}
+td.k{white-space:nowrap;font-weight:600;width:180px}
+.tag{display:inline-block;border-radius:999px;padding:2px 10px;font-size:11.5px;border:1px solid;margin-right:6px}
+.t-need{border-color:#E1704F;color:#B04A2B}
+.t-opt{border-color:#4F8CFF;color:#3A72D6}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;background:#F4F4F5;padding:1px 6px;border-radius:3px}
+.note{border-left:3px solid #4F8CFF;background:#F5F8FE;padding:14px 18px;font-size:13.5px;margin:20px 0 0;line-height:1.7}
+.footer{margin-top:40px;padding-top:20px;border-top:1px solid #E7E8EB;font-size:12px;color:#6E747C}
+</style>
+</head>
+<body><div class="wrap">
+
+<header>
+<p class="kicker">对接需求清单 · 供贵方技术 / 商务负责人填写</p>
+<h1>牛牛AI 接入浩驰（Fomalhaut MaaS）服务<br>需贵方提供的材料清单</h1>
+<p class="sub">我方以自有品牌「牛牛AI」向境内交易用户提供 AI 助手服务，拟采购贵方 MaaS 推理能力作为上游。以下为启动对接前需贵方提供与确认的事项，请逐项填写或提供。</p>
+</header>
+
+<section>
+<h2><span class="n">一</span>技术对接（请提供）</h2>
+<p class="lead">用于我方完成上游适配层开发与联调。核心是确认接口协议与计费口径。</p>
+<table>
+<thead><tr><th>事项</th><th>需提供 / 确认</th></tr></thead>
+<tbody>
+<tr><td class="k"><span class="tag t-need">必填</span>API 地址</td><td>API Base URL（是否 <code>OpenAI /v1/chat/completions</code> 兼容格式）</td></tr>
+<tr><td class="k"><span class="tag t-need">必填</span>鉴权方式</td><td>API Key / Bearer Token 的签发方式与使用说明</td></tr>
+<tr><td class="k"><span class="tag t-need">必填</span>模型清单</td><td>可调用的模型名（精确到版本），及每个模型的输入 / 输出单价（人民币 / 百万 tokens）</td></tr>
+<tr><td class="k"><span class="tag t-need">必填</span>缓存计价</td><td>缓存创建 / 缓存读取的计价规则（如缓存读取 = 输入价 0.1x）</td></tr>
+<tr><td class="k"><span class="tag t-need">必填</span>计费与结算</td><td>结算方式（预充值 / 后付费 / 月度账单）、额度单位与充值方式</td></tr>
+<tr><td class="k"><span class="tag t-need">必填</span>用量查询</td><td>用量 / 余额查询方式（API 接口 或 后台导出），账单导出格式</td></tr>
+<tr><td class="k"><span class="tag t-need">必填</span>限流与稳定性</td><td>QPS / 并发上限、单次超时时间、可用性 SLA、故障通知渠道</td></tr>
+<tr><td class="k"><span class="tag t-opt">建议</span>测试环境</td><td>测试 API Key 与小额测试额度，供我方联调验证</td></tr>
+</tbody>
+</table>
+</section>
+
+<section>
+<h2><span class="n">二</span>商务资质（请提供，用于合规尽调）</h2>
+<p class="lead">我方面向境内付费客户，需确认贵方货源与授权链，以隔离合规风险。</p>
+<table>
+<thead><tr><th>事项</th><th>需提供 / 确认</th></tr></thead>
+<tbody>
+<tr><td class="k"><span class="tag t-need">必填</span>企业主体</td><td>营业执照；签约主体、收款主体、开票主体是否一致</td></tr>
+<tr><td class="k"><span class="tag t-need">必填</span>授权链</td><td>与模型厂商（OpenAI / Anthropic 等）的采购合同或授权证明；<b>明确允许向境内第三方分销 / 转售</b>的条款</td></tr>
+<tr><td class="k"><span class="tag t-need">必填</span>合规信息</td><td>模型备案 / 登记信息（如适用）；数据处理说明（提示词数据去向、留存期、是否用于训练）</td></tr>
+<tr><td class="k"><span class="tag t-need">必填</span>税务票据</td><td>可开具的发票类型（增值税专用发票？）；结算周期与付款方式</td></tr>
+</tbody>
+</table>
+</section>
+
+<section>
+<h2><span class="n">三</span>合同要点（请在协议中明确）</h2>
+<table>
+<thead><tr><th>条款</th><th>说明</th></tr></thead>
+<tbody>
+<tr><td class="k">转售授权</td><td>允许我方以自有品牌向境内客户提供服务，模型能力嵌入我方软件</td></tr>
+<tr><td class="k">不绕客</td><td>不得绕过我方、直接接触或营销我方终端客户</td></tr>
+<tr><td class="k">价格调整</td><td>调价需提前通知（如 15 / 30 天），我方享有议价期</td></tr>
+<tr><td class="k">预付与退款</td><td>预付额度上限；未使用额度的退款条款</td></tr>
+<tr><td class="k">终止过渡</td><td>合作终止的过渡期、客户数据导出、未结账单处理</td></tr>
+<tr><td class="k">SLA 与赔偿</td><td>可用性承诺（报价单载明 99.9%+）、故障响应、违约赔偿</td></tr>
+</tbody>
+</table>
+</section>
+
+<section>
+<h2><span class="n">四</span>我方对接方式（贵方了解即可）</h2>
+<table>
+<thead><tr><th>环节</th><th>我方做法</th></tr></thead>
+<tbody>
+<tr><td class="k">接口接入</td><td>通过 OpenAI 兼容接口调用；贵方 API Key 只存我方服务端，不进客户端</td></tr>
+<tr><td class="k">计费</td><td>我方按 token 用量向客户计费，售价 = 贵方采购价 × 3</td></tr>
+<tr><td class="k">客户隔离</td><td>终端客户只连我方网关，看不到贵方地址、密钥与客户名单</td></tr>
+<tr><td class="k">对账</td><td>按周期（日对账 / 周结算）与贵方核对用量与账单</td></tr>
+</tbody>
+</table>
+<div class="note"><b>请贵方技术负责人按「第一部分」返回接口信息，商务负责人按「第二、三部分」返回资质与合同意见。</b> 我方在收到接口信息后即可启动上游适配层开发与联调，商务材料用于并行推进合规尽调。</div>
+</section>
+
+<div class="footer">牛牛AI 对接组 · 2026-10-17 · 本清单基于贵方《Fomalhaut MaaS 服务渠道商参考报价单 2026.8.19》编制</div>
+
+</div></body>
+</html>

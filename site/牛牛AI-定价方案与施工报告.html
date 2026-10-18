@@ -1,0 +1,190 @@
+<!DOCTYPE html><html lang='zh-CN'><head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width,initial-scale=1'>
+<title>牛牛AI · 定价方案与施工报告</title>
+<style>
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:#fff;color:#16181C;font:15px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;letter-spacing:.01em}
+.wrap{max-width:1080px;margin:0 auto;padding:56px 28px 90px}
+header{border-bottom:1px solid #E7E8EB;padding-bottom:26px;margin-bottom:44px}
+.kicker{font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:#6E747C;margin:0 0 12px}
+h1{font-size:32px;line-height:1.22;margin:0 0 14px;font-weight:650;letter-spacing:-.01em}
+.sub{color:#6E747C;font-size:14px;margin:0}
+.badges{margin-top:14px;display:flex;gap:8px;flex-wrap:wrap}
+.badge{display:inline-block;border-radius:999px;padding:3px 11px;font-size:11.5px;letter-spacing:.05em;border:1px solid}
+.b-ok{border-color:#4E9A6E;color:#4E9A6E}
+.b-warn{border-color:#D9A43B;color:#A87A18}
+.b-info{border-color:#4F8CFF;color:#3A72D6}
+h2{font-size:20px;margin:0 0 6px;font-weight:640;letter-spacing:-.005em}
+h2 .n{color:#C9CCD2;font-variant-numeric:tabular-nums;margin-right:10px}
+h3{font-size:14.5px;margin:26px 0 8px;font-weight:640}
+.lead{color:#6E747C;font-size:13.5px;margin:0 0 22px;max-width:74ch}
+section{padding:38px 0;border-top:1px solid #E7E8EB}
+section:first-of-type{border-top:none}
+.chart{width:100%;height:auto;display:block;margin:6px 0 4px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:34px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+@media(max-width:860px){.grid2,.grid3,.grid4{grid-template-columns:1fr}}
+.cap{font-size:12.5px;color:#6E747C;margin:10px 0 0;line-height:1.55}
+.cap b{color:#16181C;font-weight:600}
+.bl{font-size:12px;fill:#16181C}
+.bv{font-size:11.5px;fill:#6E747C;font-variant-numeric:tabular-nums}
+.ax{font-size:11px;fill:#6E747C}
+.sl{font-size:11px;fill:#fff;font-weight:600}
+.fl{font-size:12.5px;font-weight:600}
+.fv{font-size:15px;font-weight:650;font-variant-numeric:tabular-nums}
+.fn{font-size:11.5px;fill:#6E747C}
+.pl{font-size:12.5px;font-weight:600}
+.pn{font-size:11.5px;fill:#6E747C}
+.tl{font-size:11.5px;font-weight:600}
+.tv{font-size:11px}
+.ml{font-size:12px;font-weight:650;fill:#16181C}
+.ms{font-size:11px;fill:#6E747C}
+.tp{font-size:11.5px;font-weight:700;fill:#16181C}
+.tn{font-size:11px;fill:#16181C}
+.td{font-size:10.5px;fill:#6E747C}
+.gh{font-size:12px;font-weight:700;fill:#16181C;letter-spacing:.04em}
+.gs{font-size:10.5px;fill:#6E747C}
+.nb{font-size:11.5px;font-weight:600;fill:#16181C}
+.nbv{font-size:10.5px;fill:#6E747C}
+.kpi{border:1px solid #E7E8EB;border-radius:10px;padding:18px 20px;background:#FAFAF9}
+.kpi .v{font-size:30px;font-weight:660;letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1.1}
+.kpi .l{font-size:12px;color:#6E747C;margin-top:5px}
+.kpi .d{font-size:11.5px;color:#6E747C;margin-top:9px;padding-top:9px;border-top:1px solid #E7E8EB}
+table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}
+th{text-align:left;font-weight:600;color:#6E747C;font-size:11.5px;letter-spacing:.04em;border-bottom:1px solid #16181C;padding:7px 10px 7px 0}
+td{padding:7px 10px 7px 0;border-bottom:1px solid #E7E8EB;vertical-align:top}
+td.n{font-variant-numeric:tabular-nums;white-space:nowrap}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;background:#F4F4F5;padding:1px 5px;border-radius:3px}
+.note{border-left:2px solid #E1704F;background:#FBF7F5;padding:12px 16px;font-size:13px;margin:16px 0 0;line-height:1.6}
+.note.ok{border-color:#4E9A6E;background:#F4F9F6}
+.note.info{border-color:#4F8CFF;background:#F5F8FE}
+.find{border:1px solid #E7E8EB;border-radius:10px;padding:20px 22px}
+.find .i{font-size:11.5px;letter-spacing:.14em;color:#C9CCD2;font-weight:700}
+.find h4{font-size:15px;margin:8px 0 8px;font-weight:640;line-height:1.4}
+.find p{margin:0;font-size:13px;color:#4A4F57;line-height:1.62}
+.footer{margin-top:56px;padding-top:22px;border-top:1px solid #E7E8EB;font-size:12px;color:#6E747C}
+.chk{list-style:none;padding:0;margin:10px 0 0}
+.chk li{padding:9px 0 9px 30px;border-bottom:1px solid #E7E8EB;position:relative;font-size:13.5px}
+.chk li:before{content:"";position:absolute;left:4px;top:14px;width:12px;height:12px;border:1.5px solid #C9CCD2;border-radius:3px}
+</style></head><body><div class='wrap'>
+<header>
+<p class='kicker'>NiuniuAI · 上游浩驰（Fomalhaut MaaS）接入</p>
+<h1>售价 = 浩驰采购价 × 3，按 token 计费</h1>
+<p class='sub'>上游适配层已施工完毕，充值闭环已跑通 · 2026-10-17</p>
+<div class='badges'><span class='badge b-ok'>冒烟 15/15 通过</span><span class='badge b-ok'>充值闭环 9 步通过</span><span class='badge b-info'>售价 = 官方价 17.2%</span><span class='badge b-warn'>单价极低风险待拍板</span></div>
+</header>
+<section><h2><span class='n'>00</span>一屏结论</h2>
+<p class='lead'>浩驰给的是「官方价 × 极低折扣」的按 token 采购价（最低渠道只要官方价 5.74%）。我方售价 = 采购价 × 3，毛利名义 66.7%，叠加缓存差价后更高。</p>
+<div class='grid4'>
+<div class='kpi'><div class='v'>66.7%</div><div class='l'>名义毛利</div><div class='d'>= 1 − 1/3，纯加价</div></div>
+<div class='kpi'><div class='v'>17.2%</div><div class='l'>我方售价 / 官方价</div><div class='d'>客户仍拿到官方价 1.7 折</div></div>
+<div class='kpi'><div class='v'>93.7%</div><div class='l'>缓存命中 90% 时毛利</div><div class='d'>缓存差价是隐藏利润，Inferred</div></div>
+<div class='kpi'><div class='v'>9 步</div><div class='l'>充值闭环全绿</div><div class='d'>下单→ZPay→到账→调用扣费</div></div>
+</div>
+<h3>目标数据流</h3>
+<svg viewBox="0 0 1020 108" class="chart" role="img">
+<rect x="0.0" y="18" width="176.8" height="58" rx="4" fill="#2B3A50"/>
+<text x="88.4" y="42" text-anchor="middle" class="fl" fill="#fff">客户</text>
+<text x="88.4" y="62" text-anchor="middle" class="fv" fill="#fff">ZPay 充值</text>
+<text x="88.4" y="92" text-anchor="middle" class="fn">只连你的网关</text>
+<path d="M180.8 47 L206.8 47" stroke="#C9CCD2" stroke-width="1.5" marker-end="url(#ar)"/>
+<rect x="210.8" y="18" width="176.8" height="58" rx="4" fill="#3E5470"/>
+<text x="299.2" y="42" text-anchor="middle" class="fl" fill="#fff">你的网关</text>
+<text x="299.2" y="62" text-anchor="middle" class="fv" fill="#fff">按 token 计费</text>
+<text x="299.2" y="92" text-anchor="middle" class="fn">售价 = 采购价×3</text>
+<path d="M391.6 47 L417.6 47" stroke="#C9CCD2" stroke-width="1.5" marker-end="url(#ar)"/>
+<rect x="421.6" y="18" width="176.8" height="58" rx="4" fill="#5A6E88"/>
+<text x="510.0" y="42" text-anchor="middle" class="fl" fill="#fff">上游适配层</text>
+<text x="510.0" y="62" text-anchor="middle" class="fv" fill="#fff">Fomalhaut 价格表</text>
+<text x="510.0" y="92" text-anchor="middle" class="fn">已施工</text>
+<path d="M602.4 47 L628.4 47" stroke="#C9CCD2" stroke-width="1.5" marker-end="url(#ar)"/>
+<rect x="632.4" y="18" width="176.8" height="58" rx="4" fill="#8494AC"/>
+<text x="720.8" y="42" text-anchor="middle" class="fl" fill="#fff">浩驰</text>
+<text x="720.8" y="62" text-anchor="middle" class="fv" fill="#fff">Codex Plus 渠道</text>
+<text x="720.8" y="92" text-anchor="middle" class="fn">看不到客户名单</text>
+<path d="M813.2 47 L839.2 47" stroke="#C9CCD2" stroke-width="1.5" marker-end="url(#ar)"/>
+<rect x="843.2" y="18" width="176.8" height="58" rx="4" fill="#B4BFD0"/>
+<text x="931.6" y="42" text-anchor="middle" class="fl" fill="#fff">模型</text>
+<text x="931.6" y="62" text-anchor="middle" class="fv" fill="#fff">GPT / Claude</text>
+<text x="931.6" y="92" text-anchor="middle" class="fn">官方端点</text>
+<defs><marker id="ar" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="#C9CCD2"/></marker></defs>
+</svg>
+<p class='cap'>客户充的钱进你的账本；调用按 token × 售价扣费；你按采购价 × 用量向浩驰结算。<b>客户付官方价 17.2%，你赚 66%+ 毛利。</b></p>
+</section>
+<section><h2><span class='n'>01</span>价格层级</h2>
+<p class='lead'>三级价差关系：官方 100% → 浩驰 5.74% → 我方 17.2%。×3 加价后仍远低于官方价，这是能卖得动的根本。</p>
+<svg viewBox="0 0 1020 150" class="chart" role="img">
+<text x="0" y="28" class="bl">官方价</text>
+<rect x="160" y="17" width="520.0" height="20" rx="3" fill="#2B3A50"/>
+<text x="690.0" y="32" class="bv">100.00%</text>
+<text x="700" y="32" class="ax">Anthropic / OpenAI 标价（1 USD = ¥6.80）</text>
+<text x="0" y="72" class="bl">浩驰采购价</text>
+<rect x="160" y="61" width="29.8" height="20" rx="3" fill="#E1704F"/>
+<text x="199.8" y="76" class="bv">5.74%</text>
+<text x="700" y="76" class="ax">Codex Plus 渠道 · 官方价 5.74%</text>
+<text x="0" y="116" class="bl">我方售价</text>
+<rect x="160" y="105" width="89.4" height="20" rx="3" fill="#4E9A6E"/>
+<text x="259.4" y="120" class="bv">17.20%</text>
+<text x="700" y="120" class="ax">= 浩驰价 × 3 · 客户拿到官方价 1.7 折</text>
+</svg>
+<p class='cap'>数据来源：浩驰《Fomalhaut MaaS 渠道商参考报价单 2026.8.19》（Codex Plus 渠道，渠道系数 0.39，官方价 5.74%）。官方美元价按 1 USD = ¥6.80 折算。Observed。</p>
+</section>
+<section><h2><span class='n'>02</span>定价表（售价 = 采购价 × 3）</h2>
+<p class='lead'>单位：元 / 百万 tokens。采购价来自报价单最便宜渠道（GPT 走 Codex Plus、Claude 走 Kiro）。改 <code>MARKUP</code> 环境变量即可整体调价。</p>
+<table><thead><tr><th>模型</th><th>采购价 输入</th><th>采购价 输出</th><th>售价 输入（×3）</th><th>售价 输出（×3）</th></tr></thead><tbody>
+<tr><td><b>gpt-5.6-luna（快问）</b></td><td class='n'>0.078</td><td class='n'>0.468</td><td class='n'><b>0.234</b></td><td class='n'><b>1.404</b></td></tr>
+<tr><td><b>gpt-5.6-terra</b></td><td class='n'>0.78</td><td class='n'>4.68</td><td class='n'><b>2.34</b></td><td class='n'><b>14.04</b></td></tr>
+<tr><td><b>gpt-5.6-sol（深度）</b></td><td class='n'>1.95</td><td class='n'>11.7</td><td class='n'><b>5.85</b></td><td class='n'><b>35.1</b></td></tr>
+<tr><td><b>claude-sonnet-5</b></td><td class='n'>1.287</td><td class='n'>6.435</td><td class='n'><b>3.861</b></td><td class='n'><b>19.305</b></td></tr>
+<tr><td><b>claude-opus-5</b></td><td class='n'>2.145</td><td class='n'>10.725</td><td class='n'><b>6.435</b></td><td class='n'><b>32.175</b></td></tr>
+</tbody></table>
+<p class='cap'>快问档默认 luna（最便宜）、深度档默认 sol，模型可经 <code>MODEL_FAST</code> / <code>MODEL_DEEP</code> 切换。</p>
+</section>
+<section><h2><span class='n'>03</span>毛利结构：缓存差价是隐藏利润</h2>
+<p class='lead'>浩驰对缓存读取只收输入价的 0.1 倍，但客户仍按全价付。缓存命中越多，你的实际毛利越高 —— 这是纯加价之外的第二层利润。</p>
+<svg viewBox="0 0 1020 150" class="chart" role="img">
+<text x="0" y="28" class="bl">缓存命中 0%</text>
+<rect x="170" y="17" width="346.8" height="20" rx="3" fill="#4E9A6E"/>
+<text x="526.8" y="32" class="bv">66.7%</text>
+<text x="700" y="32" class="ax">名义毛利 = 1 − 1/3</text>
+<text x="0" y="72" class="bl">缓存命中 50%</text>
+<rect x="170" y="61" width="424.8" height="20" rx="3" fill="#4E9A6E"/>
+<text x="604.8" y="76" class="bv">81.7%</text>
+<text x="700" y="76" class="ax">一半输入走 0.1x 缓存读取价</text>
+<text x="0" y="116" class="bl">缓存命中 90%</text>
+<rect x="170" y="105" width="487.2" height="20" rx="3" fill="#4E9A6E"/>
+<text x="667.2" y="120" class="bv">93.7%</text>
+<text x="700" y="120" class="ax">长上下文高频缓存（交易助手典型）</text>
+</svg>
+<div class='note'><b>交易助手天然吃缓存。</b>系统提示词、持仓摘要、历史对话每次都重复，缓存命中率大概率偏高。这条利润不用额外代码，现有成本核算（<code>costOf</code>）已经自动按缓存价算成本。Inferred，需上线后用真实账单校准。</div>
+</section>
+<section><h2><span class='n'>04</span>施工完成情况</h2>
+<p class='lead'>本轮完成「上游适配层 + 按 token 计费 + 充值闭环」，未动客户端。</p>
+<table><thead><tr><th>改动</th><th>内容</th><th>验证</th></tr></thead><tbody>
+<tr><td><code>src/pricing.js（新增）</code></td><td>定价表加载 + 售价计算 + 预扣估算</td><td class='n'>冒烟 15/15</td></tr>
+<tr><td><code>config/pricing.json（新增）</code></td><td>7 个模型的采购价（元/百万 tokens）</td><td class='n'>—</td></tr>
+<tr><td><code>src/config.js</code></td><td>CREDIT_CNY→0.001、MARKUP=3、TIERS 改模型映射</td><td class='n'>—</td></tr>
+<tr><td><code>src/server.js</code></td><td>/v1/chat 按 token 结算；topup 加订单幂等</td><td class='n'>闭环重放拦截</td></tr>
+<tr><td><code>src/billing.js</code></td><td>结算流水记录 upstreamModel</td><td class='n'>—</td></tr>
+<tr><td><code>src/store.js</code></td><td>新增订单幂等 seenOrder</td><td class='n'>闭环 ⑥</td></tr>
+<tr><td><code>src/upstream.js</code></td><td>mock 成本对齐浩驰价</td><td class='n'>—</td></tr>
+<tr><td><code>test/smoke.js</code></td><td>按 token 计费断言</td><td class='n'>15/15 通过</td></tr>
+<tr><td><code>test/recharge-loop.js（新增）</code></td><td>充值闭环 9 步模拟</td><td class='n'>9 步全绿</td></tr>
+</tbody></table>
+</section>
+<section><h2><span class='n'>05</span>风险与待拍板</h2>
+<p class='lead'>三个必须你现在拍板的点，直接影响这套计费能不能赚钱。</p>
+<ul class='chk'>
+<li><b>单价极低 → 客单价上不去。</b>luna 一次调用只收 0.2 分钱，客户充 10 元能用几千次。这是「薄利多销」的代价：要么接受低客单价靠走量，要么把 MARKUP 从 3 提到 10（仍是官方价 57%，仍便宜）。</li>
+<li><b>预扣水位偏高。</b>深度档预扣 328 分但实际只花 98 分，客户余额要够预扣上限才能下单。已保证不超扣，但会劝退低余额用户。要不要改成按历史均值预估、不足再补扣？</li>
+<li><b>缓存差价让不让利？</b>当前缓存差价 100% 归你（客户按全价付）。如果浩驰的缓存读取价后续上调，毛利会被压缩，要盯紧。</li>
+</ul>
+<div class='note info'><b>下一步需要你给三样东西：</b>① 浩驰的 API Base URL + 测试 Key（填进 <code>config/upstreams.json</code> 就能真联调）；② 确认 MARKUP 用 3 还是更高；③ 把《给浩驰-接入需求清单》发过去。</div>
+</section>
+<div class='footer'>
+<p><b>数据来源</b>｜浩驰《Fomalhaut MaaS 服务渠道商参考报价单 2026.8.19》（Codex Plus / Kiro 渠道价，Observed）；官方价 1 USD = ¥6.80（报价单载明）。毛利与缓存命中率关系为 Inferred，需真实账单校准。</p>
+<p><b>产物清单</b>｜本报告 · ai-gateway/（适配层 + 定价 + 幂等 + 测试）· 给浩驰-接入需求清单.html · 给客户-充值说明.html</p>
+</div>
+</div></body></html>

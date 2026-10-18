@@ -1,0 +1,1001 @@
+<!DOCTYPE html>
+<!-- 自动生成，勿手改。源文件：src/ui/index.html + src/ui/app.js；重新生成：node tools/make-preview.js -->
+
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<!-- connect-src：AI 网关走 https（服务端地址可配），不开放 http 明文与 ws -->
+
+<title>牛牛 AI · MT5 交易副驾驶</title>
+<style>
+:root{
+  /* ===== 配色板（主色，与日/夜正交） ===== */
+  --accent:#FF6A1A; --accent-deep:#C74E00; --accent-light:#FF7A33; --accent-name:品牌橙;
+  /* 语义色 */
+  --up:#E23B2E; --down:#17995B;                 /* 涨红跌绿（中国惯例） */
+  --ok:#4CAF88; --amber:#D9A441; --danger:#E23B2E;
+  /* 中性 */
+  --bg:#F5F6F8; --panel:#FFFFFF; --soft:#FAFBFC; --line:#E4E6EA; --line-strong:#F0F1F4;
+  --ink:#17233B; --muted:#667085; --faint:#98A2B3;
+  --shell-bg:#EDEFF3;
+  /* 品牌映射 */
+  --brand:var(--accent); --brand-deep:var(--accent-deep); --brand-light:var(--accent-light);
+  --tint:color-mix(in srgb, var(--accent) 8%, #fff);
+  --shadow:0 1px 2px rgba(14,42,92,.05);
+  --ease:cubic-bezier(.22,1,.36,1);
+}
+[data-accent="blue"]{  --accent:#2563EB; --accent-deep:#1D4ED8; --accent-light:#60A5FA; --accent-name:深海蓝; }
+[data-accent="green"]{ --accent:#0E9F5A; --accent-deep:#0B7A45; --accent-light:#34D399; --accent-name:翡翠绿; }
+[data-accent="purple"]{--accent:#7C3AED; --accent-deep:#6D28D9; --accent-light:#A78BFA; --accent-name:紫罗兰; }
+[data-theme="dark"]{
+  --bg:#0B1220; --panel:#141D2B; --soft:#101827; --line:#2A3648; --line-strong:#263247;
+  --ink:#F3F6FB; --muted:#AAB4C3; --faint:#7F8A9B;
+  --shell-bg:#070B12;
+  --up:#FF7A66; --down:#3DDC97; --ok:#3DDC97; --amber:#F6C453; --danger:#FF4D6D;
+  --brand:var(--accent-light);
+  --tint:color-mix(in srgb, var(--accent-light) 20%, var(--panel));
+  --shadow:0 8px 24px rgba(0,0,0,.45);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--shell-bg);color:var(--ink);font-size:14px;line-height:1.6;
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei","Inter",sans-serif;
+  -webkit-font-smoothing:antialiased}
+
+/* ===== 骨架 ===== */
+.app{display:flex;height:100vh;overflow:hidden}
+.side{width:212px;flex:0 0 212px;background:var(--panel);border-right:1px solid var(--line);
+  display:flex;flex-direction:column;padding:20px 12px 14px}
+.brand{display:flex;align-items:center;gap:10px;padding:0 8px 22px}
+.logo{width:34px;height:34px;border-radius:9px;background:linear-gradient(150deg,var(--accent-light),var(--accent-deep));
+  display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:15px;flex:0 0 34px}
+.brand b{font-size:15px;font-weight:660;display:block;letter-spacing:-.01em}
+.brand span{font-size:10.5px;color:var(--faint)}
+.nav{display:flex;flex-direction:column;gap:2px;flex:1}
+.nav-item{display:flex;align-items:center;gap:10px;border:none;background:transparent;
+  border-radius:10px;padding:9px 11px;font-size:13px;font-weight:560;color:var(--muted);
+  font-family:inherit;cursor:pointer;text-align:left;transition:.15s var(--ease)}
+.nav-item svg{opacity:.7;flex:0 0 17px}
+.nav-item:hover{background:var(--soft);color:var(--ink)}
+.nav-item.on{background:var(--tint);color:var(--accent);font-weight:640}
+.nav-item.on svg{opacity:1}
+.nav-item .come{margin-left:auto;font-size:9.5px;color:var(--faint);background:var(--line-strong);
+  border-radius:4px;padding:1px 5px}
+.side-foot{font-size:10.5px;color:var(--faint);padding:10px 10px 0;border-top:1px solid var(--line-strong);line-height:1.5}
+
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.topbar{display:flex;align-items:center;gap:12px;padding:18px 26px 14px;
+  border-bottom:1px solid var(--line-strong);background:var(--panel)}
+.topbar h1{font-size:16px;font-weight:640;letter-spacing:-.01em}
+.topbar .hsub{font-size:11.5px;color:var(--muted)}
+.halt{margin-left:auto;display:flex;align-items:center;gap:8px}
+.halt button{background:var(--danger);color:#fff;border:none;border-radius:9px;
+  padding:8px 15px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit}
+.halt button.off{background:var(--ok)}
+.pages{flex:1;overflow-y:auto;padding:20px 26px 40px}
+.page{display:none;animation:fade .18s var(--ease)}
+.page.on{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+.page-s{font-size:12px;color:var(--muted);margin-bottom:18px}
+/* ===== 通用卡片 ===== */
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px 20px;
+  box-shadow:var(--shadow);margin-bottom:16px}
+.card h3{font-size:12.5px;font-weight:640;margin-bottom:14px;display:flex;align-items:center;gap:8px;color:var(--ink)}
+.card h3 .dot{width:7px;height:7px;border-radius:50%;background:var(--faint)}
+.card h3 .dot.live{background:var(--ok)}
+.card h3 .dot.dead{background:var(--danger)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+
+/* 步骤条 */
+.steps{display:flex;gap:8px;margin-bottom:18px}
+.step{flex:1;padding:10px 12px;border-radius:10px;background:var(--soft);
+  border:1px solid var(--line);font-size:12px;color:var(--muted);text-align:center}
+.step.on{background:var(--tint);border-color:var(--accent);color:var(--accent);font-weight:600}
+
+/* 终端列表 */
+.term{display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid var(--line);
+  border-radius:11px;margin-bottom:10px;cursor:pointer;transition:.15s var(--ease);background:var(--panel)}
+.term:hover{border-color:var(--accent)}
+.term.sel{background:var(--tint);border-color:var(--accent)}
+.term .id{font-size:11px;color:var(--muted);font-family:ui-monospace,Menlo,monospace}
+.term .br{font-size:13px;font-weight:560}
+.term .st{margin-left:auto;font-size:11.5px;padding:3px 9px;border-radius:6px;background:var(--soft);color:var(--muted)}
+.term .st.live{background:color-mix(in srgb,var(--ok) 16%,transparent);color:var(--ok)}
+.empty{padding:26px;text-align:center;color:var(--muted);font-size:13px}
+
+/* 数据 */
+.kv{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:14px}
+.kv div{background:var(--soft);border-radius:10px;padding:10px 12px}
+.kv .k{font-size:11px;color:var(--muted)}
+.kv .v{font-size:16px;font-weight:620;margin-top:2px;font-variant-numeric:tabular-nums}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{text-align:left;font-size:10.5px;letter-spacing:.06em;color:var(--muted);
+  padding:8px 10px;border-bottom:1px solid var(--line);font-weight:600}
+td{padding:9px 10px;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
+tr:last-child td{border-bottom:none}
+.buy{color:var(--up);font-weight:600}
+.sell{color:var(--down);font-weight:600}
+
+/* 表单 */
+label{display:block;font-size:11.5px;color:var(--muted);margin:12px 0 5px}
+input,select{width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:9px;
+  font-size:13px;font-family:inherit;background:var(--panel);color:var(--ink)}
+input:focus,select:focus{outline:none;border-color:var(--accent)}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+button.primary{width:100%;margin-top:18px;background:var(--brand-deep);color:#fff;border:none;
+  border-radius:10px;padding:12px;font-size:14px;font-weight:620;cursor:pointer;font-family:inherit}
+button.primary:disabled{background:var(--line);color:var(--faint);cursor:not-allowed}
+button.ghost{background:var(--soft);border:1px solid var(--line);border-radius:9px;
+  padding:9px 14px;font-size:12.5px;cursor:pointer;font-family:inherit;color:var(--ink)}
+
+/* 票据 */
+.ticket{background:var(--soft);border:1px solid var(--line);border-radius:11px;padding:14px 16px;margin-top:14px}
+.ticket .t-h{font-size:12px;font-weight:640;margin-bottom:10px}
+.ticket .t-r{display:flex;justify-content:space-between;font-size:12.5px;padding:4px 0}
+.ticket .t-r span:first-child{color:var(--muted)}
+.ticket .warn{margin-top:12px;font-size:11.5px;color:var(--danger);line-height:1.55}
+
+/* 日志 */
+.log{font-family:ui-monospace,Menlo,monospace;font-size:11.5px;color:var(--muted);
+  background:var(--soft);border:1px solid var(--line);border-radius:11px;padding:12px 14px;
+  height:190px;overflow-y:auto;white-space:pre-wrap}
+.badge{display:inline-block;font-size:10.5px;padding:2px 8px;border-radius:5px;font-weight:600}
+.b-sent{background:var(--tint);color:var(--accent)}
+.b-exec{background:color-mix(in srgb,var(--ok) 16%,transparent);color:var(--ok)}
+.b-rej{background:color-mix(in srgb,var(--danger) 16%,transparent);color:var(--danger)}
+.badge.ok{background:color-mix(in srgb,var(--ok) 16%,transparent);color:var(--ok)}
+.badge.bad{background:color-mix(in srgb,var(--danger) 18%,transparent);color:var(--danger)}
+.b-rec,.b-exp{background:color-mix(in srgb,var(--amber) 20%,transparent);color:var(--amber)}
+.note{font-size:11.5px;color:var(--muted);margin-top:10px;line-height:1.6}
+.off{opacity:.55}
+.ai-off{margin-top:14px;padding:12px 14px;border-radius:11px;background:var(--soft);
+  border:1px dashed var(--line);font-size:12px;color:var(--muted);text-align:center}
+
+/* 授权 / AI 状态条 */
+.lic{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:16px;padding:12px 16px;
+  border-radius:12px;border:1px solid var(--line);background:var(--panel)}
+.lic.act{border-color:color-mix(in srgb,var(--ok) 40%,var(--line));
+  background:color-mix(in srgb,var(--ok) 8%,var(--panel))}
+.lic.no{border-color:color-mix(in srgb,var(--danger) 45%,var(--line));
+  background:color-mix(in srgb,var(--danger) 8%,var(--panel))}
+.lic-l{display:flex;align-items:baseline;gap:9px;font-size:12.5px}
+.lic-l b{font-size:12px;color:var(--muted);font-weight:600}
+.lic-l span{font-weight:600}
+.lic-r{margin-left:auto;display:flex;gap:8px}
+.lic-r input{flex:1;min-width:280px;font-family:ui-monospace,Menlo,monospace;font-size:11.5px}
+
+/* ===== 设置 ===== */
+.set-row{display:flex;align-items:center;gap:16px;padding:14px 0;border-bottom:1px solid var(--line-strong)}
+.set-row:last-child{border-bottom:none}
+.set-row .sl{flex:1}
+.set-row .sl b{font-size:13px;font-weight:600;display:block}
+.set-row .sl span{font-size:11.5px;color:var(--muted)}
+.seg{display:flex;background:var(--soft);border:1px solid var(--line);border-radius:9px;padding:3px}
+.seg button{border:none;background:transparent;border-radius:7px;padding:6px 14px;font-size:12.5px;
+  font-weight:560;color:var(--muted);font-family:inherit;cursor:pointer;transition:.15s}
+.seg button.on{background:var(--panel);color:var(--ink);box-shadow:0 1px 3px rgba(14,42,92,.12)}
+.accent-row{display:flex;gap:10px}
+.accent-dot{width:30px;height:30px;border-radius:8px;border:none;cursor:pointer;position:relative;
+  transition:transform .15s var(--ease)}
+.accent-dot:active{transform:scale(.92)}
+.accent-dot.on{box-shadow:0 0 0 2px var(--panel),0 0 0 4px var(--accent)}
+.accent-dot.on::after{content:"✓";position:absolute;inset:0;display:flex;align-items:center;
+  justify-content:center;color:#fff;font-size:13px;font-weight:800}
+
+/* 策略广场占位 */
+.coming{text-align:center;padding:44px 20px;color:var(--muted)}
+.coming .ci{width:52px;height:52px;border-radius:14px;background:var(--tint);color:var(--accent);
+  display:flex;align-items:center;justify-content:center;margin:0 auto 14px}
+.coming b{font-size:14px;color:var(--ink);display:block;margin-bottom:6px}
+.coming span{font-size:12px;line-height:1.7;display:block;max-width:420px;margin:0 auto}
+
+/* ===== 充值弹窗 ===== */
+.modal-mask{position:fixed;inset:0;background:rgba(18,20,24,.46);display:none;align-items:center;
+  justify-content:center;z-index:60;padding:24px}
+.modal-mask.on{display:flex}
+.modal{background:var(--panel);border:1px solid var(--line);border-radius:16px;width:460px;
+  max-width:100%;max-height:calc(100vh - 48px);overflow-y:auto;padding:26px 26px 22px;
+  box-shadow:0 24px 64px rgba(0,0,0,.30)}
+.modal h2{font-size:17px;font-weight:650;margin-bottom:4px}
+.modal .m-sub{font-size:12.5px;color:var(--muted);margin-bottom:18px}
+.m-row{margin-bottom:16px}
+.m-label{font-size:11.5px;color:var(--muted);margin-bottom:7px}
+.pay-chips{display:flex;gap:8px;flex-wrap:wrap}
+.pay-chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:10px;
+  padding:8px 15px;font-size:13px;font-weight:600;background:var(--soft);color:var(--ink)}
+.m-steps{margin:0;padding-left:18px;font-size:13px;line-height:1.8;color:var(--ink)}
+.m-steps li{margin:2px 0}
+.m-note{font-size:11.5px;color:var(--muted);line-height:1.6;background:var(--soft);
+  border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.m-actions{display:flex;gap:10px;margin-top:20px}
+.m-actions button{flex:1;margin-top:0}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ============ 侧边栏（一级菜单） ============ -->
+  <aside class="side">
+    <div class="brand">
+      <div class="logo">牛</div>
+      <div><b>牛牛 AI</b><span>MT5 交易副驾驶</span></div>
+    </div>
+    <nav class="nav" id="nav">
+      <button class="nav-item on" data-page="p-overview">
+        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5M5 9.5V21h5v-6h4v6h5V9.5"/></svg>概览</button>
+      <button class="nav-item" data-page="p-terminal">
+        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg>终端与 EA</button>
+      <button class="nav-item" data-page="p-trade">
+        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5-6 4 3 5-8 4 5"/><path d="M3 21h18"/></svg>交易</button>
+      <button class="nav-item" data-page="p-strategy">
+        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 20v-9M12 20V5M17 20v-4"/><path d="M3 20h18"/></svg>策略广场<span class="come">规划中</span></button>
+      <button class="nav-item" data-page="p-ai">
+        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 4.6L18.5 9l-4.6 1.4L12 15l-1.9-4.6L5.5 9l4.6-1.4z"/><path d="M19 15l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/></svg>AI 副驾驶</button>
+      <button class="nav-item" data-page="p-settings">
+        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1-1.55 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.87 1.7 1.7 0 0 0-1.55-1H3a2 2 0 1 1 0-4h.09a1.7 1.7 0 0 0 1.55-1 1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34h.01a1.7 1.7 0 0 0 1-1.55V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1 1.55 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87v.01a1.7 1.7 0 0 0 1.55 1H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.55 1Z"/></svg>设置</button>
+    </nav>
+    <div class="side-foot">v1.0 · 模拟盘优先<br>交易链独立交付</div>
+  </aside>
+
+  <!-- ============ 主区 ============ -->
+  <main class="main">
+    <header class="topbar">
+      <div>
+        <h1>牛牛 AI</h1>
+        <div class="hsub">MT5 交易副驾驶 · 桥接版</div>
+      </div>
+      <div class="halt">
+        <button id="haltBtn" class="off">运行中 · 点击停用</button>
+      </div>
+    </header>
+
+    <div class="pages">
+
+      <!-- 全局：授权状态（始终可见，未授权不能交易） -->
+      <div class="lic" id="licBar">
+        <div class="lic-l"><b>授权状态</b><span id="licText">检查中…</span></div>
+        <div class="lic-r" id="licForm">
+          <input id="licKey" type="text" placeholder="粘贴授权密钥（NN1-…）" spellcheck="false">
+          <button class="ghost" id="licBtn">激活</button>
+        </div>
+      </div>
+
+      <!-- AI 状态条（由 app.js 控制显示） -->
+      <div class="lic" id="aiBar" style="display:none">
+        <div class="lic-l"><b>AI 积分</b><span id="aiText">—</span></div>
+        <div class="lic-r" id="aiForm">
+          <input id="aiToken" type="text" placeholder="粘贴 AI 服务令牌（nk1-…）" spellcheck="false">
+          <button class="ghost" id="aiBtn">连接</button>
+        </div>
+        <div class="lic-r" id="aiAct" style="display:none">
+          <button class="ghost" id="aiTopupBtn">充值</button>
+          <button class="ghost" id="aiOffBtn">断开</button>
+        </div>
+      </div>
+
+      <!-- ========== 概览 ========== -->
+      <section class="page on" id="p-overview">
+        <div class="steps">
+          <div class="step on" id="s1">① 选择终端</div>
+          <div class="step" id="s2">② 安装桥接 EA</div>
+          <div class="step" id="s3">③ 绑定与下单</div>
+        </div>
+        <div class="card">
+          <h3><span class="dot" id="dotAcct"></span> 账户与行情</h3>
+          <div class="kv">
+            <div><div class="k">余额 Balance</div><div class="v" id="kBalance">—</div></div>
+            <div><div class="k">净值 Equity</div><div class="v" id="kEquity">—</div></div>
+            <div><div class="k">可用保证金</div><div class="v" id="kFree">—</div></div>
+          </div>
+          <div class="kv">
+            <div><div class="k">品种 Symbol</div><div class="v" id="kSymbol">—</div></div>
+            <div><div class="k">买价 Bid</div><div class="v" id="kBid">—</div></div>
+            <div><div class="k">卖价 Ask</div><div class="v" id="kAsk">—</div></div>
+          </div>
+          <div class="note" id="acctMeta">未连接</div>
+          <div style="margin-top:8px"><span class="badge" id="sigBadge">—</span></div>
+          <div class="note" id="sigHint" style="display:none;color:var(--danger)">
+            EA 未拿到密钥：所有会改变敞口的命令都会被拒绝（不是故障，是安全设计）。
+            回到第 2 步点一次「安装桥接 EA」，桌面端会把随机密钥写入 MT5 沙箱，然后重启 EA。
+          </div>
+        </div>
+        <div class="card">
+          <h3>持仓 Positions</h3>
+          <table>
+            <thead><tr><th>单号</th><th>品种</th><th>方向</th><th>手数</th><th>开仓价</th><th>止损</th><th>盈亏</th><th></th></tr></thead>
+            <tbody id="posBody"><tr><td colspan="8" style="color:var(--muted);text-align:center;padding:18px">暂无持仓</td></tr></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ========== 终端与 EA ========== -->
+      <section class="page" id="p-terminal">
+        <div class="page-s">扫描本机 MT5 实例，安装桥接 EA 并绑定密钥</div>
+        <div class="card">
+          <h3><span class="dot" id="dotTerm"></span> MT5 终端</h3>
+          <div id="termList"><div class="empty">正在扫描…</div></div>
+          <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+            <button class="ghost" id="rescanBtn">重新扫描</button>
+            <button class="ghost" id="installBtn" disabled>安装桥接 EA</button>
+            <button class="ghost" id="rebindBtn" disabled>重新绑定（换账户）</button>
+          </div>
+          <div class="note" id="installNote"></div>
+        </div>
+      </section>
+
+      <!-- ========== 交易 ========== -->
+      <section class="page" id="p-trade">
+        <div class="page-s">人工下单与回执跟踪（AI 分析未开放，不放置无效按钮）</div>
+        <div class="grid2">
+          <div class="card" id="orderCard">
+            <h3>人工下单 · 交易票据</h3>
+            <div class="row">
+              <div><label>方向 Side</label>
+                <select id="fSide"><option value="BUY">买入 BUY</option><option value="SELL">卖出 SELL</option></select></div>
+              <div><label>手数 Lots</label>
+                <input id="fLots" type="number" step="0.01" min="0.01" value="0.01"></div>
+            </div>
+            <div class="row">
+              <div><label>止损（点 sl_points）</label>
+                <input id="fSl" type="number" step="10" min="0" value="250"></div>
+              <div><label>止盈（点 tp_points）</label>
+                <input id="fTp" type="number" step="10" min="0" value="500"></div>
+            </div>
+            <div><label>允许滑点（点 max_deviation_points）</label>
+              <input id="fDev" type="number" step="5" min="0" value="30"></div>
+            <div class="ticket">
+              <div class="t-h">下单前确认</div>
+              <div class="t-r"><span>账户</span><b id="tAcc">—</b></div>
+              <div class="t-r"><span>服务器</span><b id="tSrv">—</b></div>
+              <div class="t-r"><span>品种</span><b id="tSym">—</b></div>
+              <div class="t-r"><span>方向 / 手数</span><b id="tSide">—</b></div>
+              <div class="t-r"><span>止损 / 止盈</span><b id="tSl">—</b></div>
+              <div class="warn" id="tWarn"></div>
+            </div>
+            <button class="primary" id="orderBtn" disabled>确认下单（模拟盘）</button>
+            <div class="note">
+              point = 品种最小报价单位，不是 pip。手数与止损由 EA 按券商规格（VOLUME_STEP / STOPS_LEVEL）再次校验；
+              桌面端校验通过不替代 EA 校验。
+            </div>
+          </div>
+          <div class="card">
+            <h3>事件与回执</h3>
+            <div class="log" id="logBox"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========== 策略广场（规划中，不放无效按钮） ========== -->
+      <section class="page" id="p-strategy">
+        <div class="page-s">策略方挂牌 · 业绩可查 · 一键跟单</div>
+        <div class="card">
+          <div class="coming">
+            <div class="ci"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 20v-9M12 20V5M17 20v-4"/><path d="M3 20h18"/></svg></div>
+            <b>策略广场规划中</b>
+            <span>设计已定稿（年化 / 资金曲线 / 夏普 / 回撤 / 交易笔数的卡片化榜单 + 跟单链路）。
+            需要先跑通策略方实盘业绩接入，再对客户开放——在业绩可验证之前，不开放入口。</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========== AI 副驾驶 ========== -->
+      <section class="page" id="p-ai">
+        <div class="page-s">连接 AI 网关后按用量扣积分，未连接时整条不显示</div>
+        <div class="card">
+          <h3>AI 积分与充值</h3>
+          <div class="note" style="margin-top:0">
+            AI 状态与充值入口显示在上方状态条（连接成功才出现「充值」，未连接则显示令牌输入框）。
+            未配置 AI 服务地址时，整条状态栏不显示——不放点了没反应的按钮。
+          </div>
+          <div class="ai-off">AI 分析 / 风控审核 / 持仓巡查 —— v1 未开放。交易链独立交付，避免出现无效按钮。</div>
+        </div>
+      </section>
+
+      <!-- ========== 设置 ========== -->
+      <section class="page" id="p-settings">
+        <div class="page-s">外观与配色，选择后立即生效并记住</div>
+        <div class="card" style="max-width:640px">
+          <h3>外观</h3>
+          <div class="set-row">
+            <div class="sl"><b>主题</b><span>浅色 / 深色 / 跟随系统</span></div>
+            <div class="seg" id="themeSeg">
+              <button data-m="浅色">浅色</button>
+              <button data-m="深色">深色</button>
+              <button data-m="自动">跟随系统</button>
+            </div>
+          </div>
+          <div class="set-row">
+            <div class="sl"><b>配色</b><span id="accentNameLabel">品牌橙</span></div>
+            <div class="accent-row" id="accentRow">
+              <button class="accent-dot on" data-a="orange" title="品牌橙" style="background:#FF6A1A"></button>
+              <button class="accent-dot" data-a="blue" title="深海蓝" style="background:#2563EB"></button>
+              <button class="accent-dot" data-a="green" title="翡翠绿" style="background:#0E9F5A"></button>
+              <button class="accent-dot" data-a="purple" title="紫罗兰" style="background:#7C3AED"></button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<!-- ============ 充值弹窗（保持原有 id 与结构） ============ -->
+<div class="modal-mask" id="topupModal">
+  <div class="modal">
+    <h2>充值</h2>
+    <div class="m-sub">充的钱进入账户余额，使用 AI 时按用量自动扣费，全程自动到账。</div>
+    <div class="m-row">
+      <div class="m-label">支付方式</div>
+      <div class="pay-chips">
+        <span class="pay-chip">微信支付</span>
+        <span class="pay-chip">支付宝</span>
+      </div>
+    </div>
+    <div class="m-row">
+      <div class="m-label">三步完成充值</div>
+      <ol class="m-steps">
+        <li>点击「去支付」，跳转到安全支付页</li>
+        <li>在支付页选择金额，用微信或支付宝完成付款</li>
+        <li>支付成功后余额即时到账</li>
+      </ol>
+    </div>
+    <div class="m-note">余额不足时会提示充值，不会产生欠费；未消费的余额可申请退款。</div>
+    <div class="m-actions">
+      <button class="ghost" id="topupCancel">取消</button>
+      <button class="primary" id="topupGo">去支付</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ===== 预览桩：只替换 window.nn 这个桥，业务代码一行没改 ===== */
+(function () {
+  var KEY = 'niuniu-preview-prefs';
+  function load() {
+    try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { return {}; }
+  }
+  var prefs = Object.assign({ theme: '浅色', accent: 'orange', page: 'p-overview' }, load());
+  function save(p) {
+    prefs = Object.assign(prefs, p);
+    try { localStorage.setItem(KEY, JSON.stringify(prefs)); } catch (e) {}
+    return prefs;
+  }
+
+  var TERMINALS = [
+    { id: 'A1B2C3D4E5F6G7H8', path: 'MetaQuotes/Terminal/A1B2C3D4/MQL5', broker: 'IC Markets', eaLive: true },
+    { id: 'Z9Y8X7W6V5U4T3S2', path: 'MetaQuotes/Terminal/Z9Y8X7W6/MQL5', broker: 'Exness', eaLive: false }
+  ];
+  var SNAPSHOT = {
+    ok: true,
+    snapshot: {
+      eaLive: true,
+      status: {
+        signed: true, trading_allowed: true, symbol: 'EURUSD',
+        quote: { bid: 1.08521, ask: 1.08535 },
+        account: { login: 12345678, balance: 10000, equity: 10123.45, free_margin: 9800, mode: 'netting' },
+        positions: [
+          { ticket: 987654, symbol: 'EURUSD', type: 'BUY',  volume: 0.02, price_open: 1.084,  sl: 1.08,  profit: 23.45 },
+          { ticket: 987655, symbol: 'XAUUSD', type: 'SELL', volume: 0.01, price_open: 2410.5, sl: 2425,  profit: -8.2 }
+        ]
+      },
+      heart: { server: 'ICMarkets-Demo', epoch: 1 }
+    }
+  };
+  var sentOnce = false;
+
+  window.nn = {
+    licenseStatus:   async () => ({ ok: true, license: { ok: true, name: '预览用户', id: 'NN1-DEMO', daysLeft: 30, expires: '2026-11-16' } }),
+    licenseActivate: async () => ({ ok: false, reason: '预览模式不校验授权' }),
+    discover:        async () => ({ ok: true, terminals: TERMINALS }),
+    installEA:       async () => ({ ok: true, installed: 'NiuNiuBridge.ex5', isSource: false }),
+    rebind:          async () => ({ ok: true, secret: '', epoch: 2 }),
+    snapshot:        async () => SNAPSHOT,
+    sendCommand:     async () => { sentOnce = false; return { ok: true, id: 'cmd-0001' }; },
+    commandStatus:   async () => { if (sentOnce) return { ok: true, stage: 'EXECUTED' }; sentOnce = true; return { ok: true, stage: 'SENT' }; },
+    aiStatus:        async () => ({ enabled: true, connected: true, credits: 120, creditCny: 0.1, rechargeUrl: 'https://ai.niuniuai.app/recharge' }),
+    aiConnect:       async () => ({ connected: true, credits: 120 }),
+    aiDisconnect:    async () => ({ enabled: true, connected: false }),
+    version:         async () => '1.0.0-preview',
+    openExternal:    async (u) => { window.open(u, '_blank', 'noopener'); return true; },
+    saveLog:         async () => true,
+    onEvent:         () => () => {},
+    getPrefs:        async () => prefs,
+    setPrefs:        async (p) => save(p),
+    getPrefsSync:    () => prefs
+  };
+})();
+</script>
+<script>'use strict';
+/* 牛牛 AI · 渲染层。只调用 preload 暴露的白名单方法，拿不到密钥、拿不到任意文件路径。 */
+
+const $ = (id) => document.getElementById(id);
+const state = {
+  terminals: [],
+  selected: null,
+  snapshot: null,
+  halted: false,
+  lastCmd: null,
+  logLines: [],
+};
+
+function log(msg, tag, isHtml) {
+  const t = new Date().toLocaleTimeString('zh-CN', { hour12: false });
+  const plain = String(msg).replace(/<[^>]*>/g, '');           // 导出用纯文本
+  state.logLines.push(`[${t}] ${tag ? tag + ' ' : ''}${plain}`);
+  if (state.logLines.length > 400) state.logLines.shift();
+  const box = $('logBox');
+  if (box.childNodes.length > 400) box.removeChild(box.firstChild);
+  const row = document.createElement('div');
+  row.textContent = `[${t}] ${tag ? tag + ' ' : ''}`;
+  if (isHtml) { const sp = document.createElement('span'); sp.innerHTML = String(msg); row.appendChild(sp); }
+  else row.appendChild(document.createTextNode(plain));
+  box.appendChild(row);
+  box.scrollTop = box.scrollHeight;
+}
+
+const fmt = (n, d = 2) => (n === null || n === undefined || Number.isNaN(Number(n)))
+  ? '—' : Number(n).toLocaleString('zh-CN', { minimumFractionDigits: d, maximumFractionDigits: d });
+
+// ---------- 外观：主题 / 配色（存在主进程，不落 localStorage） ----------
+// 主题与配色是正交的两件事：主题管明暗，配色管主色。四个配色 × 日/夜都成立。
+const MODES = ['浅色', '深色', '自动'];
+const ACCENTS = { orange: '品牌橙', blue: '深海蓝', green: '翡翠绿', purple: '紫罗兰' };
+const prefs = { theme: '浅色', accent: 'orange', page: 'p-overview' };
+let sysMq = null;
+
+function resolveTheme(mode) {
+  if (mode !== '自动') return mode === '深色' ? 'dark' : 'light';
+  try { return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'; }
+  catch { return 'light'; }
+}
+function paintTheme() {
+  document.documentElement.setAttribute('data-theme', resolveTheme(prefs.theme));
+  document.querySelectorAll('#themeSeg button').forEach((b) => {
+    b.classList.toggle('on', b.dataset.m === prefs.theme);
+  });
+}
+function paintAccent() {
+  const a = ACCENTS[prefs.accent] ? prefs.accent : 'orange';
+  document.documentElement.setAttribute('data-accent', a);
+  document.querySelectorAll('#accentRow .accent-dot').forEach((b) => {
+    b.classList.toggle('on', b.dataset.a === a);
+  });
+  const lbl = $('accentNameLabel');
+  if (lbl) lbl.textContent = ACCENTS[a];
+}
+// 只在「跟随系统」时挂监听，切走就摘掉，避免多个监听器叠加
+function watchSystem() {
+  if (sysMq) { try { sysMq.removeEventListener('change', paintTheme); } catch { /* noop */ } sysMq = null; }
+  if (prefs.theme !== '自动') return;
+  try {
+    sysMq = window.matchMedia('(prefers-color-scheme: dark)');
+    sysMq.addEventListener('change', paintTheme);
+  } catch { /* noop */ }
+}
+function savePrefs() {
+  try { window.nn.setPrefs({ theme: prefs.theme, accent: prefs.accent, page: prefs.page }); }
+  catch { /* 存不下不影响交易 */ }
+}
+function loadPrefs() {
+  let p = null;
+  try { p = window.nn.getPrefsSync(); } catch { /* 老版本 preload 没有这个接口 */ }
+  if (p && typeof p === 'object') {
+    if (MODES.includes(p.theme)) prefs.theme = p.theme;
+    if (ACCENTS[p.accent]) prefs.accent = p.accent;
+    if (PAGE_META[p.page]) prefs.page = p.page;
+  }
+  paintTheme(); paintAccent(); watchSystem();
+}
+
+// ---------- 侧边栏导航（一级菜单，页面为二级） ----------
+const PAGE_META = {
+  'p-overview':  ['概览', '账户与持仓总览'],
+  'p-terminal':  ['终端与 EA', '扫描本机 MT5 实例，安装桥接 EA 并绑定密钥'],
+  'p-trade':     ['交易', '人工下单与回执跟踪'],
+  'p-strategy':  ['策略广场', '策略方挂牌 · 业绩可查 · 一键跟单'],
+  'p-ai':        ['AI 副驾驶', '连接 AI 网关后按用量扣积分'],
+  'p-settings':  ['设置', '外观与配色，选择后立即生效并记住'],
+};
+function go(pageId) {
+  if (!PAGE_META[pageId]) return;
+  prefs.page = pageId;
+  document.querySelectorAll('.page').forEach((p) => p.classList.toggle('on', p.id === pageId));
+  document.querySelectorAll('#nav .nav-item').forEach((b) => {
+    b.classList.toggle('on', b.dataset.page === pageId);
+  });
+  const t = document.querySelector('.topbar h1');
+  // 副标题固定为产品定位，不跟随页面 —— 页内已有说明，避免同一句话出现两遍
+  if (t) t.textContent = PAGE_META[pageId][0];
+  const pages = document.querySelector('.pages');
+  if (pages) pages.scrollTop = 0;
+  savePrefs();
+}
+
+// 首帧前先把主题刷上，避免深色用户看到白屏闪一下
+loadPrefs();
+document.querySelectorAll('#nav .nav-item').forEach((b) => {
+  b.addEventListener('click', () => go(b.dataset.page));
+});
+document.querySelectorAll('#themeSeg button').forEach((b) => {
+  b.addEventListener('click', () => {
+    if (!MODES.includes(b.dataset.m)) return;
+    prefs.theme = b.dataset.m;
+    paintTheme(); watchSystem(); savePrefs();
+    log(`外观已切换：${prefs.theme}`);
+  });
+});
+document.querySelectorAll('#accentRow .accent-dot').forEach((b) => {
+  b.addEventListener('click', () => {
+    if (!ACCENTS[b.dataset.a]) return;
+    prefs.accent = b.dataset.a;
+    paintAccent(); savePrefs();
+    log(`配色已切换：${ACCENTS[prefs.accent]}`);
+  });
+});
+
+// ---------- 终端发现 ----------
+async function discover() {
+  $('termList').innerHTML = '<div class="empty">正在扫描…</div>';
+  const r = await window.nn.discover();
+  if (!r || !r.ok) { log('扫描失败', '⚠'); return; }
+
+  state.terminals = r.terminals || [];
+  if (!state.terminals.length) {
+    $('termList').innerHTML =
+      '<div class="empty">未检测到 MT5 终端。<br>请先安装券商官方 MT5 并登录（建议模拟账户）。</div>';
+    log('未检测到 MT5 终端');
+    return;
+  }
+
+  $('termList').innerHTML = '';
+  state.terminals.forEach((t) => {
+    const el = document.createElement('div');
+    el.className = 'term' + (state.selected === t.path ? ' sel' : '');
+    el.innerHTML = `
+      <div>
+        <div class="br">${escapeHtml(t.broker || 'MT5 终端')}</div>
+        <div class="id">${escapeHtml(t.id.slice(0, 16))}…</div>
+      </div>
+      <div class="st ${t.eaLive ? 'live' : ''}">${t.eaLive ? 'EA 在线' : 'EA 未运行'}</div>`;
+    el.onclick = () => selectTerminal(t);
+    $('termList').appendChild(el);
+  });
+
+  // 默认选中第一个「活的」终端
+  const live = state.terminals.find((t) => t.eaLive) || state.terminals[0];
+  selectTerminal(live);
+  log(`发现 ${state.terminals.length} 个终端实例`);
+}
+
+function selectTerminal(t) {
+  state.selected = t.path;
+  document.querySelectorAll('.term').forEach((el, i) => {
+    el.classList.toggle('sel', state.terminals[i]?.path === t.path);
+  });
+  $('installBtn').disabled = false;
+  $('rebindBtn').disabled = false;
+  $('installNote').textContent = t.eaLive
+    ? 'EA 已在线。若更换了 EA 版本，可重新安装后在 MT5 中重新挂载。'
+    : 'EA 未运行。请点击「安装桥接 EA」，然后在 MT5 导航器中把它拖到图表并勾选「允许算法交易」。';
+  refresh();
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, (c) =>
+    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+// ---------- 安装 EA ----------
+$('installBtn').onclick = async () => {
+  if (!state.selected) return;
+  const r = await window.nn.installEA(state.selected);
+  if (r?.ok) {
+    log(`EA 已安装：${r.installed}`, '✓');
+    $('installNote').textContent = r.isSource
+      ? '⚠ 安装的是源码 .mq5 —— 请在 MT5 的 MetaEditor 中编译生成 .ex5 后再挂载。'
+      : '已安装编译产物 .ex5。在 MT5 导航器 → EA 交易 → NiuNiuBridge 拖到图表，勾选「允许算法交易」。';
+    $('s2').classList.add('on');
+  } else {
+    log(`安装失败：${r?.error}`, '⚠');
+  }
+  await discover();
+};
+
+$('rescanBtn').onclick = discover;
+
+// ---------- 状态刷新 ----------
+async function refresh() {
+  if (!state.selected) return;
+  const r = await window.nn.snapshot(state.selected);
+  if (!r?.ok) return;
+  state.snapshot = r.snapshot;
+  render();
+}
+
+function render() {
+  const s = state.snapshot;
+  const live = !!(s && s.eaLive);
+  $('dotTerm').className = 'dot ' + (live ? 'live' : 'dead');
+  $('dotAcct').className = 'dot ' + (live ? 'live' : 'dead');
+
+  if (!s || !s.status) {
+    $('acctMeta').textContent = live ? 'EA 在线，等待状态快照…' : '未连接：EA 未运行';
+    $('orderBtn').disabled = true;
+    return;
+  }
+
+  const st = s.status;
+  const acct = st.account || {};
+  $('kBalance').textContent = fmt(acct.balance);
+  $('kEquity').textContent = fmt(acct.equity);
+  $('kFree').textContent = fmt(acct.free_margin);
+  $('kSymbol').textContent = st.symbol || '—';
+  $('kBid').textContent = st.quote ? Number(st.quote.bid).toFixed(5) : '—';
+  $('kAsk').textContent = st.quote ? Number(st.quote.ask).toFixed(5) : '—';
+
+  const modeTxt = acct.mode === 'netting' ? '净额' : acct.mode === 'hedging' ? '对冲' : '—';
+  $('acctMeta').textContent =
+    `账户 ${acct.login} @ ${s.heart?.server || '—'} · ${modeTxt}模式 · 交易许可 ${st.trading_allowed ? '开' : '关'}`;
+
+  // 签名状态：false 表示 EA 没拿到密钥，会拒绝一切交易命令（fail-closed）。
+  // 必须让用户看见原因，否则只会看到"下单被拒"却不知道为什么。
+  const signed = st.signed !== false;
+  $('sigBadge').textContent = signed ? '签名校验已启用' : '未启用签名 · 交易命令将被拒绝';
+  $('sigBadge').className = 'badge ' + (signed ? 'ok' : 'bad');
+  $('sigHint').style.display = signed ? 'none' : 'block';
+
+  // 持仓
+  const pos = st.positions || [];
+  $('posBody').innerHTML = pos.length ? pos.map((p) => `
+    <tr>
+      <td>${p.ticket}</td>
+      <td>${escapeHtml(p.symbol)}</td>
+      <td class="${p.type === 'BUY' ? 'buy' : 'sell'}">${p.type}</td>
+      <td>${fmt(p.volume, 2)}</td>
+      <td>${Number(p.price_open).toFixed(5)}</td>
+      <td>${p.sl ? Number(p.sl).toFixed(5) : '—'}</td>
+      <td class="${p.profit >= 0 ? 'buy' : 'sell'}">${fmt(p.profit)}</td>
+      <td><button class="ghost" data-close="${p.ticket}">平仓</button></td>
+    </tr>`).join('')
+    : '<tr><td colspan="8" style="color:var(--muted);text-align:center;padding:18px">暂无持仓</td></tr>';
+
+  document.querySelectorAll('[data-close]').forEach((b) => {
+    b.onclick = () => closePosition(b.dataset.close);
+  });
+
+  // 票据
+  $('tAcc').textContent = acct.login ?? '—';
+  $('tSrv').textContent = s.heart?.server || '—';
+  $('tSym').textContent = st.symbol || '—';
+  updateTicket();
+
+  const canTrade = live && st.trading_allowed && signed && licOk && !state.halted;
+  $('orderBtn').disabled = !canTrade;
+  $('orderBtn').textContent = state.halted ? '已停用'
+    : !licOk ? '未授权 · 请先激活'
+    : '确认下单（模拟盘）';
+  if (live) $('s3').classList.add('on');
+}
+
+function updateTicket() {
+  const side = $('fSide').value;
+  const lots = $('fLots').value;
+  $('tSide').textContent = `${side} · ${lots} 手`;
+  $('tSl').textContent = `${$('fSl').value} 点 / ${$('fTp').value} 点`;
+
+  const warns = [];
+  if (state.snapshot?.status?.account?.mode === 'netting') {
+    warns.push('净额账户：平仓使用 PositionClose，不会发反向单（反向单在净额模式等于减仓或反手）。');
+  }
+  if (!state.snapshot?.status?.trading_allowed) warns.push('终端当前禁止交易。');
+  $('tWarn').textContent = warns.join(' ');
+}
+['fSide', 'fLots', 'fSl', 'fTp', 'fDev'].forEach((id) => {
+  $(id).addEventListener('input', updateTicket);
+});
+
+// ---------- 下单 ----------
+$('orderBtn').onclick = async () => {
+  if (state.halted) return log('已停用，拒绝下单', '⚠');
+  if (!licOk) return log('未授权：请先激活授权密钥', '⚠');
+  const st = state.snapshot?.status;
+  if (!st) return;
+
+  const r = await window.nn.sendCommand({
+    terminalPath: state.selected,
+    type: 'ORDER_MARKET',
+    account: st.account?.login,
+    accountServer: state.snapshot.heart?.server,
+    epoch: state.snapshot.heart?.epoch ?? 1,
+    payload: {
+      symbol: st.symbol,
+      side: $('fSide').value,
+      volume_lots: Number($('fLots').value),
+      sl_points: Number($('fSl').value),
+      tp_points: Number($('fTp').value),
+      max_deviation_points: Number($('fDev').value),
+      tag: 'manual',
+    },
+  });
+
+  if (!r?.ok) return log(`下单失败：${r?.error}`, '⚠');
+  state.lastCmd = r.id;
+  log(`命令已发送 ${r.id} · ${$('fSide').value} ${$('fLots').value} 手`, '→');
+  watchCommand(r.id);
+};
+
+async function closePosition(ticket) {
+  if (state.halted) return log('已停用，拒绝平仓', '⚠');
+  const st = state.snapshot?.status;
+  const r = await window.nn.sendCommand({
+    terminalPath: state.selected,
+    type: 'POSITION_CLOSE',
+    account: st?.account?.login,
+    accountServer: state.snapshot?.heart?.server,
+    epoch: state.snapshot?.heart?.epoch ?? 1,
+    payload: { ticket: String(ticket) },
+  });
+  if (!r?.ok) return log(`平仓失败：${r?.error}`, '⚠');
+  log(`平仓命令已发送 ${r.id} · 单号 ${ticket}`, '→');
+  watchCommand(r.id);
+}
+
+// ---------- 回执跟踪 ----------
+const watching = new Map();
+function watchCommand(id) {
+  if (watching.has(id)) return;
+  const timer = setInterval(async () => {
+    const r = await window.nn.commandStatus(id);
+    if (!r?.ok) return;
+    const stage = r.stage;
+    if (stage && stage !== 'SENT') {
+      const badge =
+        stage === 'EXECUTED' ? ['b-exec', '已成交'] :
+        stage === 'REJECTED' ? ['b-rej', '已拒绝'] :
+        stage === 'EXPIRED'  ? ['b-exp', '已过期'] :
+        stage === 'RECONCILING' ? ['b-rec', '待核对'] :
+        ['b-sent', stage];
+      log(`回执 ${id.slice(-10)} → <span class="badge ${badge[0]}">${badge[1]}</span> ${r.receipt?.message || ''}`, null, true);
+      if (stage === 'RECONCILING') {
+        log('⚠ 结果未知，已禁止自动重放。请在 MT5 中人工核对后再决定，切勿重复提交。', '⚠');
+      }
+      if (['EXECUTED', 'REJECTED', 'EXPIRED', 'RECONCILING'].includes(stage)) {
+        clearInterval(timer); watching.delete(id); refresh();
+      }
+    }
+  }, 800);
+  watching.set(id, timer);
+}
+
+// ---------- 重新绑定（换账户） ----------
+// 换账户后必须走这一步：会换掉密钥并把 epoch 自增，旧代次的命令全部作废。
+$('rebindBtn').onclick = async () => {
+  if (!state.selected) return log('请先选择终端', '⚠');
+  if (!confirm('重新绑定会更换密钥并让所有旧命令失效。\n请确认 MT5 已登录你要用的账户，然后重启一次 EA。\n\n继续？')) return;
+  const r = await window.nn.rebind(state.selected);
+  if (r?.ok) {
+    log(`已重新绑定 · 代次 epoch=${r.epoch}`, '✓');
+    log('⚠ 请在 MT5 中重启一次 EA（右键图表 → EA 交易 → 属性 / 或移除后重新拖入），让 EA 重新读取密钥。', '⚠');
+    refresh();
+  } else {
+    log(`重新绑定失败：${r?.error || '未知错误'}`, '✗');
+  }
+};
+
+// ---------- 一键停用 ----------
+$('haltBtn').onclick = () => {
+  state.halted = !state.halted;
+  $('haltBtn').className = state.halted ? '' : 'off';
+  $('haltBtn').textContent = state.halted ? '⛔ 已停用 · 点击恢复' : '运行中 · 点击停用';
+  $('orderCard').classList.toggle('off', state.halted);
+  log(state.halted ? '全局停用：不再接受新的交易指令（已发出的命令仍会完成）' : '已恢复');
+  render();
+};
+
+// ---------- 桥主动事件 ----------
+window.nn.onEvent((msg) => {
+  if (msg.type === 'receipt') {
+    const map = {
+      EXECUTED: ['b-exec', '已成交'], REJECTED: ['b-rej', '已拒绝'],
+      EXPIRED: ['b-exp', '已过期'], RECONCILING: ['b-rec', '待核对'],
+      ACCEPTED: ['b-sent', '已受理'],
+    };
+    const b = map[msg.stage] || ['b-sent', msg.stage];
+    log(`回执 ${String(msg.id).slice(-10)} → <span class="badge ${b[0]}">${b[1]}</span> ${msg.message || ''}`, null, true);
+  }
+});
+
+// ---------- 授权 ----------
+let licOk = false;
+async function refreshLicense() {
+  const r = await window.nn.licenseStatus();
+  const L = r?.license || {};
+  licOk = !!L.ok;
+  const bar = $('licBar');
+  bar.classList.toggle('act', licOk);
+  bar.classList.toggle('no', !licOk);
+  $('licText').textContent = licOk
+    ? `已激活 · ${L.name} · ${L.id} · 剩余 ${L.daysLeft} 天（${L.expires} 到期）`
+    : `未激活 —— ${L.reason || '请输入授权密钥'}。未激活可以看行情、装 EA，但不能下单。`;
+  $('licForm').style.display = licOk ? 'none' : 'flex';
+  render();
+}
+$('licBtn').onclick = async () => {
+  const key = $('licKey').value.trim();
+  if (!key) return log('请先粘贴授权密钥', '⚠');
+  const r = await window.nn.licenseActivate(key);
+  if (r?.ok) {
+    log(`授权已激活 · ${r.name} · ${r.id} · 剩余 ${r.daysLeft} 天`, '✓');
+    $('licKey').value = '';
+  } else {
+    log(`激活失败：${r?.reason || '未知原因'}`, '✗');
+  }
+  await refreshLicense();
+};
+$('licKey').addEventListener('keydown', (e) => { if (e.key === 'Enter') $('licBtn').click(); });
+
+// ---------- AI 积分 ----------
+// 没配服务地址就整条不显示；连不上才显示输入框；连上了才显示「充值」。
+// 不放点了没反应的按钮 —— 要么能用，要么不存在。
+async function refreshAI() {
+  let st;
+  try { st = await window.nn.aiStatus(); } catch { $('aiBar').style.display = 'none'; return; }
+  if (!st || !st.enabled) { $('aiBar').style.display = 'none'; return; }
+  $('aiBar').style.display = 'flex';
+  $('aiBar').classList.toggle('act', !!st.connected);
+  $('aiBar').classList.toggle('no', !st.connected);
+
+  if (st.connected) {
+    const cny = st.creditCny ? `（1 积分 ≈ ¥${st.creditCny}）` : '';
+    $('aiText').textContent = `已连接 · 余额 ${st.credits} 积分${cny}`;
+    $('aiForm').style.display = 'none';
+    $('aiAct').style.display = 'flex';
+    $('aiTopupBtn').disabled = !st.rechargeUrl;
+  } else {
+    $('aiText').textContent = st.error || '未连接 AI 服务（不影响交易功能）';
+    $('aiForm').style.display = 'flex';
+    $('aiAct').style.display = 'none';
+  }
+}
+$('aiBtn').onclick = async () => {
+  const t = $('aiToken').value.trim();
+  if (!t) return log('请先粘贴 AI 服务令牌', '⚠');
+  const r = await window.nn.aiConnect(t);
+  if (r?.connected) { log(`AI 服务已连接 · 余额 ${r.credits} 积分`, '✓'); $('aiToken').value = ''; }
+  else log(`AI 连接失败：${r?.error || '未知原因'}`, '✗');
+  await refreshAI();
+};
+$('aiToken').addEventListener('keydown', (e) => { if (e.key === 'Enter') $('aiBtn').click(); });
+$('aiOffBtn').onclick = async () => { await window.nn.aiDisconnect(); log('已断开 AI 服务'); await refreshAI(); };
+let rechargeUrlCache = null;
+$('aiTopupBtn').onclick = async () => {
+  const st = await window.nn.aiStatus();
+  if (!st?.rechargeUrl) return log('充值服务未就绪，请稍后再试', '⚠');
+  rechargeUrlCache = st.rechargeUrl;
+  $('topupModal').classList.add('on');
+};
+$('topupGo').onclick = () => {
+  $('topupModal').classList.remove('on');
+  if (rechargeUrlCache) window.nn.openExternal(rechargeUrlCache);
+};
+$('topupCancel').onclick = () => $('topupModal').classList.remove('on');
+$('topupModal').addEventListener('click', (e) => {
+  if (e.target === $('topupModal')) $('topupModal').classList.remove('on');
+});
+
+// ---------- 启动 ----------
+(async function init() {
+  const v = await window.nn.version();
+  log(`牛牛 AI v${v} 已启动 · 协议 v1 · 模拟盘优先`);
+  log('提示：本版本仅交付交易链。AI 分析功能未开放。');
+  go(prefs.page);                               // 回到上次离开的页面
+  await refreshLicense();
+  await refreshAI();
+  await discover();
+  setInterval(refresh, 1500);
+  setInterval(refreshAI, 60000);      // 积分余额一分钟同步一次，够用也不吵
+})();
+</script>
+</body>
+</html>

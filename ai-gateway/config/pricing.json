@@ -1,0 +1,12 @@
+{
+  "_说明": "上游采购价（元 / 百万 tokens），来自浩驰（Fomalhaut MaaS）2026.8.19 渠道商报价单。",
+  "_渠道": "GPT 用 Codex Plus（官方价 5.74%），Claude 用 Kiro（官方价 6.31%）—— 取最便宜渠道，毛利最大化。",
+  "_加价": "我方售价 = 采购价 × MARKUP（环境变量，默认 3）。改 MARKUP 即可整体调价，不用改表。",
+  "gpt-5.6-sol":   { "in": 1.95,  "out": 11.7,   "vendor": "openai" },
+  "gpt-5.6-terra": { "in": 0.78,  "out": 4.68,   "vendor": "openai" },
+  "gpt-5.6-luna":  { "in": 0.078, "out": 0.468,  "vendor": "openai" },
+  "gpt-5.5":       { "in": 1.95,  "out": 11.7,   "vendor": "openai" },
+  "gpt-5.4":       { "in": 0.975, "out": 5.85,   "vendor": "openai" },
+  "claude-opus-5":   { "in": 2.145, "out": 10.725, "vendor": "anthropic" },
+  "claude-sonnet-5": { "in": 1.287, "out": 6.435,  "vendor": "anthropic" }
+}

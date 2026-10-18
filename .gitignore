@@ -1,0 +1,31 @@
+# ---- 依赖与构建产物 ----
+# ⚠ gitignore 不支持行尾注释：写成 `dist/  # 说明` 会让整条规则失效（变成匹配一个带空格#的目录名）。
+#   本项目曾经就是这么失效的，结果 dist/win-unpacked 与 keys/ 私钥差点被提交。注释一律另起一行。
+node_modules/
+dist/
+.build/
+.cache/
+*.log
+.DS_Store
+
+# ---- 二进制与产物（不进仓库）----
+# .ex5 必须由 .mq5 在 MetaEditor 里编译生成。
+# 把旧二进制留在仓库里会制造「看起来能用」的假象 ——
+# 源码改了、二进制没重编，是最难查的一类 bug（本项目 8 个真 bug 里有 3 个属于这类）。
+*.ex5
+*.exe
+*.zip
+*.mp4
+*.blockmap
+
+# ---- 密钥与授权（绝不进仓库，私有库也一样）----
+# license-private.pem = 授权签发私钥。泄露 = 任何人都能造出授权密钥。
+keys/
+# AI 网关：上游 Key 与账本绝不进仓库
+ai-gateway/config/upstreams.json
+ai-gateway/data/
+ai-gateway/data-test/
+
+# ---- 测试数据 ----
+# 含测试用 secret。缺失时 tools/verify-ecosystem.js 的 A07 自动跳过，不判失败。
+test/vectors.json

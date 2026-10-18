@@ -1,0 +1,44 @@
+{
+  "brief": "deliverables/niuniuai/2026-10-17/pool-brief-correction.txt",
+  "brief_bytes": 4000,
+  "ran_at": "2026-10-16T21:08:51.091919+00:00",
+  "channels_requested": [
+    "kimi-k3",
+    "gpt-6-astra",
+    "codex-auto-review"
+  ],
+  "channels_ok": [
+    "kimi-k3",
+    "gpt-6-astra",
+    "codex-auto-review"
+  ],
+  "results": [
+    {
+      "channel": "kimi-k3",
+      "requested_model": "kimi-code/k3",
+      "status": "OK",
+      "seconds": 230.0,
+      "chars": 4302,
+      "raw": "deliverables/niuniuai/2026-10-17/pool-review-round2/answer-kimi-k3.md",
+      "stderr_tail": ""
+    },
+    {
+      "channel": "gpt-6-astra",
+      "requested_model": "gpt-6-astra",
+      "status": "OK",
+      "seconds": 93.4,
+      "chars": 4389,
+      "raw": "deliverables/niuniuai/2026-10-17/pool-review-round2/answer-gpt-6-astra.md",
+      "stderr_tail": ""
+    },
+    {
+      "channel": "codex-auto-review",
+      "requested_model": "codex-auto-review",
+      "status": "OK",
+      "seconds": 31.4,
+      "chars": 4309,
+      "raw": "deliverables/niuniuai/2026-10-17/pool-review-round2/answer-codex-auto-review.md",
+      "stderr_tail": ""
+    }
+  ]
+}

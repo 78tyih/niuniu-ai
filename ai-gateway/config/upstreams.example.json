@@ -1,0 +1,29 @@
+{
+  "_说明": "复制为 config/upstreams.json 后填入浩驰（Fomalhaut MaaS）给的 base URL 和 API Key。config/ 已在 .gitignore，Key 不会进仓库。",
+  "_价格": "采购价，单位「元/百万 token」，来自 2026.8.19 渠道商报价单（Codex Plus 渠道 = 官方价 5.74%）。售价由 pricing.json × MARKUP 决定，与这里的采购价分离。",
+  "_缓存": "priceCacheIn = 缓存读取价。OpenAI 自 GPT-5.6 起缓存读取享 90% 折扣（=输入价 0.1x），Claude 缓存读取 = 输入价 0.1x。",
+  "upstreams": [
+    {
+      "name": "fomalhaut-codex-plus-fast",
+      "tier": "fast",
+      "baseUrl": "https://浩驰给你的API地址/v1",
+      "apiKey": "浩驰给你的APIKey",
+      "model": "gpt-5.6-luna",
+      "priceIn": 0.078,
+      "priceOut": 0.468,
+      "priceCacheIn": 0.0078,
+      "maxTokens": 800
+    },
+    {
+      "name": "fomalhaut-codex-plus-deep",
+      "tier": "deep",
+      "baseUrl": "https://浩驰给你的API地址/v1",
+      "apiKey": "浩驰给你的APIKey",
+      "model": "gpt-5.6-sol",
+      "priceIn": 1.95,
+      "priceOut": 11.7,
+      "priceCacheIn": 0.195,
+      "maxTokens": 4000
+    }
+  ]
+}

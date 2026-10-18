@@ -1,0 +1,1163 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>牛牛AI · iOS 应用端预览</title>
+<style>
+:root{
+  /* ===== 配色板（主色，与日/夜正交） ===== */
+  --accent:#FF6A1A; --accent-deep:#C74E00; --accent-light:#FF7A33; --accent-name:品牌橙;
+  /* ===== 品牌色 → 主色映射 ===== */
+  --brand-orange:var(--accent); --brand-orange-text:var(--accent);
+  --btn-primary:var(--accent); --btn-primary-active:var(--accent-deep);
+  --brand-navy:#0E2A5C;
+  --page-bg:#F5F6F8; --card-bg:#fff; --card-bg-elevated:#F7F8FA; --shell-bg:#E9EBEF;
+  --text-primary:#17233B; --text-secondary:#667085; --text-tertiary:#98A2B3;
+  --divider:rgba(14,42,92,.08); --divider-strong:#F0F1F4;
+  --border:#E4E6EA; --border-strong:#E4E6EA;
+  --input-bg:#FAFBFC; --seg-bg:#E8EAEE; --tint-orange:color-mix(in srgb,var(--accent) 8%,#fff); --grab:#D9DDE3;
+  --up:#E23B2E; --down:#17995B;
+  --up-bg:rgba(226,59,46,.09); --down-bg:rgba(23,153,91,.09);
+  --risk-text:#A15A20; --risk-bg:#FFF1EB;
+  --warn-text:#B47A1A; --warn-bg:rgba(217,164,65,.14); --toast-bg:rgba(22,24,28,.9);
+  --bar-bg:rgba(250,251,252,.88); --bar-border:rgba(16,24,40,.07);
+  --chart-line:var(--accent);
+  --radius-card:20px; --radius-control:12px; --shadow-card:0 8px 24px rgba(14,42,92,.06);
+  --shadow-drag:0 16px 36px rgba(14,42,92,.18); --ease-ios:cubic-bezier(.22,1,.36,1);
+}
+[data-accent="blue"]{ --accent:#2563EB; --accent-deep:#1D4ED8; --accent-light:#60A5FA; --accent-name:深海蓝; }
+[data-accent="green"]{ --accent:#0E9F5A; --accent-deep:#0B7A45; --accent-light:#34D399; --accent-name:翡翠绿; }
+[data-accent="purple"]{ --accent:#7C3AED; --accent-deep:#6D28D9; --accent-light:#A78BFA; --accent-name:紫罗兰; }
+[data-theme="dark"]{
+  --brand-orange:var(--accent-light); --brand-orange-text:var(--accent-light);
+  --btn-primary:var(--accent-deep); --btn-primary-active:color-mix(in srgb,var(--accent-deep) 82%,#000);
+  --brand-navy:#9BB8E2;
+  --page-bg:#0B1220; --card-bg:#141D2B; --card-bg-elevated:#101827; --shell-bg:#05070D;
+  --text-primary:#F3F6FB; --text-secondary:#AAB4C3; --text-tertiary:#7F8A9B;
+  --divider:#263247; --divider-strong:#263247;
+  --border:#2A3648; --border-strong:#344258;
+  --input-bg:#101827; --seg-bg:#1B2637; --tint-orange:color-mix(in srgb,var(--accent-light) 20%,var(--card-bg)); --grab:#4B5769;
+  --up:#FF7A66; --down:#3DDC97;
+  --up-bg:rgba(255,122,102,.15); --down-bg:rgba(61,220,151,.15);
+  --risk-text:#D8C9B2; --risk-bg:#2C2418;
+  --warn-text:#F6C453; --warn-bg:rgba(246,196,83,.16); --toast-bg:#2A3648;
+  --bar-bg:rgba(11,18,32,.86); --bar-border:#263247;
+  --chart-line:var(--accent-light);
+  --shadow-card:0 8px 24px rgba(0,0,0,.45); --shadow-drag:0 16px 36px rgba(0,0,0,.65);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--shell-bg);display:flex;align-items:center;justify-content:center;min-height:100vh;
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  color:var(--text-primary);-webkit-font-smoothing:antialiased}
+.phone{width:390px;height:844px;background:var(--page-bg);border-radius:54px;position:relative;overflow:hidden;
+  box-shadow:0 0 0 12px #101318,0 0 0 14px #2A2F36,0 30px 80px rgba(0,0,0,.4)}
+.island{position:absolute;top:12px;left:50%;transform:translateX(-50%);width:122px;height:34px;background:#000;border-radius:20px;z-index:90}
+.statusbar{position:absolute;top:0;left:0;right:0;height:56px;display:flex;justify-content:space-between;align-items:center;padding:14px 32px 0;font-size:15px;font-weight:600;z-index:80;pointer-events:none}
+.sb-icons{display:flex;gap:6px;align-items:center}
+.app{position:absolute;inset:0;display:flex;flex-direction:column}
+.pages{flex:1;overflow-y:auto;overflow-x:hidden;padding:64px 18px 110px;scrollbar-width:none}
+.pages::-webkit-scrollbar{display:none}
+.page{display:none;animation:fadein .18s ease}
+.page.on{display:block}
+@keyframes fadein{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+/* ===== 通用 ===== */
+.bigt{font-size:28px;font-weight:750;letter-spacing:-.02em}
+.subt{font-size:13px;color:var(--text-secondary);margin-top:2px}
+.card{background:var(--card-bg);border-radius:var(--radius-card);padding:16px;box-shadow:var(--shadow-card)}
+.sec-t{font-size:13px;font-weight:650;color:var(--text-secondary);margin:20px 2px 10px;display:flex;justify-content:space-between;align-items:baseline}
+.sec-t .more{font-size:12px;color:var(--brand-orange);font-weight:600;cursor:pointer}
+.chip{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:4px 11px;font-size:11.5px;font-weight:600}
+.dot{width:6px;height:6px;border-radius:50%;display:inline-block}
+.up{color:var(--up)}.dn{color:var(--down)}
+.num,.price,.pnl,.metric-number{font-variant-numeric:tabular-nums lining-nums;font-feature-settings:"tnum" 1,"lnum" 1;white-space:nowrap}
+.btn-main{flex:1.6;border:none;background:var(--btn-primary);color:#fff;border-radius:13px;padding:13px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer}
+.btn-main:active{background:var(--btn-primary-active)}
+.btn-ghost{flex:1;border:1.5px solid var(--border);background:var(--card-bg);border-radius:13px;padding:13px;font-size:14px;font-weight:650;font-family:inherit;cursor:pointer;color:var(--text-primary)}
+/* ===== DIY 看板 ===== */
+.dash-nav{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.dash-nav .t{font-size:24px;font-weight:760;letter-spacing:-.02em}
+.edit-btn{display:inline-flex;align-items:center;gap:5px;border:1.5px solid var(--brand-orange);color:var(--brand-orange);background:var(--card-bg);border-radius:10px;padding:7px 13px;font-size:12.5px;font-weight:650;font-family:inherit;cursor:pointer}
+.edit-btn.on{background:var(--btn-primary);color:#fff}
+.edit-bar{display:none;align-items:center;justify-content:space-between;background:rgba(14,42,92,.05);border:1px dashed rgba(14,42,92,.18);border-radius:12px;padding:8px 12px;margin-bottom:12px;font-size:12px;color:var(--text-secondary)}
+.edit-bar.on{display:flex}
+.edit-bar b{color:var(--brand-navy);font-size:12.5px}
+.edit-bar .ebtns{display:flex;gap:8px}
+.edit-bar button{border:none;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:650;font-family:inherit;cursor:pointer}
+.eb-cancel{background:var(--card-bg);color:var(--text-secondary)}
+.eb-save{background:var(--btn-primary);color:#fff}
+.dash-canvas{display:flex;flex-direction:column;gap:12px}
+.dash-widget{background:var(--card-bg);border-radius:var(--radius-card);box-shadow:var(--shadow-card);position:relative;overflow:hidden;transition:transform .05s linear}
+.dash-widget .dw-head{display:flex;align-items:center;gap:8px;padding:13px 16px 0}
+.dash-widget .dw-title{font-size:13.5px;font-weight:700;display:flex;align-items:center;gap:6px}
+.dash-widget .dw-title svg{color:var(--brand-orange)}
+.dash-widget .dw-sub{margin-left:auto;font-size:11px;color:var(--text-tertiary)}
+.dash-widget .dw-body{padding:12px 16px 16px}
+.dash-widget.dragging{box-shadow:var(--shadow-drag);z-index:40;opacity:.96}
+/* 编辑态手柄与工具 */
+.dw-tools{display:none;position:absolute;top:10px;right:12px;gap:5px;z-index:5}
+.dash-widget.edit .dw-tools{display:flex}
+.dash-widget.edit .dw-head{padding-right:120px}
+.dw-tools button{width:26px;height:26px;border:none;border-radius:8px;background:rgba(14,42,92,.06);color:var(--text-secondary);font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1}
+.dw-tools .drag-handle{cursor:grab;touch-action:none;color:var(--brand-navy);font-size:15px}
+.dash-widget.edit{outline:1.5px dashed rgba(14,42,92,.25);outline-offset:-1px}
+.add-tile{display:none;border:1.5px dashed var(--border-strong);border-radius:var(--radius-card);padding:22px;text-align:center;color:var(--text-tertiary);font-size:13px;font-weight:600;cursor:pointer}
+.fixed-ai{margin:12px 0 0;background:var(--card-bg);border-radius:16px;padding:13px 16px;display:flex;align-items:center;gap:12px;box-shadow:var(--shadow-card);cursor:pointer}
+.ai-ico{width:40px;height:40px;border-radius:12px;background:var(--tint-orange);color:var(--accent);display:flex;align-items:center;justify-content:center;flex:0 0 40px}
+.fai-mid{flex:1;min-width:0}
+.fai-mid b{font-size:14px;font-weight:650;display:block}
+.fai-mid span{font-size:11.5px;color:var(--text-secondary)}
+.fai-state{font-size:11px;color:var(--text-tertiary);font-weight:600;white-space:nowrap}
+.add-tile.on{display:block}
+.add-tile svg{display:block;margin:0 auto 6px;color:var(--brand-orange)}
+/* widget 内容 */
+.info-top{display:flex;align-items:center;gap:12px}
+.info-ava{width:44px;height:44px;border-radius:13px;background:linear-gradient(160deg,#FF8A3D,#F4580E);color:#fff;font-weight:700;font-size:17px;display:flex;align-items:center;justify-content:center;flex:0 0 44px}
+.info-top .nm{font-size:15px;font-weight:720}
+.info-top .id{font-size:11px;color:var(--text-secondary)}
+.info-stats{display:flex;margin-top:13px;gap:0;border-top:1px solid var(--divider);padding-top:11px}
+.info-stats>div{flex:1}
+.info-stats b{display:block;font-size:15px;font-weight:700;margin-top:2px}
+.info-stats span{font-size:11px;color:var(--text-secondary)}
+.pos-mini{display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid var(--divider)}
+.pos-mini:last-child{border-bottom:none}
+.pos-mini .pm-sym{font-size:13px;font-weight:700;min-width:62px}
+.pos-mini .pm-dir{font-size:10px;font-weight:700;border-radius:5px;padding:2px 6px}
+.dir-buy{background:var(--up-bg);color:var(--up)}.dir-sell{background:var(--down-bg);color:var(--down)}
+.pos-mini .pm-pnl{margin-left:auto;text-align:right;font-size:13px;font-weight:700}
+.pos-mini .pm-pnl small{display:block;font-size:10px;color:var(--text-tertiary);font-weight:500}
+.market-head{display:flex;align-items:baseline;gap:10px;margin-bottom:4px}
+.market-head .sym{font-size:16px;font-weight:720}
+.market-head .px{font-size:20px;font-weight:760}
+.market-head .chg{font-size:12px;font-weight:650;margin-left:auto}
+.tf-chips{display:flex;gap:6px;margin:6px 0 10px}
+.tf-chips button{border:1px solid var(--border);background:var(--card-bg);border-radius:8px;padding:4px 10px;font-size:11px;font-weight:600;color:var(--text-secondary);cursor:pointer;font-family:inherit}
+.tf-chips button.on{background:var(--tint-orange);border-color:var(--brand-orange);color:var(--brand-orange)}
+.news-item{display:flex;gap:9px;padding:8px 0;border-bottom:1px solid var(--divider)}
+.news-item:last-child{border-bottom:none}
+.news-item .nt{font-size:10.5px;color:var(--brand-orange);font-weight:700;white-space:nowrap;padding-top:2px}
+.news-item .nb{font-size:12.5px;line-height:1.5;color:var(--text-primary)}
+.news-item .nb small{display:block;font-size:10.5px;color:var(--text-tertiary);margin-top:2px}
+/* ===== AI 副驾驶 ===== */
+.seg{display:flex;background:var(--seg-bg);border-radius:11px;padding:3px;margin:14px 0}
+.seg button{flex:1;border:none;background:transparent;border-radius:9px;padding:7px 0;font-size:13px;font-weight:600;color:var(--text-secondary);font-family:inherit;cursor:pointer;transition:.15s}
+.seg button.on{background:var(--card-bg);color:var(--text-primary);box-shadow:0 1px 3px rgba(16,24,40,.12)}
+.filter-chips{display:flex;gap:7px;overflow-x:auto;padding:2px 0 10px;scrollbar-width:none}
+.filter-chips::-webkit-scrollbar{display:none}
+.today-card{background:var(--card-bg);border-radius:16px;padding:14px 16px;box-shadow:var(--shadow-card);cursor:pointer}
+.tc-head{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.tc-ico{width:30px;height:30px;border-radius:9px;background:var(--tint-orange);color:var(--accent);display:flex;align-items:center;justify-content:center;font-size:15px}
+.tc-title{font-size:14px;font-weight:700;flex:1}
+.tc-date{font-size:10.5px;color:var(--text-tertiary);font-weight:500;margin-left:5px}
+.tc-arr{color:var(--text-tertiary);font-size:12px;transition:transform .2s var(--ease-ios)}
+.tc-arr.open{transform:rotate(180deg)}
+.tc-item{display:flex;align-items:center;gap:8px;padding:6px 0;font-size:12.5px;color:var(--text-secondary)}
+.tc-tag{font-size:10.5px;font-weight:650;border-radius:5px;padding:2px 7px;white-space:nowrap}
+.f-chip{flex:0 0 auto;border:1px solid var(--border);background:var(--card-bg);border-radius:999px;padding:5px 13px;font-size:12px;font-weight:600;color:var(--text-secondary);cursor:pointer;font-family:inherit}
+.f-chip.on{background:var(--tint-orange);border-color:var(--brand-orange);color:var(--brand-orange)}
+.summary-card{background:var(--card-bg);border-radius:16px;padding:14px 15px;box-shadow:0 1px 2px rgba(16,24,40,.05);margin-bottom:10px;cursor:pointer}
+.summary-card .sc-top{display:flex;align-items:center;gap:8px}
+.summary-card .sc-ico{width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex:0 0 30px}
+.summary-card .sc-type{font-size:12.5px;font-weight:700}
+.summary-card .sc-time{margin-left:auto;font-size:10.5px;color:var(--text-tertiary)}
+.summary-card .sc-title{font-size:13.5px;font-weight:650;margin-top:8px}
+.summary-card .sc-body{font-size:12px;color:var(--text-secondary);line-height:1.6;margin-top:4px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.summary-card .sc-tags{display:flex;gap:6px;margin-top:9px}
+.summary-card .sc-tags span{font-size:10.5px;color:var(--text-secondary);background:var(--card-bg-elevated);border-radius:6px;padding:2px 7px}
+.unread-dot{width:7px;height:7px;border-radius:50%;background:var(--brand-orange);flex:0 0 7px;margin-left:6px}
+.chat{display:flex;flex-direction:column;gap:12px;padding-bottom:8px}
+.msg{max-width:82%;font-size:13.5px;line-height:1.65;border-radius:16px;padding:11px 14px}
+.msg.ai{background:var(--card-bg);border-top-left-radius:6px;box-shadow:0 1px 2px rgba(16,24,40,.05);align-self:flex-start}
+.msg.me{background:var(--btn-primary);color:#fff;border-bottom-right-radius:6px;align-self:flex-end}
+.msg .risk{margin-top:8px;font-size:11px;color:var(--risk-text);background:var(--risk-bg);border-radius:8px;padding:6px 9px}
+.msg.me .risk{background:rgba(255,255,255,.16);color:#fff}
+.embed-card{background:var(--card-bg);border:1px solid var(--divider);border-radius:14px;padding:12px 14px;margin-top:10px}
+.embed-card .ec-top{display:flex;align-items:baseline;gap:8px}
+.embed-card .ec-sym{font-size:14px;font-weight:720}
+.embed-card .ec-px{font-size:18px;font-weight:760}
+.embed-card .ec-chg{margin-left:auto;font-size:12px;font-weight:650}
+.embed-card .ec-foot{display:flex;justify-content:space-between;font-size:10.5px;color:var(--text-tertiary);margin-top:4px}
+.chatbar{position:absolute;left:0;right:0;bottom:88px;padding:10px 14px;display:flex;gap:9px;align-items:center;
+  background:var(--bar-bg);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-top:1px solid var(--bar-border)}
+.chatbar input{flex:1;border:none;background:var(--card-bg);border-radius:12px;padding:11px 14px;font-size:13.5px;font-family:inherit;outline:none;box-shadow:0 1px 2px rgba(16,24,40,.06)}
+.send{width:40px;height:40px;flex:0 0 40px;border:none;border-radius:50%;background:var(--btn-primary);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.disc{font-size:10.5px;color:var(--text-tertiary);text-align:center;margin-top:8px}
+/* ===== 策略广场 ===== */
+.strat-nav{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.sort-row{display:flex;gap:6px;overflow-x:auto;padding-bottom:10px;scrollbar-width:none}
+.sort-row::-webkit-scrollbar{display:none}
+.sort-chip{flex:0 0 auto;border:1px solid var(--border);background:var(--card-bg);border-radius:999px;padding:5px 12px;font-size:11.5px;font-weight:600;color:var(--text-secondary);cursor:pointer;font-family:inherit}
+.sort-chip.on{background:var(--tint-orange);border-color:var(--brand-orange);color:var(--brand-orange)}
+.filter-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.fb-count{font-size:12px;color:var(--text-tertiary)}
+.filter-btn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--border);background:var(--card-bg);border-radius:10px;padding:7px 13px;font-size:12.5px;font-weight:650;color:var(--text-primary);cursor:pointer;font-family:inherit}
+.strat-card{background:var(--card-bg);border-radius:var(--radius-card);box-shadow:var(--shadow-card);padding:16px;margin-bottom:12px;cursor:pointer}
+.strat-card .sc-head{display:flex;align-items:flex-start;gap:8px}
+.strat-card .s-name{font-size:16px;font-weight:720;letter-spacing:-.01em}
+.strat-card .s-tags{display:flex;gap:5px;margin-top:3px}
+.strat-card .s-tags span{font-size:10px;color:var(--text-secondary);background:var(--card-bg-elevated);border-radius:5px;padding:2px 6px}
+.strat-card .risk-tag{margin-left:auto;font-size:10.5px;font-weight:650;border-radius:6px;padding:3px 8px;flex:0 0 auto}
+.risk-low{background:var(--down-bg);color:var(--down)}
+.risk-mid{background:var(--warn-bg);color:var(--warn-text)}
+.risk-high{background:var(--up-bg);color:var(--up)}
+.strat-card .s-meta{font-size:11px;color:var(--text-secondary);margin-top:6px}
+.strat-card .s-perf{display:flex;align-items:center;gap:14px;margin-top:13px}
+.strat-card .s-annual{flex:0 0 104px}
+.strat-card .s-annual .ml{font-size:11px;color:var(--text-secondary)}
+.strat-card .s-annual .mn{font-size:30px;font-weight:760;letter-spacing:-.02em;line-height:1.1}
+.strat-card .s-chart{flex:1;min-width:0}
+.strat-card .s-chart .ml{font-size:10.5px;color:var(--text-tertiary);text-align:right;margin-bottom:2px}
+.strat-card .s-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:13px}
+.strat-card .s-metrics .m{background:var(--card-bg-elevated);border-radius:10px;padding:8px 11px}
+.strat-card .s-metrics .m span{display:block;font-size:10px;color:var(--text-secondary)}
+.strat-card .s-metrics .m b{font-size:15px;font-weight:720;margin-top:1px;display:block}
+.strat-card .s-foot{display:flex;align-items:center;gap:10px;margin-top:13px}
+.strat-card .s-foot .upd{font-size:10px;color:var(--text-tertiary);flex:1;line-height:1.4}
+.follow-btn{border:none;background:var(--btn-primary);color:#fff;border-radius:11px;padding:9px 22px;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;flex:0 0 auto}
+.follow-btn.following{background:var(--down-bg);color:var(--down)}
+.risk-foot{font-size:10.5px;color:var(--text-tertiary);text-align:center;line-height:1.6;padding:6px 20px 2px}
+.follow-item{display:flex;align-items:center;gap:10px;background:var(--card-bg);border-radius:14px;padding:13px 15px;margin-bottom:10px;box-shadow:0 1px 2px rgba(16,24,40,.05)}
+.follow-item .fi-ico{width:38px;height:38px;border-radius:10px;background:var(--tint-orange);display:flex;align-items:center;justify-content:center;flex:0 0 38px}
+.follow-item .fi-mid{flex:1;min-width:0}
+.follow-item .fi-mid b{font-size:13.5px;font-weight:650;display:block}
+.follow-item .fi-mid span{font-size:11px;color:var(--text-secondary)}
+.follow-item .fi-r{text-align:right}
+.follow-item .fi-r b{font-size:14px;font-weight:720;display:block}
+.follow-item .fi-r span{font-size:10.5px;color:var(--text-secondary)}
+/* ===== 持仓 ===== */
+.pos{background:var(--card-bg);border-radius:16px;padding:14px 16px;margin-bottom:10px;box-shadow:0 1px 2px rgba(16,24,40,.05)}
+.pos .r1{display:flex;align-items:center;gap:8px}
+.pos .sym{font-size:14.5px;font-weight:700}
+.pos .dir{font-size:10.5px;font-weight:700;border-radius:6px;padding:2px 7px}
+.pos .pnl{margin-left:auto;text-align:right}
+.pos .pnl b{font-size:15px;font-weight:720}
+.pos .r2{display:flex;gap:14px;margin-top:8px;font-size:11.5px;color:var(--text-secondary)}
+.pos .close-btn{margin-left:auto;background:var(--up-bg);color:var(--up);border:none;border-radius:8px;padding:5px 12px;font-size:11.5px;font-weight:650;font-family:inherit;cursor:pointer}
+.order-btn{width:100%;border:none;background:var(--btn-primary);color:#fff;border-radius:14px;padding:14px;font-size:14.5px;font-weight:700;font-family:inherit;cursor:pointer;margin-top:6px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.mini{background:var(--card-bg);border-radius:14px;padding:12px;box-shadow:0 1px 2px rgba(16,24,40,.05)}
+.mini .k{font-size:11px;color:var(--text-secondary)}
+.mini .v{font-size:17px;font-weight:720;margin-top:4px}
+/* ===== 我的 ===== */
+.me-head{display:flex;align-items:center;gap:14px;padding:6px 2px 18px}
+.me-head .ava{width:54px;height:54px;border-radius:14px;background:linear-gradient(160deg,#FF8A3D,#F4580E);color:#fff;font-weight:700;font-size:21px;display:flex;align-items:center;justify-content:center;flex:0 0 54px}
+.me-head b{font-size:17px;font-weight:720;display:block}
+.me-head span{font-size:12px;color:var(--text-secondary)}
+.glist{background:var(--card-bg);border-radius:16px;overflow:hidden;box-shadow:0 1px 2px rgba(16,24,40,.05);margin-bottom:14px}
+.glist .gtitle{font-size:11px;color:var(--text-tertiary);font-weight:600;padding:12px 16px 4px}
+.grow{display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--divider-strong);cursor:pointer}
+.grow:last-child{border-bottom:none}
+.grow .gi{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex:0 0 30px}
+.grow .gt{flex:1;min-width:0}
+.grow .gt b{font-size:14px;font-weight:600;display:block}
+.grow .gt span{font-size:11.5px;color:var(--text-secondary)}
+.grow .val{font-size:12.5px;color:var(--text-secondary);font-weight:600;white-space:nowrap}
+.grow .arr{color:#C3C8CF;font-size:15px}
+.badge-ok{color:var(--down);background:var(--down-bg);border-radius:6px;padding:2px 8px;font-size:11px;font-weight:650}
+.copy-btn{border:1px solid var(--brand-orange);color:var(--brand-orange);background:var(--card-bg);border-radius:8px;padding:5px 12px;font-size:11.5px;font-weight:650;font-family:inherit;cursor:pointer}
+/* ===== Tab Bar ===== */
+.tabbar{position:absolute;left:0;right:0;bottom:0;height:92px;padding:8px 10px 26px;display:flex;
+  background:var(--bar-bg);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);border-top:1px solid var(--bar-border)}
+.tab{flex:1;border:none;background:transparent;display:flex;flex-direction:column;align-items:center;gap:3px;
+  font-size:10.5px;font-weight:600;color:#9AA1AA;font-family:inherit;cursor:pointer;transition:.15s}
+.tab.on{color:var(--brand-orange)}
+/* ===== Sheet ===== */
+.sheet-mask{position:absolute;inset:0;background:rgba(16,20,26,.45);z-index:100;display:none;align-items:flex-end}
+.sheet-mask.on{display:flex}
+.sheet{background:var(--card-bg);width:100%;border-radius:22px 22px 0 0;padding:14px 20px 34px;animation:up .24s var(--ease-ios);max-height:86%;overflow-y:auto}
+@keyframes up{from{transform:translateY(60%)}to{transform:none}}
+.grab{width:38px;height:5px;border-radius:99px;background:var(--grab);margin:0 auto 16px}
+.sheet h3{font-size:19px;font-weight:740}
+.sheet .ssub{font-size:12.5px;color:var(--text-secondary);margin:5px 0 16px}
+.sheet .btns{display:flex;gap:10px;margin-top:18px}
+.metric-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:14px 0}
+.metric-grid .g{background:var(--card-bg-elevated);border-radius:12px;padding:11px}
+.metric-grid .g span{display:block;font-size:11px;color:var(--text-secondary)}
+.metric-grid .g b{font-size:15px;font-weight:720;margin-top:2px;display:block}
+.follow-row{margin:12px 0}
+.follow-row label{display:block;font-size:11.5px;color:var(--text-secondary);margin-bottom:6px}
+.follow-row input{width:100%;border:1px solid var(--border);border-radius:11px;padding:11px 13px;font-size:14px;font-family:inherit;outline:none;background:var(--input-bg)}
+.pct-chips{display:flex;gap:8px;margin-bottom:12px}
+.pct-chip{flex:1;border:1px solid var(--border);background:var(--card-bg);border-radius:10px;padding:9px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;color:var(--text-secondary)}
+.pct-chip.on{background:var(--tint-orange);border-color:var(--brand-orange);color:var(--brand-orange)}
+.risk-chips{display:flex;gap:8px;margin-bottom:12px}
+.risk-chip{flex:1;border:1px solid var(--border);background:var(--card-bg);border-radius:10px;padding:9px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;color:var(--text-secondary)}
+.risk-chip.on{border-color:var(--brand-orange);color:var(--brand-orange);background:var(--tint-orange)}
+.safe-note{font-size:11px;color:var(--risk-text);background:var(--risk-bg);border-radius:10px;padding:9px 12px;line-height:1.6}
+/* 组件抽屉 & 配置 & 主题 & 授权 */
+.drawer-item{display:flex;align-items:center;gap:12px;padding:13px 4px;border-bottom:1px solid var(--divider-strong);cursor:pointer}
+.drawer-item:last-child{border-bottom:none}
+.drawer-item .di-ico{width:38px;height:38px;border-radius:11px;background:var(--tint-orange);display:flex;align-items:center;justify-content:center;flex:0 0 38px;color:var(--brand-orange)}
+.drawer-item .di-mid{flex:1}
+.drawer-item .di-mid b{font-size:14px;font-weight:650;display:block}
+.drawer-item .di-mid span{font-size:11.5px;color:var(--text-secondary)}
+.size-row{display:flex;gap:8px;margin-bottom:12px}
+.size-btn{flex:1;border:1px solid var(--border);background:var(--card-bg);border-radius:10px;padding:11px;font-size:13px;font-weight:650;font-family:inherit;cursor:pointer;color:var(--text-secondary)}
+.size-btn.on{background:var(--tint-orange);border-color:var(--brand-orange);color:var(--brand-orange)}
+.opt-row{display:flex;align-items:center;justify-content:space-between;padding:13px 0;border-bottom:1px solid var(--divider-strong)}
+.opt-row:last-child{border-bottom:none}
+.opt-row .ol{font-size:14px;font-weight:600}
+.opt-row .ov{font-size:13px;color:var(--text-secondary)}
+.accent-row{display:flex;gap:16px;padding:6px 0 2px}
+.accent-dot{width:42px;height:42px;border-radius:50%;cursor:pointer;position:relative;flex:0 0 42px;transition:transform .15s var(--ease-ios)}
+.accent-dot:active{transform:scale(.92)}
+.accent-dot.on{box-shadow:0 0 0 3px var(--card-bg),0 0 0 5.5px var(--accent)}
+.accent-dot.on::after{content:"✓";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px;font-weight:800;text-shadow:0 1px 2px rgba(0,0,0,.25)}
+.toast{position:absolute;left:50%;bottom:120px;transform:translateX(-50%);background:var(--toast-bg);color:#fff;
+  font-size:12.5px;padding:9px 16px;border-radius:99px;z-index:130;opacity:0;transition:.25s;pointer-events:none;white-space:nowrap}
+.toast.on{opacity:1;bottom:130px}
+</style>
+</head>
+<body>
+<div class="phone">
+  <div class="island"></div>
+  <div class="statusbar"><span>9:41</span>
+    <span class="sb-icons">
+      <svg width="17" height="11" viewBox="0 0 17 11"><g fill="#15171C"><rect x="0" y="7" width="3" height="4" rx="1"/><rect x="4.5" y="5" width="3" height="6" rx="1"/><rect x="9" y="2.5" width="3" height="8.5" rx="1"/><rect x="13.5" y="0" width="3" height="11" rx="1"/></g></svg>
+      <svg width="15" height="11" viewBox="0 0 15 11"><path d="M7.5 9.5 L5.2 7.2 a3.4 3.4 0 0 1 4.6 0 Z M3.4 5.4 a6 6 0 0 1 8.2 0 L13 4 a8 8 0 0 0 -11 0 Z" fill="#15171C"/></svg>
+      <svg width="25" height="12" viewBox="0 0 25 12"><rect x=".5" y=".5" width="21" height="11" rx="3.5" fill="none" stroke="#15171C" opacity=".4"/><rect x="2" y="2" width="15" height="8" rx="2" fill="#15171C"/><path d="M23 4v4a2 2 0 0 0 0-4Z" fill="#15171C" opacity=".4"/></svg>
+    </span>
+  </div>
+
+  <div class="app">
+  <div class="pages" id="pages">
+
+    <!-- ================= 首页 · DIY 看板 ================= -->
+    <div class="page on" id="p-home">
+      <div class="dash-nav">
+        <div>
+          <div class="t">牛牛 AI</div>
+          <div class="subt" style="margin-top:0">MT5 交易副驾驶 · 模拟盘</div>
+        </div>
+        <button class="edit-btn" id="editBtn" onclick="toggleEdit()">编辑看板</button>
+      </div>
+      <div class="edit-bar" id="editBar">
+        <b>编辑模式</b><span>拖拽手柄排序 · 右上角改尺寸/配置/删除</span>
+        <div class="ebtns">
+          <button class="eb-cancel" onclick="cancelEdit()">取消</button>
+          <button class="eb-save" onclick="saveEdit()">完成</button>
+        </div>
+      </div>
+      <div class="fixed-ai" onclick="switchTab('p-ai')">
+        <div class="ai-ico">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 4.6L18.5 9l-4.6 1.4L12 15l-1.9-4.6L5.5 9l4.6-1.4z"/><path d="M19 15l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/></svg>
+        </div>
+        <div class="fai-mid"><b>AI 副驾驶</b><span>问行情 · 看总结 · 聊交易</span></div>
+        <span class="fai-state">98,650 积分</span>
+        <span class="arr">›</span>
+      </div>
+      <div class="sec-t" style="margin-top:18px">我的看板 <span class="more" onclick="toggleEdit()">编辑</span></div>
+      <div class="dash-canvas" id="dashCanvas"></div>
+      <div class="add-tile" id="addTile" onclick="openDrawer()">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>
+        添加组件
+      </div>
+    </div>
+
+    <!-- ================= AI 副驾驶 ================= -->
+    <div class="page" id="p-ai" style="padding-bottom:170px">
+      <div class="bigt">AI 副驾驶</div>
+      <div class="subt">连接你的 MT5 · 分析 · 风控 · 复盘</div>
+      <div class="seg" id="aiSeg">
+        <button class="on" data-v="summary">AI 总结</button>
+        <button data-v="chat">对话</button>
+      </div>
+
+      <div id="summaryPane">
+        <div class="today-card" onclick="toggleHistory()">
+          <div class="tc-head">
+            <div class="tc-ico">✦</div>
+            <div class="tc-title">今日摘要<span class="tc-date">10 月 17 日</span></div>
+            <span class="tc-arr" id="histArrow">▾</span>
+          </div>
+          <div class="tc-item"><span class="tc-tag" style="background:var(--down-bg);color:var(--down)">持仓</span><span>3 个持仓 · 浮盈 <b class="up">+$271.6</b></span></div>
+          <div class="tc-item"><span class="tc-tag" style="background:var(--seg-bg);color:var(--chart-line)">行情</span><span>XAUUSD 突破 2,380，短线偏多</span></div>
+          <div class="tc-item"><span class="tc-tag" style="background:var(--up-bg);color:var(--up)">风控</span><span>集中度偏高，建议分散品种</span></div>
+        </div>
+        <div id="historyPane" style="display:none">
+          <div class="filter-chips" id="sumFilters" style="margin-top:14px">
+            <button class="f-chip on" data-f="all" onclick="filterSummary(this)">全部</button>
+            <button class="f-chip" data-f="持仓" onclick="filterSummary(this)">持仓</button>
+            <button class="f-chip" data-f="行情" onclick="filterSummary(this)">行情</button>
+            <button class="f-chip" data-f="策略" onclick="filterSummary(this)">策略</button>
+            <button class="f-chip" data-f="风控" onclick="filterSummary(this)">风控</button>
+          </div>
+          <div id="summaryList"></div>
+        </div>
+      </div>
+
+      <div id="chatPane" style="display:none">
+        <div class="chat" id="chat"></div>
+        <div class="disc">按实际用量扣积分 · 对话中可直接查看行情与资金曲线</div>
+      </div>
+    </div>
+
+    <!-- ================= 策略广场 ================= -->
+    <div class="page" id="p-strategy">
+      <div class="strat-nav">
+        <div>
+          <div class="bigt" style="font-size:24px">策略广场</div>
+          <div class="subt">实盘策略 · 跟单自动化 · 业绩可查</div>
+        </div>
+      </div>
+      <div class="seg" id="strategySeg">
+        <button class="on" data-v="market">广场</button>
+        <button data-v="mine">我的跟单</button>
+      </div>
+
+      <div id="marketPane">
+        <div class="filter-bar">
+          <span class="fb-count" id="stratCount">共 4 个策略</span>
+          <button class="filter-btn" onclick="openFilter()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h18M6 12h12M10 19h4"/></svg>
+            <span id="filterSummary">综合 · 全部</span>
+          </button>
+        </div>
+        <div id="strategyList"></div>
+        <div class="risk-foot">历史收益不代表未来表现，跟单可能产生本金损失。请设置止损、控制仓位。</div>
+      </div>
+
+      <div id="minePane" style="display:none">
+        <div class="card" style="background:linear-gradient(160deg,#12305F,#0C1F42);color:#fff;border:none">
+          <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:12px;color:rgba(255,255,255,.65)">跟单资产（USD）</span><span style="font-size:11px;color:#8FE3B8;background:rgba(127,237,177,.12);border-radius:999px;padding:3px 10px;font-weight:600">● 2 个策略运行中</span></div>
+          <div style="font-size:28px;font-weight:760;margin-top:8px"><small style="font-size:15px;margin-right:4px;color:rgba(255,255,255,.75)">$</small>1,240.00</div>
+          <div style="display:flex;margin-top:14px;border-top:1px solid rgba(255,255,255,.14);padding-top:12px">
+            <div style="flex:1"><span style="font-size:11px;color:rgba(255,255,255,.65)">投入</span><b style="display:block;font-size:15px;margin-top:1px">$1,100</b></div>
+            <div style="flex:1"><span style="font-size:11px;color:rgba(255,255,255,.65)">浮动收益</span><b class="up" style="display:block;font-size:15px;margin-top:1px">+$140</b></div>
+            <div style="flex:1"><span style="font-size:11px;color:rgba(255,255,255,.65)">收益率</span><b class="up" style="display:block;font-size:15px;margin-top:1px">+12.7%</b></div>
+          </div>
+        </div>
+        <div class="sec-t">跟单中的策略</div>
+        <div id="followList"></div>
+        <div style="font-size:11px;color:var(--text-tertiary);line-height:1.7;padding:4px 6px 0">跟单由你的 MT5 账户自动执行，可随时调整参数或停止。</div>
+      </div>
+    </div>
+
+    <!-- ================= 持仓 ================= -->
+    <div class="page" id="p-pos">
+      <div class="bigt">持仓</div>
+      <div class="subt">实时同步自你的 MT5 终端</div>
+      <div style="height:16px"></div>
+      <div class="grid3" style="margin-bottom:16px">
+        <div class="mini"><div class="k">余额</div><div class="v">$10,254</div></div>
+        <div class="mini"><div class="k">净值</div><div class="v">$10,391</div></div>
+        <div class="mini"><div class="k">保证金</div><div class="v">$1,512</div></div>
+      </div>
+      <div class="pos">
+        <div class="r1"><span class="sym">XAUUSD</span><span class="dir dir-buy">买入</span><span style="font-size:11.5px;color:var(--text-secondary)">0.50 手</span>
+          <div class="pnl"><b class="up">+$236.10</b></div></div>
+        <div class="r2"><span>开仓 2,351.20</span><span>现价 2,384.60</span><span>止损 2,338.00</span>
+          <button class="close-btn" onclick="toast('已发送平仓请求（演示）')">平仓</button></div>
+      </div>
+      <div class="pos">
+        <div class="r1"><span class="sym">EURUSD</span><span class="dir dir-sell">卖出</span><span style="font-size:11.5px;color:var(--text-secondary)">1.00 手</span>
+          <div class="pnl"><b class="dn">−$52.30</b></div></div>
+        <div class="r2"><span>开仓 1.08610</span><span>现价 1.08423</span><span>止损 1.09050</span>
+          <button class="close-btn" onclick="toast('已发送平仓请求（演示）')">平仓</button></div>
+      </div>
+      <div class="pos">
+        <div class="r1"><span class="sym">US30</span><span class="dir dir-buy">买入</span><span style="font-size:11.5px;color:var(--text-secondary)">0.20 手</span>
+          <div class="pnl"><b class="up">+$88.00</b></div></div>
+        <div class="r2"><span>开仓 39,420</span><span>现价 39,542</span><span>止损 39,260</span>
+          <button class="close-btn" onclick="toast('已发送平仓请求（演示）')">平仓</button></div>
+      </div>
+      <div class="order-btn" onclick="toast('下单页规划中（含交易票据二次确认）')">＋ 手动下单</div>
+    </div>
+
+    <!-- ================= 我的 ================= -->
+    <div class="page" id="p-me">
+      <div class="bigt">我的</div>
+      <div class="me-head" style="padding-top:14px">
+        <div class="ava">牛</div>
+        <div><b>Sera</b><span>ID 7721 · MT5 交易副驾驶</span></div>
+      </div>
+
+      <div class="glist">
+        <div class="gtitle">账户与服务</div>
+        <div class="grow" onclick="openAuth()">
+          <div class="gi" style="background:var(--down-bg)">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--down)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+          </div>
+          <div class="gt"><b>授权状态</b><span>NN1-****-7721 · 模拟盘</span></div>
+          <span class="badge-ok">已授权</span>
+          <span class="arr">›</span>
+        </div>
+        <div class="grow" onclick="openGateway()">
+          <div class="gi" style="background:var(--tint-orange)">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FF6A1A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 4.6L18.5 9l-4.6 1.4L12 15l-1.9-4.6L5.5 9l4.6-1.4z"/><path d="M19 15l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/></svg>
+          </div>
+          <div class="gt"><b>AI 网关</b><span>已连接 · 剩余 2,340 积分</span></div>
+          <span class="arr">›</span>
+        </div>
+        <div class="grow" onclick="openSheet()">
+          <div class="gi" style="background:rgba(79,140,255,.1)">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="3"/><path d="M3 10h18M8 15h3"/></svg>
+          </div>
+          <div class="gt"><b>充值入口</b><span>微信 / 支付宝 · 实时到账</span></div>
+          <span class="val" style="color:var(--brand-orange)">充值</span>
+          <span class="arr">›</span>
+        </div>
+      </div>
+
+      <div class="glist">
+        <div class="gtitle">通用</div>
+        <div class="grow" onclick="openTheme()">
+          <div class="gi" style="background:rgba(14,42,92,.06)">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0E2A5C" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+          </div>
+          <div class="gt"><b>主题</b><span>跟随系统 / 浅色 / 深色</span></div>
+          <span class="val">自动</span>
+          <span class="arr">›</span>
+        </div>
+        <div class="grow" onclick="toast('设置页规划中（通知 / 隐私 / 安全）')">
+          <div class="gi" style="background:rgba(79,140,255,.1)">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4F8CFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1-1.55 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.87 1.7 1.7 0 0 0-1.55-1H3a2 2 0 1 1 0-4h.09a1.7 1.7 0 0 0 1.55-1 1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34h.01a1.7 1.7 0 0 0 1-1.55V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1 1.55 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87v.01a1.7 1.7 0 0 0 1.55 1H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.55 1Z"/></svg>
+          </div>
+          <div class="gt"><b>设置</b><span>通知 · 隐私 · 安全</span></div>
+          <span class="arr">›</span>
+        </div>
+        <div class="grow" onclick="copyInvite()">
+          <div class="gi" style="background:rgba(217,164,65,.12)">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#D9A441" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14a5 5 0 0 0 7.07 0l2.83-2.83a5 5 0 0 0-7.07-7.07L11 5.93"/><path d="M14 10a5 5 0 0 0-7.07 0L4.1 12.83a5 5 0 0 0 7.07 7.07L13 18.07"/></svg>
+          </div>
+          <div class="gt"><b>邀请链接</b><span>niuniuai.app/i/AB12CD</span></div>
+          <button class="copy-btn" onclick="event.stopPropagation();copyInvite()">复制链接</button>
+        </div>
+      </div>
+
+      <div class="glist">
+        <div class="gtitle">帮助与支持</div>
+        <div class="grow" onclick="toast('跳转使用教程（演示）')">
+          <div class="gi" style="background:rgba(217,164,65,.12)">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#D9A441" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V6a2 2 0 0 1 2-2h13v13H6a2 2 0 0 0-2 2Zm0 0a2 2 0 0 0 2 2h13"/></svg>
+          </div>
+          <div class="gt"><b>使用教程</b><span>绑定 · 使用 AI · 跟单全流程</span></div>
+          <span class="arr">›</span>
+        </div>
+        <div class="grow" onclick="openSupport()">
+          <div class="gi" style="background:var(--up-bg)">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--up)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13a8 8 0 0 1 16 0M4 13v4a2 2 0 0 0 2 2h1v-6H5m15 0h-2v6h1a2 2 0 0 0 2-2v-4Z"/></svg>
+          </div>
+          <div class="gt"><b>客服联系方式</b><span>工作日 9:00 – 21:00</span></div>
+          <span class="val">在线客服</span>
+          <span class="arr">›</span>
+        </div>
+      </div>
+
+      <div style="font-size:11px;color:var(--text-tertiary);line-height:1.7;padding:2px 6px 8px;text-align:center">牛牛 AI v1.0 · AI 生成内容仅供参考，不构成投资建议</div>
+    </div>
+
+  </div>
+
+  <!-- ================= 输入栏（AI 对话专用） ================= -->
+  <div class="chatbar" id="chatbar" style="display:none">
+    <input id="chatInput" placeholder="问行情、持仓、风险…" onkeydown="if(event.key==='Enter')sendMsg()">
+    <button class="send" onclick="sendMsg()"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4Z"/></svg></button>
+  </div>
+
+  <!-- ================= Tab Bar ================= -->
+  <div class="tabbar">
+    <button class="tab on" data-p="p-home" onclick="go(this)">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5M5 9.5V21h5v-6h4v6h5V9.5"/></svg>首页</button>
+    <button class="tab" data-p="p-ai" onclick="go(this)">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 4.6L18.5 9l-4.6 1.4L12 15l-1.9-4.6L5.5 9l4.6-1.4z"/><path d="M19 15l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/></svg>AI</button>
+    <button class="tab" data-p="p-strategy" onclick="go(this)">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 20v-9M12 20V5M17 20v-4"/><path d="M3 20h18"/></svg>策略</button>
+    <button class="tab" data-p="p-pos" onclick="go(this)">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5-6 4 3 5-8 4 5"/><path d="M3 21h18"/></svg>持仓</button>
+    <button class="tab" data-p="p-me" onclick="go(this)">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-6.5 8-6.5s8 2.5 8 6.5"/></svg>我的</button>
+  </div>
+
+  <!-- ================= 充值 Sheet ================= -->
+  <div class="sheet-mask" id="sheet" onclick="if(event.target===this)closeSheet()">
+    <div class="sheet">
+      <div class="grab"></div>
+      <h3>充值</h3>
+      <div class="ssub">充的钱进入账户余额，使用 AI 时按用量自动扣费，全程自动到账。</div>
+      <div class="risk-chips">
+        <span class="risk-chip on" style="cursor:default">微信支付</span>
+        <span class="risk-chip" style="cursor:default">支付宝</span>
+      </div>
+      <ol style="font-size:13px;color:#3A4048;line-height:1.9;padding-left:18px;margin-bottom:14px">
+        <li>点击「去支付」，跳转到安全支付页</li>
+        <li>在支付页选择金额，用微信或支付宝完成付款</li>
+        <li>支付成功后余额即时到账</li>
+      </ol>
+      <div class="safe-note">余额不足时会提示充值，不会产生欠费；未消费的余额可申请退款。</div>
+      <div class="btns">
+        <button class="btn-ghost" onclick="closeSheet()">取消</button>
+        <button class="btn-main" onclick="closeSheet();toast('跳转安全支付页（演示）')">去支付</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= 策略跟单 Sheet ================= -->
+  <div class="sheet-mask" id="stratSheet" onclick="if(event.target===this)closeStrat()">
+    <div class="sheet"><div class="grab"></div><div id="stratDetail"></div></div>
+  </div>
+
+  <!-- ================= 策略筛选 Sheet ================= -->
+  <div class="sheet-mask" id="filterSheet" onclick="if(event.target===this)closeFilter()">
+    <div class="sheet">
+      <div class="grab"></div>
+      <h3>筛选</h3>
+      <div class="ssub">排序与策略类型，选择后即时生效</div>
+      <div class="follow-row"><label>排序</label>
+        <div class="sort-row" id="sortChips" style="padding-bottom:0">
+          <button class="sort-chip on" data-s="综合" onclick="setSort(this)">综合</button>
+          <button class="sort-chip" data-s="年化" onclick="setSort(this)">年化收益</button>
+          <button class="sort-chip" data-s="回撤" onclick="setSort(this)">回撤最小</button>
+          <button class="sort-chip" data-s="夏普" onclick="setSort(this)">夏普最高</button>
+          <button class="sort-chip" data-s="笔数" onclick="setSort(this)">交易笔数</button>
+        </div>
+      </div>
+      <div class="follow-row"><label>策略类型</label>
+        <div class="sort-row" id="tierChips" style="padding-bottom:0">
+          <button class="sort-chip on" data-t="all" onclick="setTier(this)">全部</button>
+          <button class="sort-chip" data-t="cons" onclick="setTier(this)">稳健</button>
+          <button class="sort-chip" data-t="agg" onclick="setTier(this)">激进</button>
+        </div>
+      </div>
+      <div class="btns">
+        <button class="btn-ghost" onclick="resetFilter()">重置</button>
+        <button class="btn-main" onclick="closeFilter()">完成</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= 组件抽屉 Sheet ================= -->
+  <div class="sheet-mask" id="drawerSheet" onclick="if(event.target===this)closeDrawer()">
+    <div class="sheet"><div class="grab"></div><h3>添加组件</h3><div class="ssub">选择一个组件添加到看板末尾</div><div id="drawerList"></div></div>
+  </div>
+
+  <!-- ================= 组件配置 Sheet ================= -->
+  <div class="sheet-mask" id="configSheet" onclick="if(event.target===this)closeConfig()">
+    <div class="sheet"><div class="grab"></div><div id="configBody"></div></div>
+  </div>
+
+  <!-- ================= 主题 Sheet ================= -->
+  <div class="sheet-mask" id="themeSheet" onclick="if(event.target===this)closeTheme()">
+    <div class="sheet">
+      <div class="grab"></div><h3>主题</h3><div class="ssub">外观与配色，立即生效</div>
+      <div class="follow-row" style="margin-top:0"><label>外观</label>
+        <div class="opt-row" style="border-bottom:none" onclick="pickTheme(this,'自动')"><span class="ol">跟随系统</span><span class="ov" id="thAuto">✓</span></div>
+        <div class="opt-row" style="border-bottom:none" onclick="pickTheme(this,'浅色')"><span class="ol">浅色</span><span class="ov" id="thLight"></span></div>
+        <div class="opt-row" onclick="pickTheme(this,'深色')"><span class="ol">深色</span><span class="ov" id="thDark"></span></div>
+      </div>
+      <div class="follow-row" style="margin-top:18px"><label>配色</label>
+        <div class="accent-row" id="accentRow">
+          <div class="accent-dot on" data-a="orange" title="品牌橙" onclick="pickAccent(this,'orange')" style="background:#FF6A1A"></div>
+          <div class="accent-dot" data-a="blue" title="深海蓝" onclick="pickAccent(this,'blue')" style="background:#2563EB"></div>
+          <div class="accent-dot" data-a="green" title="翡翠绿" onclick="pickAccent(this,'green')" style="background:#0E9F5A"></div>
+          <div class="accent-dot" data-a="purple" title="紫罗兰" onclick="pickAccent(this,'purple')" style="background:#7C3AED"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= 授权详情 Sheet ================= -->
+  <div class="sheet-mask" id="authSheet" onclick="if(event.target===this)closeAuth()">
+    <div class="sheet">
+      <div class="grab"></div><h3>授权状态</h3><div class="ssub">MT5 账户绑定与授权信息</div>
+      <div style="background:var(--card-bg-elevated);border-radius:12px;padding:14px;font-size:13px;line-height:2">
+        <div><span style="color:var(--text-secondary)">账号</span>　<b>NN1-****-7721</b></div>
+        <div><span style="color:var(--text-secondary)">服务器</span>　<b>ICMarkets-Demo01</b></div>
+        <div><span style="color:var(--text-secondary)">状态</span>　<span class="badge-ok">已授权 · 剩 15 天</span></div>
+        <div><span style="color:var(--text-secondary)">授权时间</span>　2026-10-02 14:30</div>
+      </div>
+      <div class="btns">
+        <button class="btn-ghost" onclick="closeAuth()">关闭</button>
+        <button class="btn-main" onclick="closeAuth();toast('已发起重新授权（演示）')">重新授权</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= 客服 Sheet ================= -->
+  <div class="sheet-mask" id="supportSheet" onclick="if(event.target===this)closeSupport()">
+    <div class="sheet">
+      <div class="grab"></div><h3>客服联系方式</h3><div class="ssub">工作日 9:00 – 21:00</div>
+      <div class="opt-row" onclick="closeSupport();toast('已打开在线客服（演示）')"><span class="ol">在线客服</span><span class="ov">即时回复 ›</span></div>
+      <div class="opt-row" onclick="closeSupport();toast('企业微信已复制（演示）')"><span class="ol">企业微信</span><span class="ov">复制 ›</span></div>
+      <div class="opt-row" onclick="closeSupport();toast('邮箱已复制（演示）')"><span class="ol">邮箱</span><span class="ov">support@niuniuai.app ›</span></div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+  </div>
+</div>
+
+<script>
+/* ================= 通用 ================= */
+function go(btn){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  btn.classList.add('on');
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
+  document.getElementById(btn.dataset.p).classList.add('on');
+  document.getElementById('chatbar').style.display = btn.dataset.p==='p-ai' ? 'flex' : 'none';
+  document.getElementById('pages').scrollTop = 0;
+}
+let toastTimer=null;
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('on');
+  clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('on'),1800)}
+function switchTab(p){const b=document.querySelector('.tab[data-p="'+p+'"]');if(b)go(b)}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function openSheet(){document.getElementById('sheet').classList.add('on')}
+function closeSheet(){document.getElementById('sheet').classList.remove('on')}
+
+/* ================= 曲线 ================= */
+function sparkMini(el, data, color){
+  const W=150,H=58,pad=4;
+  const min=Math.min(...data),max=Math.max(...data),rng=(max-min)||1;
+  const xs=data.map((v,i)=>pad+i*(W-2*pad)/(data.length-1));
+  const ys=data.map(v=>H-pad-(v-min)/rng*(H-2*pad));
+  const pts=xs.map((x,i)=>x.toFixed(1)+','+ys[i].toFixed(1)).join(' ');
+  const area='0,'+(H-pad)+' '+pts+' '+(W-pad)+','+(H-pad);
+  el.innerHTML='<polygon points="'+area+'" fill="'+color+'" opacity="0.12"/>'+
+    '<polyline points="'+pts+'" fill="none" stroke="'+color+'" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>';
+}
+function sparkArea(el, data, labels, color){
+  const W=340,H=110,pad=6;
+  const min=Math.min(...data),max=Math.max(...data),rng=(max-min)||1;
+  const xs=data.map((v,i)=>pad+i*(W-2*pad)/(data.length-1));
+  const ys=data.map(v=>H-pad-(v-min)/rng*(H-2*pad));
+  const pts=xs.map((x,i)=>x.toFixed(1)+','+ys[i].toFixed(1)).join(' ');
+  const area='0,'+(H-pad)+' '+pts+' '+(W-pad)+','+(H-pad);
+  el.innerHTML='<defs><linearGradient id="fg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="'+color+'" stop-opacity=".30"/><stop offset="1" stop-color="'+color+'" stop-opacity="0"/></linearGradient></defs>'+
+    '<polygon points="'+area+'" fill="url(#fg)"/>'+
+    '<polyline points="'+pts+'" fill="none" stroke="'+color+'" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>'+
+    '<circle cx="'+xs[xs.length-1].toFixed(1)+'" cy="'+ys[ys.length-1].toFixed(1)+'" r="3.5" fill="'+color+'"/>';
+  if(labels){const lb=document.getElementById('fundLabels');if(lb)lb.innerHTML=labels.map(t=>'<span>'+t+'</span>').join('')}
+}
+/* K线蜡烛图 */
+function sparkCandle(el, bars){
+  const W=320,H=120,pad=4,bw=16;
+  let lo=1e9,hi=-1e9;
+  bars.forEach(b=>{lo=Math.min(lo,b.l);hi=Math.max(hi,b.h)});
+  const rng=(hi-lo)||1;
+  const n=bars.length, step=(W-2*pad)/n;
+  let out='';
+  bars.forEach((b,i)=>{
+    const cx=pad+step*i+step/2;
+    const yO=H-pad-(b.o-lo)/rng*(H-2*pad);
+    const yC=H-pad-(b.c-lo)/rng*(H-2*pad);
+    const yH=H-pad-(b.h-lo)/rng*(H-2*pad);
+    const yL=H-pad-(b.l-lo)/rng*(H-2*pad);
+    const up=b.c>=b.o; const c=up?cssVar('--up'):cssVar('--down');
+    const top=Math.min(yO,yC), hgt=Math.max(Math.abs(yC-yO),1.5);
+    out+='<line x1="'+cx+'" y1="'+yH+'" x2="'+cx+'" y2="'+yL+'" stroke="'+c+'" stroke-width="1"/>';
+    out+='<rect x="'+(cx-bw/2)+'" y="'+top+'" width="'+bw+'" height="'+hgt+'" fill="'+(up?c:'#fff')+'" stroke="'+c+'" stroke-width="1"/>';
+  });
+  el.innerHTML=out;
+}
+
+/* ================= DIY 看板 ================= */
+const widgetTypes={
+  profile:{name:'个人信息',size:'M',icon:'<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>'},
+  positions:{name:'持仓总览',size:'L',icon:'<path d="M3 17l5-6 4 3 5-8 4 5"/><path d="M3 21h18"/>'},
+  market:{name:'总行情',size:'L',icon:'<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9v6M12 6v9M17 8v7"/>'},
+  news:{name:'快讯流',size:'L',icon:'<path d="M4 4h16v16H4z"/><path d="M7 8h10M7 12h10M7 16h6"/>'}
+};
+let dashboard=[
+  {id:'profile',type:'profile',size:'M'},
+  {id:'news',type:'news',size:'L'}
+];
+let dashSnapshot=null, editing=false, cfgWidget=null;
+
+function wIcon(type){return '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+widgetTypes[type].icon+'</svg>'}
+
+function widgetHTML(w){
+  let body='';
+  if(w.type==='profile'){
+    body=`<div class="info-top">
+      <div class="info-ava">牛</div>
+      <div><div class="nm">Sera</div><div class="id">NN1-****-7721 · 模拟盘</div></div>
+    </div>
+    <div class="info-stats">
+      <div><span>总资产</span><b>$10,391.20</b></div>
+      <div><span>今日盈亏</span><b class="up">+$136.88</b></div>
+      <div><span>可用保证金</span><b>$8,742.55</b></div>
+    </div>`;
+  }else if(w.type==='positions'){
+    body=`<div class="pos-mini"><span class="pm-sym">XAUUSD</span><span class="pm-dir dir-buy">买入</span><span style="font-size:11px;color:var(--text-secondary)">0.50 手</span><div class="pm-pnl up">+$236.10<small>浮动盈亏</small></div></div>
+    <div class="pos-mini"><span class="pm-sym">EURUSD</span><span class="pm-dir dir-sell">卖出</span><span style="font-size:11px;color:var(--text-secondary)">1.00 手</span><div class="pm-pnl dn">−$52.30<small>浮动盈亏</small></div></div>
+    <div class="pos-mini"><span class="pm-sym">US30</span><span class="pm-dir dir-buy">买入</span><span style="font-size:11px;color:var(--text-secondary)">0.20 手</span><div class="pm-pnl up">+$88.00<small>浮动盈亏</small></div></div>`;
+  }else if(w.type==='market'){
+    body=`<div class="market-head"><span class="sym">XAUUSD</span><span class="px up">2,384.6</span><span class="chg up">▲ +0.62%</span></div>
+    <div class="tf-chips"><button class="on">1H</button><button>4H</button><button>1D</button><button>1W</button></div>
+    <svg id="mkChart" viewBox="0 0 320 120" width="100%" height="110" preserveAspectRatio="none"></svg>`;
+  }else if(w.type==='news'){
+    body=`<div class="news-item"><span class="nt">快讯</span><div class="nb">非农数据超预期，美元指数短线走强<small>10:42 · 来源：财联社</small></div></div>
+    <div class="news-item"><span class="nt">黄金</span><div class="nb">XAUUSD 突破 2,380 阻力，1 小时放量上行<small>09:40 · 来源：路透</small></div></div>
+    <div class="news-item"><span class="nt">策略</span><div class="nb">黄金趋势跟随已触发 2 笔开仓信号<small>09:00 · 来源：牛牛 AI</small></div></div>
+    <div class="news-item"><span class="nt">风控</span><div class="nb">XAUUSD 敞口占比 62%，集中度偏高<small>08:30 · 来源：风控中心</small></div></div>`;
+  }
+  const tools = editing ? `<div class="dw-tools">
+    <button class="drag-handle" title="拖拽排序" onpointerdown="dragStart(event,${dashboard.indexOf(w)})">⠿</button>
+    <button title="上移" onclick="moveW(${dashboard.indexOf(w)},-1)">↑</button>
+    <button title="下移" onclick="moveW(${dashboard.indexOf(w)},1)">↓</button>
+    <button title="尺寸" onclick="openConfig('${w.id}')">▦</button>
+    <button title="删除" onclick="delW('${w.id}')">✕</button>
+  </div>`:'';
+  return `<div class="dash-widget ${editing?'edit':''}" data-id="${w.id}">
+    ${tools}
+    <div class="dw-head"><div class="dw-title">${wIcon(w.type)}${widgetTypes[w.type].name}</div><div class="dw-sub">${w.size==='S'?'紧凑':w.size==='M'?'标准':'大'}</div></div>
+    <div class="dw-body">${body}</div>
+  </div>`;
+}
+function renderCanvas(){
+  const el=document.getElementById('dashCanvas');
+  el.innerHTML=dashboard.map(w=>widgetHTML(w)).join('');
+  document.getElementById('addTile').classList.toggle('on',editing);
+  const mk=document.getElementById('mkChart');
+  if(mk)sparkCandle(mk,[
+    {o:2370,h:2385,l:2365,c:2382},{o:2382,h:2392,l:2378,c:2385},{o:2385,h:2390,l:2375,c:2378},
+    {o:2378,h:2388,l:2372,c:2386},{o:2386,h:2395,l:2382,c:2392},{o:2392,h:2396,l:2384,c:2388},
+    {o:2388,h:2394,l:2380,c:2384},{o:2384,h:2390,l:2378,c:2389}
+  ]);
+}
+function toggleEdit(){
+  if(!editing){dashSnapshot=JSON.stringify(dashboard);editing=true;}
+  else{saveEdit();return;}
+  document.getElementById('editBtn').classList.add('on');
+  document.getElementById('editBtn').textContent='完成';
+  document.getElementById('editBar').classList.add('on');
+  renderCanvas();
+}
+function saveEdit(){editing=false;dashSnapshot=null;
+  document.getElementById('editBtn').classList.remove('on');
+  document.getElementById('editBtn').textContent='编辑看板';
+  document.getElementById('editBar').classList.remove('on');
+  renderCanvas();toast('看板已保存');}
+function cancelEdit(){if(dashSnapshot!==null)dashboard=JSON.parse(dashSnapshot);editing=false;dashSnapshot=null;
+  document.getElementById('editBtn').classList.remove('on');document.getElementById('editBtn').textContent='编辑看板';
+  document.getElementById('editBar').classList.remove('on');renderCanvas();}
+function moveW(i,d){const j=i+d;if(j<0||j>=dashboard.length)return;
+  const t=dashboard[i];dashboard[i]=dashboard[j];dashboard[j]=t;renderCanvas();}
+function delW(id){const i=dashboard.findIndex(w=>w.id===id);if(i<0)return;
+  dashboard.splice(i,1);renderCanvas();toast('已删除，可撤销');}
+function openDrawer(){
+  document.getElementById('drawerList').innerHTML=Object.keys(widgetTypes).map(t=>{
+    const exists=dashboard.some(w=>w.type===t);
+    return `<div class="drawer-item" onclick="addWidget('${t}')">
+      <div class="di-ico">${wIcon(t)}</div>
+      <div class="di-mid"><b>${widgetTypes[t].name}</b><span>${exists?'已在看板中（可重复添加）':'点击添加'}</span></div>
+      <span class="arr">＋</span></div>`;
+  }).join('');
+  document.getElementById('drawerSheet').classList.add('on');
+}
+function closeDrawer(){document.getElementById('drawerSheet').classList.remove('on')}
+function addWidget(t){
+  dashboard.push({id:t+Date.now(),type:t,size:widgetTypes[t].size});
+  closeDrawer();renderCanvas();toast('已添加「'+widgetTypes[t].name+'」');
+  document.getElementById('pages').scrollTop=99999;
+}
+function openConfig(id){
+  cfgWidget=dashboard.find(w=>w.id===id);if(!cfgWidget)return;
+  const sizes=['S','M','L'];
+  document.getElementById('configBody').innerHTML=`
+    <h3>配置 · ${widgetTypes[cfgWidget.type].name}</h3>
+    <div class="ssub">调整尺寸与数据源</div>
+    <div class="follow-row"><label>组件尺寸</label>
+      <div class="size-row">${sizes.map(s=>`<button class="size-btn ${cfgWidget.size===s?'on':''}" onclick="setSize('${s}')">${s==='S'?'紧凑 S':s==='M'?'标准 M':'大 L'}</button>`).join('')}</div>
+    </div>
+    <div class="follow-row"><label>数据源</label>
+      <select id="cfgAccount" style="width:100%;border:1px solid var(--border);border-radius:11px;padding:11px 13px;font-size:14px;font-family:inherit;background:var(--input-bg);outline:none">
+        <option>NN1-****-7721（模拟盘）</option><option>绑定其他 MT5 账户</option>
+      </select>
+    </div>
+    <div class="btns"><button class="btn-ghost" onclick="closeConfig()">取消</button><button class="btn-main" onclick="applyConfig()">保存</button></div>`;
+  document.getElementById('configSheet').classList.add('on');
+}
+function closeConfig(){document.getElementById('configSheet').classList.remove('on');cfgWidget=null}
+function setSize(s){if(cfgWidget){cfgWidget.size=s;openConfig(cfgWidget.id)}}
+function applyConfig(){if(cfgWidget){closeConfig();renderCanvas();toast('组件已更新')}}
+
+/* 拖拽 */
+let drag=null;
+function dragStart(e,idx){
+  if(!editing)return;
+  e.preventDefault();e.stopPropagation();
+  drag={idx,startY:e.clientY,dy:0,moved:false};
+  const el=document.querySelectorAll('.dash-widget')[idx];
+  el.classList.add('dragging');
+  document.getElementById('pages').style.overflow='hidden';
+}
+document.addEventListener('pointermove',e=>{
+  if(!drag)return;
+  drag.dy=e.clientY-drag.startY;
+  if(Math.abs(drag.dy)>4)drag.moved=true;
+  const els=document.querySelectorAll('.dash-widget');
+  const el=els[drag.idx];
+  if(el&&drag.moved)el.style.transform='translateY('+drag.dy+'px)';
+});
+document.addEventListener('pointerup',()=>{
+  if(!drag)return;
+  const els=document.querySelectorAll('.dash-widget');
+  const el=els[drag.idx];
+  if(el){el.style.transform='';el.classList.remove('dragging')}
+  document.getElementById('pages').style.overflow='';
+  if(drag.moved&&Math.abs(drag.dy)>40){
+    const step=Math.round(drag.dy/92);
+    const from=drag.idx,to=Math.max(0,Math.min(dashboard.length-1,from+step));
+    if(from!==to){const [item]=dashboard.splice(from,1);dashboard.splice(to,0,item);}
+    renderCanvas();
+  }
+  drag=null;
+});
+
+/* ================= AI 副驾驶 ================= */
+const summaries=[
+  {type:'持仓',color:'var(--brand-orange)',bg:'var(--tint-orange)',title:'今日持仓总结',time:'10:30',unread:true,tags:['XAUUSD','EURUSD'],body:'3 个持仓，XAUUSD 多单盈利 +$236，EURUSD 空单浮亏 −$52，整体敞口偏高，建议关注 US30 止损位。'},
+  {type:'行情',color:'var(--chart-line)',bg:'var(--seg-bg)',title:'XAUUSD 异动提醒',time:'09:42',unread:true,tags:['XAUUSD'],body:'XAUUSD 突破 2,380 阻力，1 小时放量上行，短线结构偏多，2,392 有前高压力。'},
+  {type:'策略',color:'var(--brand-navy)',bg:'var(--seg-bg)',title:'策略运行状态',time:'09:00',unread:false,tags:['黄金趋势跟随'],body:'黄金趋势跟随已触发 2 笔开仓，网格策略正常，动量突破策略回撤接近阈值。'},
+  {type:'风控',color:'var(--up)',bg:'var(--up-bg)',title:'风险体检',time:'08:30',unread:false,tags:['风控'],body:'保证金占用 14.5%，集中度偏高：XAUUSD 占 62% 敞口，建议分散品种、控制单笔仓位。'}
+];
+let sumFilter='all';
+function renderSummary(){
+  const el=document.getElementById('summaryList');
+  const list=summaries.filter(s=>sumFilter==='all'||s.type===sumFilter);
+  el.innerHTML=list.map(s=>`
+    <div class="summary-card" onclick="toast('展开总结详情（演示）')">
+      <div class="sc-top">
+        <div class="sc-ico" style="background:${s.bg};color:${s.color}">${s.type==='持仓'?'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5-6 4 3 5-8 4 5"/></svg>':s.type==='行情'?'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9v6M12 6v9M17 8v7"/></svg>':s.type==='策略'?'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 4.6L18.5 9l-4.6 1.4L12 15l-1.9-4.6L5.5 9l4.6-1.4z"/></svg>':'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg>'}</div>
+        <span class="sc-type">${s.type}</span>
+        ${s.unread?'<span class="unread-dot"></span>':''}
+        <span class="sc-time">${s.time}</span>
+      </div>
+      <div class="sc-title">${s.title}</div>
+      <div class="sc-body">${s.body}</div>
+      <div class="sc-tags">${s.tags.map(t=>'<span>'+t+'</span>').join('')}</div>
+    </div>`).join('');
+}
+function filterSummary(btn){
+  document.querySelectorAll('#sumFilters .f-chip').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');sumFilter=btn.dataset.f;renderSummary();
+}
+function toggleHistory(){
+  const pane=document.getElementById('historyPane');
+  const arr=document.getElementById('histArrow');
+  const show=pane.style.display==='none';
+  pane.style.display=show?'block':'none';
+  arr.classList.toggle('open',show);
+}
+document.getElementById('aiSeg').addEventListener('click',e=>{
+  if(e.target.tagName!=='BUTTON')return;
+  document.querySelectorAll('#aiSeg button').forEach(b=>b.classList.remove('on'));
+  e.target.classList.add('on');
+  const v=e.target.dataset.v;
+  document.getElementById('summaryPane').style.display=v==='summary'?'block':'none';
+  document.getElementById('chatPane').style.display=v==='chat'?'block':'none';
+  document.getElementById('chatbar').style.display=v==='chat'?'flex':'none';
+  document.getElementById('pages').scrollTop=0;
+});
+function renderChat(){
+  document.getElementById('chat').innerHTML=`
+    <div class="msg ai">已连接你的模拟账户。可以直接问我行情、持仓或风险，我会把关键数据直接嵌进对话里。</div>
+    <div class="msg me">XAUUSD 现在能进吗？</div>
+    <div class="msg ai">短线结构偏多：1 小时站上 2,380，但 2,392 有前高压力。建议<b>轻仓试多，止损 2,372（约 120 点），第一目标 2,392</b>。
+      <div class="embed-card">
+        <div class="ec-top"><span class="ec-sym">XAUUSD</span><span class="ec-px up">2,384.6</span><span class="ec-chg up">▲ +0.62%</span></div>
+        <svg viewBox="0 0 150 46" width="100%" height="40" preserveAspectRatio="none" style="margin-top:6px"></svg>
+        <div class="ec-foot"><span>实时行情</span><span>10:30 更新</span></div>
+      </div>
+      <div class="embed-card">
+        <div class="ec-top"><span class="ec-sym">账户资金曲线</span><span class="ec-px up">+1.87%</span><span class="ec-chg up">近 7 天</span></div>
+        <svg viewBox="0 0 150 46" width="100%" height="40" preserveAspectRatio="none" style="margin-top:6px"></svg>
+        <div class="ec-foot"><span>净值 $10,391</span><span>查看持仓 ›</span></div>
+      </div>
+      <div class="risk">⚠️ AI 分析仅供参考，不构成投资建议</div></div>`;
+  const svgs=document.querySelectorAll('#chat .embed-card svg');
+  if(svgs[0])sparkMini(svgs[0],[2370,2375,2380,2378,2385,2382,2390,2388,2392,2384],cssVar('--up'));
+  if(svgs[1])sparkMini(svgs[1],[10200,10280,10240,10320,10290,10380,10391],getChartColor());
+}
+function sendMsg(){
+  const inp=document.getElementById('chatInput');
+  const v=inp.value.trim(); if(!v)return;
+  const chat=document.getElementById('chat');
+  chat.insertAdjacentHTML('beforeend','<div class="msg me"></div>');
+  chat.lastElementChild.textContent=v;inp.value='';
+  setTimeout(()=>{
+    chat.insertAdjacentHTML('beforeend','<div class="msg ai">已收到，正在分析你的账户与行情。短线偏多，2,392 有压力。<b>轻仓试多，止损 2,372，目标 2,392</b>。注意你已有 0.5 手多单，控制总敞口。<div class="risk">⚠️ AI 分析仅供参考，不构成投资建议</div></div>');
+    document.getElementById('pages').scrollTop=99999;
+  },500);
+}
+
+/* ================= 策略广场 ================= */
+const strategies=[
+  {id:'s1',name:'黄金趋势跟随',tags:['趋势','XAUUSD'],risk:'中风险',riskCls:'risk-mid',creator:'Alpha Quant',days:428,followers:1286,annual:38.2,sharpe:2.1,dd:8.4,trades:326,win:6.1,window:'6周',curve:[0.4,0.9,1.5,2.2,2.8,3.6,4.5,5.4,6.1]},
+  {id:'s2',name:'多品种网格',tags:['网格','多品种'],risk:'低风险',riskCls:'risk-low',creator:'GridMaster',days:512,followers:940,annual:29.5,sharpe:1.9,dd:5.6,trades:402,win:4.8,window:'12周',curve:[0.3,0.6,0.8,1.1,1.4,1.6,1.9,2.1,2.3]},
+  {id:'s3',name:'动量突破',tags:['趋势','激进'],risk:'高风险',riskCls:'risk-high',creator:'Momentum Lab',days:187,followers:632,annual:71.5,sharpe:1.7,dd:15.3,trades:98,win:14.6,window:'4周',curve:[0.8,1.4,1.9,2.8,3.9,5.2,7.1,9.3,14.6]},
+  {id:'s4',name:'跨品种套利',tags:['套利','低回撤'],risk:'低风险',riskCls:'risk-low',creator:'Arb Fund',days:301,followers:875,annual:45.8,sharpe:2.4,dd:7.1,trades:233,win:7.9,window:'8周',curve:[0.3,0.7,1.0,1.5,1.9,2.5,3.1,3.8,4.6]}
+];
+const following=[];
+let curTier='all', curSort='综合';
+function tierList(){return strategies.filter(s=>curTier==='all'||(curTier==='cons'?(s.riskCls!=='risk-high'):(s.riskCls==='risk-high')))}
+function renderList(){
+  const el=document.getElementById('strategyList');
+  let list=tierList();
+  const sortFn={年化:(a,b)=>b.annual-a.annual,回撤:(a,b)=>a.dd-b.dd,夏普:(a,b)=>b.sharpe-a.sharpe,笔数:(a,b)=>b.trades-a.trades}[curSort];
+  if(sortFn)list=[...list].sort(sortFn);
+  el.innerHTML=list.map(s=>{
+    const f=following.find(x=>x.id===s.id);
+    const isUp=s.annual>0;
+    return `<div class="strat-card" onclick="openStrategy('${s.id}')">
+      <div class="sc-head">
+        <div><div class="s-name">${s.name}</div><div class="s-tags">${s.tags.map(t=>'<span>'+t+'</span>').join('')}</div></div>
+        <span class="risk-tag ${s.riskCls}">${s.risk}</span>
+      </div>
+      <div class="s-meta">${s.creator} · 实盘 ${s.days} 天 · ${s.followers.toLocaleString()} 人跟单</div>
+      <div class="s-perf">
+        <div class="s-annual"><div class="ml">年化收益</div><div class="mn ${isUp?'up':'dn'}">${isUp?'+':''}${s.annual}%</div></div>
+        <div class="s-chart"><div class="ml">近 12 个月资金曲线</div><svg viewBox="0 0 150 58" width="100%" height="56" preserveAspectRatio="none"></svg></div>
+      </div>
+      <div class="s-metrics">
+        <div class="m"><span>夏普比率</span><b>${s.sharpe}</b></div>
+        <div class="m"><span>最大回撤</span><b>${s.dd}%</b></div>
+        <div class="m"><span>交易笔数</span><b>${s.trades}</b></div>
+      </div>
+      <div class="s-foot">
+        <div class="upd">更新于 10:30 · 历史收益不代表未来表现</div>
+        <button class="follow-btn ${f?'following':''}" onclick="event.stopPropagation();openStrategy('${s.id}')">${f?'已跟单 · 管理':'跟单'}</button>
+      </div>
+    </div>`;
+  }).join('');
+  list.forEach(s=>{const svg=el.querySelector(`.strat-card[onclick="openStrategy('${s.id}')"] .s-chart svg`);if(svg)sparkMini(svg,s.curve,getChartColor())});
+}
+function setSort(btn){
+  document.querySelectorAll('#sortChips .sort-chip').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on'); curSort=btn.dataset.s; renderList(); updateFilterSummary();
+}
+function setTier(btn){
+  document.querySelectorAll('#tierChips .sort-chip').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on'); curTier=btn.dataset.t; renderList(); updateFilterSummary();
+}
+function openFilter(){document.getElementById('filterSheet').classList.add('on')}
+function closeFilter(){document.getElementById('filterSheet').classList.remove('on')}
+function resetFilter(){
+  curSort='综合'; curTier='all';
+  document.querySelectorAll('#sortChips .sort-chip').forEach(b=>b.classList.toggle('on',b.dataset.s==='综合'));
+  document.querySelectorAll('#tierChips .sort-chip').forEach(b=>b.classList.toggle('on',b.dataset.t==='all'));
+  renderList(); updateFilterSummary();
+}
+function updateFilterSummary(){
+  const sNames={综合:'综合',年化:'年化收益',回撤:'回撤最小',夏普:'夏普最高',笔数:'交易笔数'};
+  const tNames={all:'全部',cons:'稳健',agg:'激进'};
+  const el=document.getElementById('filterSummary');
+  if(el)el.textContent=(sNames[curSort]||curSort)+' · '+(tNames[curTier]||curTier);
+}
+function openStrategy(id){
+  const s=strategies.find(x=>x.id===id); if(!s)return;
+  const f=following.find(x=>x.id===id);
+  const isUp=s.annual>0;
+  document.getElementById('stratDetail').innerHTML=`
+    <h3>${s.name}</h3>
+    <div class="ssub">${s.creator} · 实盘 ${s.days} 天 · ${s.followers.toLocaleString()} 人跟单 · ${s.window}实盘</div>
+    <svg id="stratChart" viewBox="0 0 340 120" width="100%" height="110" preserveAspectRatio="none"></svg>
+    <div style="display:flex;gap:12px;font-size:11px;color:var(--text-secondary);margin-top:2px"><span><span class="dot" style="background:${getChartColor()}"></span> 资金曲线</span><span>区间：近 12 个月</span></div>
+    <div class="metric-grid">
+      <div class="g"><span>年化收益</span><b class="${isUp?'up':'dn'}">${isUp?'+':''}${s.annual}%</b></div>
+      <div class="g"><span>最大回撤</span><b>${s.dd}%</b></div>
+      <div class="g"><span>夏普比率</span><b>${s.sharpe}</b></div>
+      <div class="g"><span>窗口收益</span><b class="up">+${s.win}%</b></div>
+      <div class="g"><span>交易笔数</span><b>${s.trades}</b></div>
+      <div class="g"><span>实盘窗口</span><b>${s.window}</b></div>
+    </div>
+    <div class="safe-note">策略方已自投资金跑实盘 ${s.window}，收益曲线为实盘前向段。跟随成交可能与策略方不同，止损阈值不保证精确成交。历史业绩不代表未来。</div>
+    <div class="follow-row"><label>投入金额（USD）· 快捷比例</label>
+      <div class="pct-chips">
+        <button class="pct-chip" onclick="setPct(this)">25%</button>
+        <button class="pct-chip on" onclick="setPct(this)">50%</button>
+        <button class="pct-chip" onclick="setPct(this)">100%</button>
+      </div>
+      <input id="followAmt" type="number" value="500" min="100">
+    </div>
+    <div class="follow-row"><label>风险档位</label>
+      <div class="risk-chips">
+        <button class="risk-chip" onclick="setRisk(this)">低</button>
+        <button class="risk-chip on" onclick="setRisk(this)">中</button>
+        <button class="risk-chip" onclick="setRisk(this)">高</button>
+      </div>
+    </div>
+    <div class="follow-row"><label>最大回撤止损（%）</label><input id="followDD" type="number" value="10" min="3"></div>
+    <div class="btns">
+      <button class="btn-ghost" onclick="closeStrat()">取消</button>
+      <button class="btn-main" onclick="confirmFollow('${s.id}')">${f?'保存修改':'确认跟单'}</button>
+    </div>`;
+  sparkMini(document.getElementById('stratChart'),s.curve,getChartColor());
+  document.getElementById('stratSheet').classList.add('on');
+}
+function setPct(btn){document.querySelectorAll('.pct-chip').forEach(b=>b.classList.remove('on'));btn.classList.add('on');const amt=document.getElementById('followAmt');if(amt){const p=[.25,.5,1][['25%','50%','100%'].indexOf(btn.textContent.trim())];amt.value=Math.round(1000*p)}}
+function setRisk(btn){document.querySelectorAll('.risk-chip').forEach(b=>b.classList.remove('on'));btn.classList.add('on')}
+function closeStrat(){document.getElementById('stratSheet').classList.remove('on')}
+function confirmFollow(id){
+  const s=strategies.find(x=>x.id===id);
+  const amt=+document.getElementById('followAmt').value||500;
+  const dd=+document.getElementById('followDD').value||10;
+  const f=following.find(x=>x.id===id);
+  if(!f)following.push({...s,amt,dd,pnl:(amt*0.03).toFixed(2)});
+  else{f.amt=amt;f.dd=dd;}
+  closeStrat();renderList();renderFollow();toast(f?'跟单参数已更新（演示）':'跟单已启动（演示）');
+}
+function renderFollow(){
+  const el=document.getElementById('followList');
+  if(!following.length){el.innerHTML='<div style="text-align:center;color:var(--text-tertiary);padding:24px;font-size:13px">还没有跟单，去广场挑一个吧</div>';return;}
+  el.innerHTML=following.map(f=>`
+    <div class="follow-item">
+      <div class="fi-ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FF6A1A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5-6 4 3 5-8 4 5"/></svg></div>
+      <div class="fi-mid"><b>${f.name}</b><span>${f.creator} · 回撤止损 ${f.dd}%</span></div>
+      <div class="fi-r"><b class="up">+$${f.pnl}</b><span>投入 $${f.amt}</span></div>
+    </div>`).join('');
+}
+document.getElementById('strategySeg').addEventListener('click',e=>{
+  if(e.target.tagName!=='BUTTON')return;
+  document.querySelectorAll('#strategySeg button').forEach(b=>b.classList.remove('on'));
+  e.target.classList.add('on');
+  const v=e.target.dataset.v;
+  document.getElementById('marketPane').style.display=v==='market'?'block':'none';
+  document.getElementById('minePane').style.display=v==='mine'?'block':'none';
+});
+
+/* ================= 我的 · 交互 ================= */
+function openTheme(){document.getElementById('themeSheet').classList.add('on')}
+function closeTheme(){document.getElementById('themeSheet').classList.remove('on')}
+function cssVar(n){return getComputedStyle(document.documentElement).getPropertyValue(n).trim()}
+function getChartColor(){return cssVar('--chart-line')}
+function renderThemeAware(){renderCanvas();renderList();renderChat();}
+function applyTheme(mode){
+  const actual = mode==='自动' ? (window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light') : (mode==='深色'?'dark':'light');
+  document.documentElement.setAttribute('data-theme',actual);
+  document.querySelectorAll('#themeSheet .opt-row .ov').forEach(e=>e.textContent='');
+  const map={自动:'thAuto',浅色:'thLight',深色:'thDark'};
+  const el=document.getElementById(map[mode]); if(el)el.textContent='✓';
+  const lb=document.querySelector('#p-me .glist:nth-of-type(2) .grow .val');
+  if(lb)lb.textContent=mode;
+  try{localStorage.setItem('niuniu-theme',mode)}catch(e){}
+  renderThemeAware();
+}
+function pickTheme(row,v){applyTheme(v);setTimeout(closeTheme,220);toast('主题已切换：'+v)}
+function pickAccent(el,a){
+  document.querySelectorAll('.accent-dot').forEach(d=>d.classList.remove('on'));
+  el.classList.add('on');
+  document.documentElement.setAttribute('data-accent',a);
+  try{localStorage.setItem('niuniu-accent',a)}catch(e){}
+  renderThemeAware();
+}
+function openAuth(){document.getElementById('authSheet').classList.add('on')}
+function closeAuth(){document.getElementById('authSheet').classList.remove('on')}
+function openSupport(){document.getElementById('supportSheet').classList.add('on')}
+function closeSupport(){document.getElementById('supportSheet').classList.remove('on')}
+function openGateway(){toast('网关详情页（演示）')}
+function copyInvite(){toast('邀请链接已复制')}
+
+/* ================= 初始化 ================= */
+renderSummary(); renderFollow();
+let initMode='自动'; try{initMode=localStorage.getItem('niuniu-theme')||'自动'}catch(e){}
+let initAccent='orange'; try{initAccent=localStorage.getItem('niuniu-accent')||'orange'}catch(e){}
+document.documentElement.setAttribute('data-accent',initAccent);
+document.querySelectorAll('.accent-dot').forEach(d=>d.classList.toggle('on',d.dataset.a===initAccent));
+applyTheme(initMode);
+</script>
+</body>
+</html>

@@ -1,0 +1,77 @@
+{
+  "_note": "绩效字段全部为 null 且 evidence=NOT_RUN：本模板尚未回测，禁止在对外材料里填任何数字。回测后填 metrics 并把 evidence 改成 BACKTEST_ONLY。",
+  "id": "NN-T01",
+  "version": "1.0.0",
+  "name_zh": "趋势回撤",
+  "name_en": "Trend Pullback",
+  "one_liner_zh": "顺着趋势的方向，等价格回踩到快线附近再进，不追高不抄底。",
+  "one_liner_en": "Trade with the trend, enter on a pullback to the fast EMA.",
+  "engine": {
+    "ea": "NiuNiuStrategy.mq5",
+    "strategy_enum": "NN_TREND_PULLBACK",
+    "strategy_value": 0,
+    "primitives_used": ["市价开仓", "按单号平仓", "改止盈止损"],
+    "primitives_not_used": ["挂单", "加仓", "网格", "马丁"]
+  },
+  "params": {
+    "InpStrategy": 0,
+    "InpDirection": 0,
+    "InpMagic": 810001,
+    "InpTag": "NNS",
+    "InpFastPeriod": 20,
+    "InpSlowPeriod": 60,
+    "InpChannelPeriod": 20,
+    "InpStdK": 2.0,
+    "InpAtrPeriod": 14,
+    "InpAtrSlMult": 2.0,
+    "InpAtrTpMult": 3.0,
+    "InpFixedSlPoints": 0,
+    "InpFixedTpPoints": 0,
+    "InpPullbackTolAtr": 0.5,
+    "InpMinChannelAtr": 0.8,
+    "InpRiskPct": 0.5,
+    "InpFixedLots": 0.0,
+    "InpMaxPositions": 1,
+    "InpMaxDailyLossPct": 2.0,
+    "InpMaxSpreadPoints": 30,
+    "InpMaxDeviationPoints": 20,
+    "InpMaxHoldBars": 0,
+    "InpUseTrailing": false,
+    "InpTrailPoints": 0,
+    "InpSessionFromHour": 0,
+    "InpSessionToHour": 0,
+    "InpVerbose": true,
+    "InpCloseOnStop": false
+  },
+  "param_notes": {
+    "InpMagic": "每个图表实例必须唯一。跑第二个策略改成 810002，第三个 810003，以此类推。",
+    "InpRiskPct": "单笔风险占余额百分比。组合里跑 2-3 个策略时把它降到 0.3-0.5，合计控制在 2.5% 以内。",
+    "InpMaxHoldBars": "0 = 不限。趋势策略靠止损出场，一般不需要设上限。",
+    "InpAtrSlMult / InpAtrTpMult": "单位是 ATR 倍数，不是点。EA 内部再换算成 point 才下单。"
+  },
+  "markets": {
+    "suggested_symbols": ["XAUUSD", "EURUSD", "NAS100"],
+    "suggested_timeframe": "H1",
+    "avoid": ["点差长期大于 30 point 的品种", "流动性枯竭时段（周五尾盘、节假日前后）"]
+  },
+  "risk": {
+    "single_trade_risk_pct": 0.5,
+    "daily_stop_pct": 2.0,
+    "max_concurrent_positions": 1,
+    "stop_is_mandatory": true,
+    "netting_note": "净额账户下同品种只有一个净头寸，Magic 在同品种内不隔离。跑多策略时用不同品种，或改用对冲账户。"
+  },
+  "metrics": {
+    "evidence": "NOT_RUN",
+    "window_return_pct": null,
+    "max_drawdown_pct": null,
+    "sharpe": null,
+    "trades": null,
+    "days_recorded": null,
+    "source": null
+  },
+  "lifecycle": {
+    "state": "backtest_pending",
+    "gates_to_publish": ["在 MT5 策略测试器跑完至少 1 个完整样本区间", "与另外两个模板同账户跑满 30 天模拟盘", "最大回撤未超过日限的 3 倍"]
+  }
+}

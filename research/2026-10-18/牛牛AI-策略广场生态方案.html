@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>牛牛AI · 策略广场生态方案（2026-10-18）</title>
+<style>
+:root{
+  --bg:#F5F6F8; --panel:#FFFFFF; --soft:#FAFBFC; --line:#E4E6EA; --line2:#F0F1F4;
+  --ink:#17233B; --muted:#667085; --faint:#98A2B3;
+  --brand:#FF6A1A; --brand-deep:#C74E00; --brand-light:#FF7A33;
+  --up:#E23B2E; --down:#17995B; --warn:#D9A441;
+  --blue:#2563EB; --blue-soft:#E8EFFE; --green:#0E9F5A; --green-soft:#E6F5EE;
+  --red-soft:#FDECEC; --amber-soft:#FCF3E2; --grey-soft:#F1F3F6;
+  --ease:cubic-bezier(.22,1,.36,1);
+}
+[data-theme="dark"]{
+  --bg:#0B1220; --panel:#141D2B; --soft:#101827; --line:#2A3648; --line2:#263247;
+  --ink:#F3F6FB; --muted:#AAB4C3; --faint:#7F8A9B;
+  --brand:#FF7A33; --brand-deep:#C74E00; --brand-light:#FF9060;
+  --up:#FF7A66; --down:#3DDC97; --warn:#F6C453;
+  --blue:#7CA9F8; --blue-soft:#16233A; --green:#3DDC97; --green-soft:#122A20;
+  --red-soft:#33161C; --amber-soft:#2C2418; --grey-soft:#1A2436;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-size:14px;line-height:1.75;
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei","Inter",sans-serif;
+  -webkit-font-smoothing:antialiased;letter-spacing:.005em}
+.wrap{max-width:1160px;margin:0 auto;padding:36px 28px 80px}
+h1{font-size:26px;font-weight:680;letter-spacing:-.015em}
+h2{font-size:17px;font-weight:660;margin:52px 0 6px;letter-spacing:-.01em;
+  display:flex;align-items:center;gap:10px}
+h2 .no{font-size:11px;font-weight:700;color:var(--brand);background:var(--soft);
+  border:1px solid var(--line);border-radius:6px;padding:2px 7px;letter-spacing:.04em}
+h3{font-size:13px;font-weight:640;margin:22px 0 8px;color:var(--ink)}
+.sub{font-size:12.5px;color:var(--muted);margin-bottom:18px}
+p{font-size:13px;color:var(--muted);margin:8px 0}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px 20px;margin-bottom:14px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{text-align:left;font-size:10.5px;letter-spacing:.06em;color:var(--muted);
+  padding:8px 10px;border-bottom:1px solid var(--line);font-weight:640}
+td{padding:8px 10px;border-bottom:1px solid var(--line2);vertical-align:top}
+tr:last-child td{border-bottom:none}
+.tag{display:inline-block;font-size:10.5px;padding:2px 7px;border-radius:5px;font-weight:600;white-space:nowrap}
+.t-f{background:var(--green-soft);color:var(--green)}
+.t-i{background:var(--amber-soft);color:var(--warn)}
+.t-u{background:var(--grey-soft);color:var(--muted)}
+.t-r{background:var(--red-soft);color:var(--up)}
+.t-b{background:var(--blue-soft);color:var(--blue)}
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin:10px 0}
+.chip{font-size:11.5px;padding:4px 10px;border-radius:7px;background:var(--soft);
+  border:1px solid var(--line);color:var(--muted)}
+.chip b{color:var(--ink);font-weight:660}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.kpi .n{font-size:26px;font-weight:680;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.kpi .l{font-size:11.5px;color:var(--muted);margin-top:2px}
+.note{font-size:11.5px;color:var(--muted);line-height:1.7}
+.mono{font-family:ui-monospace,Menlo,monospace;font-size:11.5px}
+svg{display:block;max-width:100%;height:auto}
+.hr{height:1px;background:var(--line);margin:34px 0 0}
+.top{display:flex;justify-content:space-between;align-items:flex-start;gap:20px;margin-bottom:26px}
+.toggle{border:1px solid var(--line);background:var(--panel);color:var(--muted);border-radius:9px;
+  padding:7px 13px;font-size:12px;cursor:pointer;font-family:inherit;white-space:nowrap}
+.toggle:hover{color:var(--ink)}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:var(--muted);margin-top:10px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+ul{margin:6px 0 0 18px;font-size:12.5px;color:var(--muted)}
+li{margin:3px 0}
+.no-list{list-style:none;margin-left:0}
+.no-list li{padding-left:0}
+.foot{margin-top:44px;padding-top:18px;border-top:1px solid var(--line);font-size:11.5px;color:var(--faint)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="top">
+  <div>
+    <h1>牛牛AI · 策略广场生态方案</h1>
+    <div class="sub">逆向 minara / AlphaFox / mojo.trade → 模板化 → 打通 AI 副驾驶 · MT5/EA 桥接 · 订阅接入 → 可测闭环<br>
+    2026-10-18 · 通道：K3 四路并行子代理 + GPT 单路评审 · 事实全部标注来源</div>
+  </div>
+  <button class="toggle" id="themeBtn">🌗 切换日/夜</button>
+</div>
+
+<!-- ============ 0 结论 ============ -->
+<div class="grid4" style="margin-bottom:22px">
+  <div class="kpi"><div class="n">23</div><div class="l">可复用策略模板（v1 schema）</div></div>
+  <div class="kpi"><div class="n" style="color:var(--up)">3</div><div class="l">实测确认的真 bug（源码级）</div></div>
+  <div class="kpi"><div class="n">36</div><div class="l">端到端可自动化断言</div></div>
+  <div class="kpi"><div class="n">30/30</div><div class="l">现有客户端 UI 断言基线</div></div>
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0">五句话结论</h3>
+  <table>
+    <tr><td style="width:26%;font-weight:640;color:var(--ink)">① 模块名要更正</td><td>「module.trade」<b>检索不到该产品</b>，域名 fetch 失败、无任何对应信息。判断为 <b>mojo.trade</b> 的转写误差，本次已按 mojo 展开。若确有另一产品，需你给准确域名。</td></tr>
+    <tr><td style="font-weight:640;color:var(--ink)">② 最该抄的是「披露纪律」不是界面</td><td>minara 真正的资产是它的<b>口径警告</b>：年化≠那一年真赚到、回撤不是未来上限、高排名不是推荐、保守标签不保证回撤、回测与 live-forward 不得读成一条曲线。这五条比任何卡片排版都值钱。</td></tr>
+    <tr><td style="font-weight:640;color:var(--ink)">③ 模板能落地的前提是原语</td><td>我们 EA <b>只实现了 3 种命令</b>（MARKET / CLOSE / SYNC）。任何依赖挂单、移动止损、部分平仓的模板，v1 一律停在 <span class="tag t-r">draft</span>，这是 schema 硬约束不是审核问题。</td></tr>
+    <tr><td style="font-weight:640;color:var(--ink)">④ 不要照搬「一账户一策略」</td><td>那是 AlphaFox 在加密货币场景的取舍。MT5 的现实是<b>一图表一 EA</b>，开几个图表就能跑几个策略——照搬等于白砍能力。正确做法是 Magic 注册 + Netting 品种互斥 + 组合风险预算三件套。</td></tr>
+    <tr><td style="font-weight:640;color:var(--ink)">⑤ 分润先不做</td><td>GPT 与 K3 独立得出同一结论：<b>本季度走订阅/授权制</b>。客户资金不在我们手上，成交数据由客户端上报，可信度不足以支撑按盈利收款。</td></tr>
+  </table>
+</div>
+
+<!-- 生态全景图 -->
+<svg viewBox="0 0 1160 340" style="margin:18px 0 4px">
+  <defs>
+    <marker id="ar" markerWidth="9" markerHeight="9" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6 z" fill="#98A2B3"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1160" height="340" fill="var(--panel)" rx="14" stroke="var(--line)"/>
+  <text x="24" y="30" font-size="12" font-weight="700" fill="var(--muted)" letter-spacing="1">生态全景 · 一条主线</text>
+
+  <!-- 层 1 客户端 UI -->
+  <rect x="24" y="46" width="240" height="112" rx="10" fill="var(--soft)" stroke="var(--line)"/>
+  <text x="40" y="68" font-size="12" font-weight="700" fill="var(--ink)">客户端（Electron）</text>
+  <text x="40" y="88" font-size="11" fill="var(--muted)">· 策略广场 目录/排行/详情</text>
+  <text x="40" y="106" font-size="11" fill="var(--muted)">· DIY 看板 组件可拖</text>
+  <text x="40" y="124" font-size="11" fill="var(--muted)">· AI 副驾驶 对话 + 确认卡</text>
+  <text x="40" y="144" font-size="10.5" fill="var(--faint)">CSP · sandbox · 无 inline 脚本</text>
+
+  <!-- 层 2 主进程闸门 -->
+  <rect x="290" y="46" width="240" height="112" rx="10" fill="var(--soft)" stroke="var(--line)"/>
+  <text x="306" y="68" font-size="12" font-weight="700" fill="var(--ink)">主进程闸门</text>
+  <text x="306" y="88" font-size="11" fill="var(--muted)">· 授权 fail-closed</text>
+  <text x="306" y="106" font-size="11" fill="var(--muted)">· 命令类型 + 值域白名单</text>
+  <text x="306" y="124" font-size="11" fill="var(--muted)">· 模板/参数/审批 hash 校验</text>
+  <text x="306" y="144" font-size="10.5" fill="var(--brand)">新增：magic 注册 · 租约</text>
+
+  <!-- 层 3 桥 -->
+  <rect x="556" y="46" width="240" height="112" rx="10" fill="var(--soft)" stroke="var(--line)"/>
+  <text x="572" y="68" font-size="12" font-weight="700" fill="var(--ink)">桥进程 utilityProcess</text>
+  <text x="572" y="88" font-size="11" fill="var(--muted)">· stdio JSON-lines（无本地端口）</text>
+  <text x="572" y="106" font-size="11" fill="var(--muted)">· 持有密钥 · HMAC 签名</text>
+  <text x="572" y="124" font-size="11" fill="var(--muted)">· epoch 代次 · 回执状态机</text>
+  <text x="572" y="144" font-size="10.5" fill="var(--faint)">持有密钥，渲染层零接触</text>
+
+  <!-- 层 4 EA / MT5 -->
+  <rect x="822" y="46" width="240" height="112" rx="10" fill="var(--soft)" stroke="var(--line)"/>
+  <text x="838" y="68" font-size="12" font-weight="700" fill="var(--ink)">EA × MT5（客户机器）</text>
+  <text x="838" y="88" font-size="11" fill="var(--muted)">· 一图表一 EA 一 Magic</text>
+  <text x="838" y="106" font-size="11" fill="var(--muted)">· 确定性信号 + 手数换算</text>
+  <text x="838" y="124" font-size="11" fill="var(--muted)">· 资金永不离开客户账户</text>
+  <text x="838" y="144" font-size="10.5" fill="var(--up)">现状：只实现 3 种命令</text>
+
+  <!-- 箭头 -->
+  <line x1="264" y1="102" x2="288" y2="102" stroke="#98A2B3" stroke-width="1.5" marker-end="url(#ar)"/>
+  <line x1="530" y1="102" x2="554" y2="102" stroke="#98A2B3" stroke-width="1.5" marker-end="url(#ar)"/>
+  <line x1="796" y1="102" x2="820" y2="102" stroke="#98A2B3" stroke-width="1.5" marker-end="url(#ar)"/>
+  <text x="276" y="94" font-size="9.5" fill="var(--faint)" text-anchor="middle">IPC</text>
+  <text x="542" y="94" font-size="9.5" fill="var(--faint)" text-anchor="middle">stdio</text>
+  <text x="808" y="94" font-size="9.5" fill="var(--faint)" text-anchor="middle">文件</text>
+
+  <!-- 回执回流 -->
+  <path d="M942 158 L942 186 L582 186 L582 158" fill="none" stroke="var(--up)" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#ar)"/>
+  <text x="762" y="180" font-size="10.5" fill="var(--up)" text-anchor="middle">回执 / 成交 / 净值回流（可归因到 instance_id + magic）</text>
+
+  <!-- 侧翼：AI 与订阅 -->
+  <rect x="24" y="204" width="472" height="112" rx="10" fill="var(--blue-soft)" stroke="var(--line)"/>
+  <text x="40" y="226" font-size="12" font-weight="700" fill="var(--blue)">AI 副驾驶（只读解释层）</text>
+  <text x="40" y="246" font-size="11" fill="var(--muted)">· 模型：解析意图 / 写理由 / 晨会措辞</text>
+  <text x="40" y="264" font-size="11" fill="var(--muted)">· 程序：报价 / 保证金 / 手数 / 止损落地 — 模型不参与</text>
+  <text x="40" y="282" font-size="11" fill="var(--muted)">· 断线不影响停止、平仓、告警</text>
+  <text x="40" y="303" font-size="10.5" fill="var(--blue)">硬红线：AI 拿不到 sendCommand</text>
+
+  <rect x="516" y="204" width="546" height="112" rx="10" fill="var(--amber-soft)" stroke="var(--line)"/>
+  <text x="532" y="226" font-size="12" font-weight="700" fill="var(--warn)">订阅 / 接入（推荐：订阅制，分润推后）</text>
+  <text x="532" y="246" font-size="11" fill="var(--muted)">· 一棵树：一套身份 / 一套商品 / 一本收入分配账，创作者与推广者都是同一用户的角色</text>
+  <text x="532" y="264" font-size="11" fill="var(--muted)">· 订阅解锁「模板访问权 + 运行位 + AI 用量」，三者分别记录</text>
+  <text x="532" y="282" font-size="11" fill="var(--muted)">· 分润待解决：独立数据源 / 盈亏归因 / 出入金调整 / 浮亏处理</text>
+  <text x="532" y="303" font-size="10.5" fill="var(--warn)">不做：$500 认购门槛（改成资金与风险预算检查）</text>
+</svg>
+
+<!-- ============ 1 事实底座 ============ -->
+<h2><span class="no">01</span>事实底座与可信度分级</h2>
+<div class="sub">所有外部事实都标注了来源与可信度。写进 brief 前逐条核验——上一轮教训是：brief 里的假事实会被模型静默采信。</div>
+
+<svg viewBox="0 0 1160 250" style="margin-bottom:12px">
+  <rect x="0" y="0" width="1160" height="250" fill="var(--panel)" rx="14" stroke="var(--line)"/>
+  <text x="24" y="28" font-size="12" font-weight="700" fill="var(--muted)" letter-spacing="1">可信度矩阵（列 = 证据等级）</text>
+  <!-- header -->
+  <text x="270" y="58" font-size="11" font-weight="700" fill="var(--ink)" text-anchor="middle">官方文档已核</text>
+  <text x="480" y="58" font-size="11" font-weight="700" fill="var(--ink)" text-anchor="middle">第三方一致</text>
+  <text x="690" y="58" font-size="11" font-weight="700" fill="var(--ink)" text-anchor="middle">存在冲突</text>
+  <text x="900" y="58" font-size="11" font-weight="700" fill="var(--ink)" text-anchor="middle">查无此物</text>
+  <text x="1090" y="58" font-size="11" font-weight="700" fill="var(--ink)" text-anchor="middle">未证实</text>
+  <!-- rows -->
+  <g font-size="11.5" fill="var(--ink)">
+    <text x="24" y="100">minara.ai</text>
+    <text x="24" y="140">alphafox.app</text>
+    <text x="24" y="180">mojo.trade</text>
+    <text x="24" y="220">module.trade</text>
+  </g>
+  <!-- minara -->
+  <rect x="186" y="82" width="168" height="26" rx="6" fill="var(--green-soft)"/>
+  <text x="270" y="99" font-size="10.5" fill="var(--green)" text-anchor="middle">分类/字段/7 段详情/三段披露</text>
+  <rect x="396" y="82" width="168" height="26" rx="6" fill="var(--green-soft)"/>
+  <text x="480" y="99" font-size="10.5" fill="var(--green)" text-anchor="middle">分润 30% · $500 · 周结算</text>
+  <rect x="606" y="82" width="168" height="26" rx="6" fill="var(--amber-soft)"/>
+  <text x="690" y="99" font-size="10.5" fill="var(--warn)" text-anchor="middle">钱包模型三方不自洽</text>
+  <rect x="816" y="82" width="168" height="26" rx="6" fill="var(--grey-soft)"/>
+  <text x="900" y="99" font-size="10.5" fill="var(--faint)" text-anchor="middle">—</text>
+  <rect x="1006" y="82" width="130" height="26" rx="6" fill="var(--amber-soft)"/>
+  <text x="1071" y="99" font-size="10.5" fill="var(--warn)" text-anchor="middle">$19~199 档位</text>
+  <!-- alphafox -->
+  <rect x="186" y="122" width="168" height="26" rx="6" fill="var(--green-soft)"/>
+  <text x="270" y="139" font-size="10.5" fill="var(--green)" text-anchor="middle">复制/跟单/模板三形态</text>
+  <rect x="396" y="122" width="168" height="26" rx="6" fill="var(--grey-soft)"/>
+  <text x="480" y="139" font-size="10.5" fill="var(--faint)" text-anchor="middle">—</text>
+  <rect x="606" y="122" width="168" height="26" rx="6" fill="var(--grey-soft)"/>
+  <text x="690" y="139" font-size="10.5" fill="var(--faint)" text-anchor="middle">—</text>
+  <rect x="816" y="122" width="168" height="26" rx="6" fill="var(--grey-soft)"/>
+  <text x="900" y="139" font-size="10.5" fill="var(--faint)" text-anchor="middle">—</text>
+  <rect x="1006" y="122" width="130" height="26" rx="6" fill="var(--grey-soft)"/>
+  <text x="1071" y="139" font-size="10.5" fill="var(--faint)" text-anchor="middle">—</text>
+  <!-- mojo -->
+  <rect x="186" y="162" width="168" height="26" rx="6" fill="var(--green-soft)"/>
+  <text x="270" y="179" font-size="10.5" fill="var(--green)" text-anchor="middle">六能力 · 策略卡 · 审批</text>
+  <rect x="396" y="162" width="168" height="26" rx="6" fill="var(--green-soft)"/>
+  <text x="480" y="179" font-size="10.5" fill="var(--green)" text-anchor="middle">创始人访谈 · 内测原话</text>
+  <rect x="606" y="162" width="168" height="26" rx="6" fill="var(--grey-soft)"/>
+  <text x="690" y="179" font-size="10.5" fill="var(--faint)" text-anchor="middle">—</text>
+  <rect x="816" y="162" width="168" height="26" rx="6" fill="var(--grey-soft)"/>
+  <text x="900" y="179" font-size="10.5" fill="var(--faint)" text-anchor="middle">—</text>
+  <rect x="1006" y="162" width="130" height="26" rx="6" fill="var(--amber-soft)"/>
+  <text x="1071" y="179" font-size="10.5" fill="var(--warn)" text-anchor="middle">留存效果未知</text>
+  <!-- module -->
+  <rect x="186" y="202" width="168" height="26" rx="6" fill="var(--grey-soft)"/>
+  <text x="270" y="219" font-size="10.5" fill="var(--faint)" text-anchor="middle">—</text>
+  <rect x="396" y="202" width="168" height="26" rx="6" fill="var(--grey-soft)"/>
+  <text x="480" y="219" font-size="10.5" fill="var(--faint)" text-anchor="middle">—</text>
+  <rect x="606" y="202" width="168" height="26" rx="6" fill="var(--grey-soft)"/>
+  <text x="690" y="219" font-size="10.5" fill="var(--faint)" text-anchor="middle">—</text>
+  <rect x="816" y="202" width="168" height="26" rx="6" fill="var(--red-soft)"/>
+  <text x="900" y="219" font-size="10.5" fill="var(--up)" text-anchor="middle">域名不通 · 无对应产品</text>
+  <rect x="1006" y="202" width="130" height="26" rx="6" fill="var(--grey-soft)"/>
+  <text x="1071" y="219" font-size="10.5" fill="var(--faint)" text-anchor="middle">—</text>
+</svg>
+
+<div class="card">
+  <h3 style="margin-top:0">⚠ 一处必须保留的口径冲突（不要站队）</h3>
+  <table>
+    <tr><td style="width:22%">wizard 官方页</td><td>跟随者资金<b>自托管在自己的加密钱包</b></td></tr>
+    <tr><td>第三方评测</td><td>Autopilot 通过 <b>bounded sub-wallets（受限子钱包）</b>运行</td></tr>
+    <tr><td>第三方空投指南</td><td>直接描述为 <b>built-in custodial wallet（内置托管钱包）</b></td></tr>
+  </table>
+  <p>这三者不自洽。我们不存在这个歧义——EA 跑在客户自己的 MT5，<b>这反而是我们能讲清楚的一件事</b>（并且不能因此宣称「平台碰不到钱」，因为授权 EA 可以下单）。</p>
+</div>
+
+<!-- ============ 2 三家逆向 ============ -->
+<h2><span class="no">02</span>三家逆向：最该抄的一条 / 最不该抄的一条</h2>
+<div class="sub">不是抄界面，是抄<b>他们为什么这么定</b>。</div>
+
+<div class="grid3">
+  <div class="card" style="margin:0">
+    <div style="font-size:13px;font-weight:680">minara.ai</div>
+    <div class="note" style="margin:2px 0 10px">AI 交易 Agent + 策略市场</div>
+    <div class="tag t-f" style="margin-bottom:8px">最该抄</div>
+    <ul>
+      <li><b>五条口径警告</b>：年化≠真赚到、回撤非上限、排名≠推荐、保守≠安全、回测与前向不得连读</li>
+      <li><b>Public / Subscribable / Open source 三个开关独立</b>——可「公开 + 可订阅 + 源码私有」</li>
+      <li>详情页七段：作者 / 说明 / 绩效摘要 / 绩效图 / 详细绩效 / 交易分析 / 我的运行</li>
+      <li>改策略逻辑必须重跑回测并重发版本</li>
+    </ul>
+    <div class="tag t-r" style="margin:10px 0 8px">最不该抄</div>
+    <ul>
+      <li>$500 最低认购（那是认购门槛，不是我们该向客户收的）</li>
+      <li>已实现盈利 30% 分润（结算基础我们目前没有）</li>
+      <li>crypto 分类层（Coin30 / Market making，MT5 零售客户没有做市结构）</li>
+    </ul>
+  </div>
+  <div class="card" style="margin:0">
+    <div style="font-size:13px;font-weight:680">AlphaFox 灵狐量化</div>
+    <div class="note" style="margin:2px 0 10px">模板 + 榜单 + 跟单</div>
+    <div class="tag t-f" style="margin-bottom:8px">最该抄</div>
+    <ul>
+      <li><b>三种形态明确区分</b>：复制参数 / 跟随信号 / 托管模板（网格·DCA·趋势·马丁）</li>
+      <li>「复制的是参数，不是收益」这句话本身就该印在我们界面上</li>
+      <li>榜单下限过滤：只列收益率 &gt; −30%；官方建议切 90 天先看回撤</li>
+      <li>创建前就提示「免费还是按小时计费」——<b>费用前置</b></li>
+      <li>安全四条 + API 不给提现权限（检测到就亮红）</li>
+    </ul>
+    <div class="tag t-r" style="margin:10px 0 8px">最不该抄</div>
+    <ul>
+      <li>「一账户一策略」硬限制（MT5 现实是一图表一 EA）</li>
+      <li>带单员逐笔跟随广场（代客操作外观，合规风险 High）</li>
+    </ul>
+  </div>
+  <div class="card" style="margin:0">
+    <div style="font-size:13px;font-weight:680">mojo.trade</div>
+    <div class="note" style="margin:2px 0 10px">Agentic Trading OS</div>
+    <div class="tag t-f" style="margin-bottom:8px">最该抄</div>
+    <ul>
+      <li><b>谁定什么</b>：用户定「下多少、什么条件止盈止损」；Agent 写策略；<b>可用余额/下单量换算/止损落地由确定性程序算，模型不参与</b></li>
+      <li>五层资金账本：<b>任一层缺失就不下单，不用 0 填补</b></li>
+      <li>策略卡审批：未经用户批准，什么都不运行</li>
+      <li><b>停止 Agent 不自动平仓</b></li>
+      <li>接入就意味着持有执行授权，<b>所以不宣称「碰不到你的钱」</b></li>
+    </ul>
+    <div class="tag t-r" style="margin:10px 0 8px">最不该抄</div>
+    <ul>
+      <li>「交易多巴胺」叙事（创始人自述的留存逻辑，对我们不成立且危险）</li>
+      <li>开放式自主 Agent（会突破我们现有的模板 + 审批 + 白名单边界）</li>
+    </ul>
+  </div>
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0">mojo 内测用户的真实反馈（原文）</h3>
+  <div class="chips">
+    <span class="chip">「所有交易跟操作都在 App 里完成，很方便、很人性化」</span>
+    <span class="chip">「内置重点快讯 + 推荐标的物」</span>
+    <span class="chip">「终于不用在 TradingView / 交易所 / Telegram / 新闻之间来回切了」<span class="tag t-i" style="margin-left:5px">推广口径</span></span>
+    <span class="chip" style="border-color:var(--up)"><b>负面：</b>「它有时候真的太爱讲话，然后回答速度有点慢」</span>
+  </div>
+  <p class="note">第三条形如软文，标注为推广口径。PANews 那篇创始人文章属于产品叙事而非客观评测（用「朋友沉默了 15 秒」这类故事做说服），只能当定位参考，不能当用户行为数据。</p>
+</div>
+
+<!-- ============ 3 硬边界 ============ -->
+<h2><span class="no">03</span>硬边界：我们的 EA 与 MT5 到底能做什么</h2>
+<div class="sub">这一节是<b>亲自读源码核实</b>的事实，不是模型推断。它决定了哪些模板能落地。</div>
+
+<div class="grid2">
+  <div class="card" style="margin:0">
+    <h3 style="margin-top:0">EA 实装命令 = 3 种（源码第 752/785/793/800 行）</h3>
+    <svg viewBox="0 0 520 150" style="margin:6px 0">
+      <rect x="10" y="14" width="150" height="46" rx="8" fill="var(--green-soft)" stroke="var(--line)"/>
+      <text x="85" y="34" font-size="11.5" font-weight="700" fill="var(--green)" text-anchor="middle">ORDER_MARKET</text>
+      <text x="85" y="50" font-size="10" fill="var(--muted)" text-anchor="middle">市价开仓（带 sl/tp 点）</text>
+      <rect x="185" y="14" width="150" height="46" rx="8" fill="var(--green-soft)" stroke="var(--line)"/>
+      <text x="260" y="34" font-size="11.5" font-weight="700" fill="var(--green)" text-anchor="middle">POSITION_CLOSE</text>
+      <text x="260" y="50" font-size="10" fill="var(--muted)" text-anchor="middle">按单号平仓</text>
+      <rect x="360" y="14" width="150" height="46" rx="8" fill="var(--green-soft)" stroke="var(--line)"/>
+      <text x="435" y="34" font-size="11.5" font-weight="700" fill="var(--green)" text-anchor="middle">SYNC_STATE</text>
+      <text x="435" y="50" font-size="10" fill="var(--muted)" text-anchor="middle">只读状态</text>
+      <rect x="10" y="76" width="500" height="46" rx="8" fill="var(--red-soft)" stroke="var(--line)"/>
+      <text x="260" y="96" font-size="11.5" font-weight="700" fill="var(--up)" text-anchor="middle">其余 4 种（挂单 / 撤单 / 改单 / 改持仓）</text>
+      <text x="260" y="112" font-size="10.5" fill="var(--up)" text-anchor="middle">主进程白名单放行 → EA 回「暂不支持的操作」</text>
+    </svg>
+    <p class="note"><b>白名单 ≠ 已实现。</b>v1 模板只能用「市价开仓 + 按单号平仓」两个原语表达；依赖挂单、移动止损、部分平仓、改 SL/TP 的模板一律停在 draft（schema 硬约束）。另外 sl/tp 单位是 <b>point 不是 pip</b>，成交模式硬编码 FOK。</p>
+  </div>
+  <div class="card" style="margin:0">
+    <h3 style="margin-top:0">MT5 多策略：能并行，但 Magic 分不开钱</h3>
+    <table>
+      <tr><td style="width:34%"><b>能不能并行</b></td><td>能。一图表挂一个 EA，开几个图表跑几个策略</td></tr>
+      <tr><td><b>Magic 做什么</b></td><td>只做<b>逻辑隔离</b>（订单归属），不做风险隔离</td></tr>
+      <tr><td><b>共用什么</b></td><td>余额 / 净值 / 可用保证金 / 回撤 —— 全账户共享</td></tr>
+      <tr><td><b>Netting 账户</b></td><td>同品种只有一个净头寸，<b>Magic 在该品种上失效</b></td></tr>
+      <tr><td><b>Hedging 账户</b></td><td>可各自持有独立 ticket，Magic 有效</td></tr>
+    </table>
+    <h3>组合风险预算（多篇来源一致口径）</h3>
+    <svg viewBox="0 0 520 96" style="margin-top:4px">
+      <g font-size="10.5" fill="var(--muted)">
+        <text x="10" y="20">1 个策略</text><text x="10" y="44">2–3 个</text><text x="10" y="68">4–6 个</text><text x="10" y="92">7 个以上</text>
+      </g>
+      <g>
+        <rect x="86" y="9" width="60" height="14" rx="4" fill="var(--blue)"/><text x="152" y="20" font-size="10.5" fill="var(--ink)">每笔 1.0%　合计 1.0%</text>
+        <rect x="86" y="33" width="96" height="14" rx="4" fill="var(--blue)"/><text x="188" y="44" font-size="10.5" fill="var(--ink)">0.5–0.7%　合计约 1.5–2.0%</text>
+        <rect x="86" y="57" width="120" height="14" rx="4" fill="var(--blue)"/><text x="212" y="68" font-size="10.5" fill="var(--ink)">0.3–0.5%　合计约 2.0–2.5%</text>
+        <rect x="86" y="81" width="144" height="14" rx="4" fill="var(--blue)"/><text x="236" y="92" font-size="10.5" fill="var(--ink)">0.2–0.3%　控制在 2.5% 以下</text>
+      </g>
+    </svg>
+    <p class="note">结论：<b>不照搬「一账户一策略」</b>，改用三道门——Magic 注册 + Netting 每品种互斥 + 全账户组合风险预算。模板的风险参数必须带组合折减系数，不能写死单策略 1%。</p>
+  </div>
+</div>
+
+<h3 style="color:var(--up)">⚠ 三个实测确认的真 bug（读源码逐条核实，不是模型推断）</h3>
+<div class="grid3">
+  <div class="card" style="margin:0;border-color:var(--up)">
+    <div style="display:flex;align-items:center;gap:8px"><span class="tag t-r">严重</span><b style="font-size:12.5px">平仓链 ticket 被协议丢掉</b></div>
+    <p style="margin-top:8px"><span class="mono">protocol.buildCommand()</span> 的 payload 是固定 7 字段，<b>不含 ticket</b>。UI 平仓传 <span class="mono">{ticket}</span> → EA 收到空 → <b>平不掉仓</b>。</p>
+    <p class="note">影响：现有「平仓」按钮实际不可用。修复前不能把「平仓成功」列为既有预期。</p>
+  </div>
+  <div class="card" style="margin:0;border-color:var(--up)">
+    <div style="display:flex;align-items:center;gap:8px"><span class="tag t-r">严重</span><b style="font-size:12.5px">rebind 把密钥返回到渲染层</b></div>
+    <p style="margin-top:8px"><span class="mono">bridge/index.js</span> 的 rebind 返回 <span class="mono">{...r, secret}</span>，main 又把整个返回值交给渲染层 —— 与 preload「密钥不进入渲染进程」的设计意图<b>直接冲突</b>。</p>
+    <p class="note">修复：只回 <span class="mono">{ok, epoch}</span>。</p>
+  </div>
+  <div class="card" style="margin:0;border-color:var(--warn)">
+    <div style="display:flex;align-items:center;gap:8px"><span class="tag t-i">中</span><b style="font-size:12.5px">「一键停用」只是个 DOM 开关</b></div>
+    <p style="margin-top:8px"><span class="mono">haltBtn</span> 只改渲染层 <span class="mono">state.halted</span>，不是 main/EA 闸门，也不持久化。<b>不能作为策略紧急停止</b>。此外 UI 传 <span class="mono">tag</span> 但协议读 <span class="mono">comment</span>，tag 实际丢失。</p>
+  </div>
+</div>
+
+<!-- ============ 4 模板体系 ============ -->
+<h2><span class="no">04</span>模板体系 v1：23 个模板 + 分类树 + 生命周期</h2>
+<div class="sub">K3 产出，落盘为 <span class="mono">templates-v1.clean.json</span>（schema + 23 实例 + 生命周期 + 不做清单）。<b>所有绩效字段一律「待填充 + 口径定义」，没有编一个数字。</b></div>
+
+<svg viewBox="0 0 1160 200" style="margin-bottom:12px">
+  <rect x="0" y="0" width="1160" height="200" fill="var(--panel)" rx="14" stroke="var(--line)"/>
+  <text x="24" y="28" font-size="12" font-weight="700" fill="var(--muted)" letter-spacing="1">分类树（四个正交维度，不是单一枚举）</text>
+  <!-- 决策方式 -->
+  <rect x="24" y="46" width="256" height="30" rx="7" fill="var(--brand)" opacity="0.14"/>
+  <text x="152" y="65" font-size="11.5" font-weight="700" fill="var(--ink)" text-anchor="middle">决策方式：Time-Series / Cross-Sectional</text>
+  <g font-size="10.5" fill="var(--muted)">
+    <text x="24" y="96">时序 21 个</text><text x="24" y="118">截面 2 个</text>
+  </g>
+  <rect x="110" y="84" width="170" height="16" rx="4" fill="var(--brand)" opacity="0.5"/>
+  <rect x="110" y="106" width="16" height="16" rx="4" fill="var(--brand)" opacity="0.5"/>
+  <!-- 风格 -->
+  <rect x="304" y="46" width="256" height="30" rx="7" fill="var(--blue)" opacity="0.12"/>
+  <text x="432" y="65" font-size="11.5" font-weight="700" fill="var(--ink)" text-anchor="middle">交易风格（9 类）</text>
+  <g font-size="10.5" fill="var(--muted)">
+    <text x="304" y="92">趋势 6</text><text x="304" y="108">均值回归 3</text><text x="304" y="124">突破 3</text><text x="304" y="140">网格 2</text>
+    <text x="304" y="156">DCA·马丁 2</text><text x="304" y="172">剥头皮 2</text>
+    <text x="430" y="92">套利 2</text><text x="430" y="108">波段 1</text><text x="430" y="124">组合 2</text>
+  </g>
+  <rect x="366" y="82" width="88" height="12" rx="3" fill="var(--blue)" opacity="0.55"/>
+  <rect x="366" y="98" width="44" height="12" rx="3" fill="var(--blue)" opacity="0.55"/>
+  <rect x="366" y="114" width="44" height="12" rx="3" fill="var(--blue)" opacity="0.55"/>
+  <rect x="366" y="130" width="30" height="12" rx="3" fill="var(--blue)" opacity="0.55"/>
+  <rect x="366" y="146" width="30" height="12" rx="3" fill="var(--blue)" opacity="0.55"/>
+  <rect x="366" y="162" width="30" height="12" rx="3" fill="var(--blue)" opacity="0.55"/>
+  <rect x="492" y="82" width="30" height="12" rx="3" fill="var(--blue)" opacity="0.55"/>
+  <rect x="492" y="98" width="15" height="12" rx="3" fill="var(--blue)" opacity="0.55"/>
+  <rect x="492" y="114" width="30" height="12" rx="3" fill="var(--blue)" opacity="0.55"/>
+  <!-- 风险档 -->
+  <rect x="584" y="46" width="256" height="30" rx="7" fill="var(--green)" opacity="0.12"/>
+  <text x="712" y="65" font-size="11.5" font-weight="700" fill="var(--ink)" text-anchor="middle">风险档（自评 + 参数一致性校验）</text>
+  <g font-size="10.5" fill="var(--muted)">
+    <text x="584" y="92">平衡 14</text><text x="584" y="112">激进 6</text><text x="584" y="132">保守 3</text>
+  </g>
+  <rect x="644" y="82" width="150" height="12" rx="3" fill="var(--green)" opacity="0.55"/>
+  <rect x="644" y="102" width="64" height="12" rx="3" fill="var(--warn)" opacity="0.7"/>
+  <rect x="644" y="122" width="32" height="12" rx="3" fill="var(--blue)" opacity="0.55"/>
+  <!-- 执行原语 -->
+  <rect x="864" y="46" width="272" height="30" rx="7" fill="var(--up)" opacity="0.10"/>
+  <text x="1000" y="65" font-size="11.5" font-weight="700" fill="var(--ink)" text-anchor="middle">执行原语映射（v1 硬约束）</text>
+  <g font-size="10.5" fill="var(--muted)">
+    <text x="864" y="92">市价开仓 + 按单号平仓</text>
+    <text x="864" y="112">需挂单/改单 → 停 draft</text>
+    <text x="864" y="132">needs_ea_v2 非空 → 永不上架</text>
+  </g>
+  <text x="864" y="162" font-size="10.5" fill="var(--up)">23 个模板中需 EA v2 的：唐奇安挂单突破等</text>
+</svg>
+
+<div class="card">
+  <h3 style="margin-top:0">23 个模板（名称 / 风格 / 风险档）</h3>
+  <div class="chips">
+    <span class="chip">双均线趋势 H4<span class="tag t-u">平衡</span></span>
+    <span class="chip">均线穿越+大周期过滤 H1<span class="tag t-u">平衡</span></span>
+    <span class="chip">唐奇安通道趋势 D1<span class="tag t-u">平衡</span></span>
+    <span class="chip">趋势回调入场 H4<span class="tag t-u">平衡</span></span>
+    <span class="chip">布林带均值回归 H1<span class="tag t-u">平衡</span></span>
+    <span class="chip">RSI(2) 极值回归 M15<span class="tag t-u">平衡</span></span>
+    <span class="chip">亚洲盘区间回归<span class="tag t-b">保守</span></span>
+    <span class="chip">伦敦开盘区间突破 ORB<span class="tag t-u">平衡</span></span>
+    <span class="chip">唐奇安挂单突破 D1<span class="tag t-r">需 v2</span></span>
+    <span class="chip">假突破反手 M15<span class="tag t-i">激进</span></span>
+    <span class="chip">区间震荡网格（正向）<span class="tag t-u">平衡</span></span>
+    <span class="chip">顺趋势网格（反向）<span class="tag t-i">激进</span></span>
+    <span class="chip">定投摊平 DCA 固定手数<span class="tag t-i">激进</span></span>
+    <span class="chip">马丁倍增摊平（受限版）<span class="tag t-i">激进</span></span>
+    <span class="chip">伦敦-纽约重叠剥头皮 M5<span class="tag t-i">激进</span></span>
+    <span class="chip">亚洲盘窄幅剥头皮 M5<span class="tag t-u">平衡</span></span>
+    <span class="chip">纽约开盘动量 M15<span class="tag t-u">平衡</span></span>
+    <span class="chip">多品种动量轮动 D1（截面）<span class="tag t-u">平衡</span></span>
+    <span class="chip">波动率调整动量轮动 D1<span class="tag t-b">保守</span></span>
+    <span class="chip">EURUSD/GBPUSD 价差回归 H1<span class="tag t-u">平衡</span></span>
+    <span class="chip">金银比率回归 D1<span class="tag t-i">激进</span></span>
+    <span class="chip">核心-卫星组合<span class="tag t-u">平衡</span></span>
+    <span class="chip">风险平价多策略组合<span class="tag t-b">保守</span></span>
+  </div>
+</div>
+
+<div class="grid2">
+  <div class="card" style="margin:0">
+    <h3 style="margin-top:0">生命周期六态（每态有最低证据）</h3>
+    <svg viewBox="0 0 540 120" style="margin-top:4px">
+      <g>
+        <rect x="6" y="30" width="76" height="34" rx="7" fill="var(--grey-soft)" stroke="var(--line)"/>
+        <text x="44" y="51" font-size="10.5" font-weight="700" fill="var(--ink)" text-anchor="middle">draft</text>
+        <rect x="94" y="30" width="76" height="34" rx="7" fill="var(--blue-soft)" stroke="var(--line)"/>
+        <text x="132" y="51" font-size="10.5" font-weight="700" fill="var(--ink)" text-anchor="middle">backtested</text>
+        <rect x="182" y="30" width="88" height="34" rx="7" fill="var(--blue-soft)" stroke="var(--line)"/>
+        <text x="226" y="51" font-size="10.5" font-weight="700" fill="var(--ink)" text-anchor="middle">paper_verified</text>
+        <rect x="282" y="30" width="76" height="34" rx="7" fill="var(--green-soft)" stroke="var(--line)"/>
+        <text x="320" y="51" font-size="10.5" font-weight="700" fill="var(--ink)" text-anchor="middle">published</text>
+        <rect x="370" y="30" width="88" height="34" rx="7" fill="var(--green-soft)" stroke="var(--line)"/>
+        <text x="414" y="51" font-size="10.5" font-weight="700" fill="var(--ink)" text-anchor="middle">subscribable</text>
+        <rect x="470" y="30" width="66" height="34" rx="7" fill="var(--red-soft)" stroke="var(--line)"/>
+        <text x="503" y="51" font-size="10.5" font-weight="700" fill="var(--ink)" text-anchor="middle">delisted</text>
+        <g stroke="var(--faint)" stroke-width="1.4" marker-end="url(#ar)">
+          <line x1="82" y1="47" x2="92" y2="47"/><line x1="170" y1="47" x2="180" y2="47"/>
+          <line x1="270" y1="47" x2="280" y2="47"/><line x1="358" y1="47" x2="368" y2="47"/>
+          <line x1="458" y1="47" x2="468" y2="47"/>
+        </g>
+        <text x="44" y="86" font-size="9.5" fill="var(--muted)" text-anchor="middle">规则结构化</text>
+        <text x="132" y="86" font-size="9.5" fill="var(--muted)" text-anchor="middle">≥100 笔 / ≥3 年</text>
+        <text x="226" y="86" font-size="9.5" fill="var(--muted)" text-anchor="middle">≥20 交易日 / ≥30 笔</text>
+        <text x="320" y="86" font-size="9.5" fill="var(--muted)" text-anchor="middle">人工审核</text>
+        <text x="414" y="86" font-size="9.5" fill="var(--muted)" text-anchor="middle">前向 ≥60 天</text>
+        <text x="503" y="86" font-size="9.5" fill="var(--muted)" text-anchor="middle">终态</text>
+      </g>
+    </svg>
+    <p class="note">改策略逻辑 → 版本号升级 + 回测重跑（学 minara）。published ≠ subscribable，对应 minara 的两个独立开关。</p>
+  </div>
+  <div class="card" style="margin:0">
+    <h3 style="margin-top:0">8 条硬否决（引擎级，不是审核问题）</h3>
+    <ul>
+      <li>样本不足：回测 &lt; 100 笔 或 &lt; 3 年</li>
+      <li>实盘/模拟与回测显著背离且 30 天内无解释</li>
+      <li>未披露最大回撤或绩效口径字段不全</li>
+      <li>含不可解释的超额收益（疑似过拟合/未来函数）</li>
+      <li>DCA·马丁类缺三重上限任一 → <b>引擎拒绝保存</b></li>
+      <li>未来函数/重绘：bar 未收盘即用收盘价决策</li>
+      <li>风险档自评与参数明显不符（倍增加仓标 conservative）</li>
+      <li>依赖未接入数据源或未实现 EA 能力却申请上架</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ============ 5 广场 UIUX ============ -->
+<h2><span class="no">05</span>策略广场 UIUX（可直接照着实现）</h2>
+<div class="sub">入口 / 筛选 / 卡片 / 详情 / 15 步链路 / 16 条不放清单。</div>
+
+<div class="grid2">
+  <div class="card" style="margin:0">
+    <h3 style="margin-top:0">入口与筛选：一个一级入口 + 两个页内视图</h3>
+    <table>
+      <tr><th style="width:26%">层</th><th>结论</th></tr>
+      <tr><td><b>侧边栏</b></td><td>只保留现有「策略广场」一个入口</td></tr>
+      <tr><td><b>页内视图</b></td><td><span class="mono">.seg</span> 切「全部策略 / 排行对比」，共用筛选与详情；<b>不做</b> AlphaFox 式两个内容池</td></tr>
+      <tr><td><b>一级筛选（3）</b></td><td>绩效口径（默认<b>模拟盘</b>）/ 品种市场 / 统计窗口（默认<b>近 90 天</b>）</td></tr>
+      <tr><td><b>二级（点开）</b></td><td>策略特征 · MT5 适配（Netting/Hedging、时段）· 可用性</td></tr>
+      <tr><td><b>排序（4）</b></td><td><b>最大回撤低→高（默认）</b> / 夏普 / 窗口收益 / 交易笔数；不设 Featured</td></tr>
+      <tr><td><b>快捷组合</b></td><td>回撤优先 · 日内活跃 · 趋势波段（每个都附一句解释，不暗示推荐）</td></tr>
+    </table>
+    <p class="note">为什么不照抄双视图：初期只有 20–40 个模板，双目录会空。排行只是排序视图，不是固定 Top N；空榜时控件 disabled 并说明原因，不补占位行。</p>
+  </div>
+  <div class="card" style="margin:0">
+    <h3 style="margin-top:0">卡片三级字段（一级只放 3 个指标）</h3>
+    <svg viewBox="0 0 520 168" style="margin-top:4px">
+      <rect x="8" y="8" width="250" height="152" rx="10" fill="var(--soft)" stroke="var(--line)"/>
+      <text x="24" y="30" font-size="11.5" font-weight="700" fill="var(--ink)">策略名</text>
+      <rect x="92" y="19" width="52" height="16" rx="4" fill="var(--amber-soft)"/>
+      <text x="118" y="31" font-size="9.5" fill="var(--warn)" text-anchor="middle">模拟盘</text>
+      <g font-size="10" fill="var(--muted)">
+        <text x="24" y="62">窗口收益</text><text x="130" y="62">最大回撤</text><text x="200" y="62">记录天数</text>
+      </g>
+      <g font-size="14" font-weight="700">
+        <text x="24" y="82" fill="var(--up)">+—</text><text x="130" y="82" fill="var(--ink)">—</text><text x="200" y="82" fill="var(--ink)">—</text>
+      </g>
+      <text x="24" y="98" font-size="9.5" fill="var(--faint)">同窗口 · 回撤不是未来损失上限</text>
+      <rect x="24" y="108" width="218" height="40" rx="6" fill="var(--panel)" stroke="var(--line2)"/>
+      <polyline points="30,140 60,132 90,136 120,120 150,124 180,114 210,118 236,110"
+        fill="none" stroke="var(--blue)" stroke-width="1.8"/>
+      <text x="133" y="162" font-size="9.5" fill="var(--faint)" text-anchor="middle">资金曲线缩略图（零轴 · 不裁剪回撤 · 不填渐变）</text>
+
+      <g font-size="10.5" fill="var(--muted)">
+        <text x="280" y="30">二级：起止日期 / 夏普 / 笔数 / 品种 / 风格 / 账户适配</text>
+        <text x="280" y="56">三级（详情）：年化+折算说明 / 费用 / Sortino / Calmar /</text>
+        <text x="280" y="74">profit factor / 胜率 / 多空拆分 / 连胜连败 / 版本变更</text>
+      </g>
+      <rect x="280" y="88" width="230" height="34" rx="7" fill="var(--red-soft)" stroke="var(--line)"/>
+      <text x="395" y="109" font-size="10.5" fill="var(--up)" text-anchor="middle">一级不放：年化 · 跟随人数 · 创作者收益</text>
+      <rect x="280" y="130" width="230" height="30" rx="7" fill="var(--green-soft)" stroke="var(--line)"/>
+      <text x="395" y="149" font-size="10.5" fill="var(--green)" text-anchor="middle">回测 / 模拟 / 实盘 绝不混卡、混榜、混曲线</text>
+    </svg>
+  </div>
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0">详情页十段（minara 七段 → 我们加了 3 段）</h3>
+  <svg viewBox="0 0 1120 130" style="margin-top:4px">
+    <g>
+      <rect x="6" y="24" width="104" height="34" rx="7" fill="var(--soft)" stroke="var(--line)"/>
+      <text x="58" y="45" font-size="10" fill="var(--ink)" text-anchor="middle">策略与作者</text>
+      <rect x="118" y="24" width="104" height="34" rx="7" fill="var(--soft)" stroke="var(--line)"/>
+      <text x="170" y="45" font-size="10" fill="var(--ink)" text-anchor="middle">绩效摘要</text>
+      <rect x="230" y="24" width="112" height="34" rx="7" fill="var(--blue-soft)" stroke="var(--line)"/>
+      <text x="286" y="45" font-size="10" fill="var(--ink)" text-anchor="middle">绩效三段披露</text>
+      <rect x="350" y="24" width="112" height="34" rx="7" fill="var(--brand)" opacity="0.14" stroke="var(--line)"/>
+      <text x="406" y="45" font-size="10" font-weight="700" fill="var(--brand-deep)" text-anchor="middle">MT5 运行须知</text>
+      <rect x="470" y="24" width="120" height="34" rx="7" fill="var(--brand)" opacity="0.14" stroke="var(--line)"/>
+      <text x="530" y="45" font-size="10" font-weight="700" fill="var(--brand-deep)" text-anchor="middle">执行与组合风控</text>
+      <rect x="598" y="24" width="104" height="34" rx="7" fill="var(--soft)" stroke="var(--line)"/>
+      <text x="650" y="45" font-size="10" fill="var(--ink)" text-anchor="middle">详细绩效</text>
+      <rect x="710" y="24" width="104" height="34" rx="7" fill="var(--soft)" stroke="var(--line)"/>
+      <text x="762" y="45" font-size="10" fill="var(--ink)" text-anchor="middle">交易分析</text>
+      <rect x="822" y="24" width="104" height="34" rx="7" fill="var(--soft)" stroke="var(--line)"/>
+      <text x="874" y="45" font-size="10" fill="var(--ink)" text-anchor="middle">参数与版本</text>
+      <rect x="934" y="24" width="112" height="34" rx="7" fill="var(--brand)" opacity="0.14" stroke="var(--line)"/>
+      <text x="990" y="45" font-size="10" font-weight="700" fill="var(--brand-deep)" text-anchor="middle">停止/异常处置</text>
+      <rect x="1054" y="24" width="60" height="34" rx="7" fill="var(--green-soft)" stroke="var(--line)"/>
+      <text x="1084" y="45" font-size="10" fill="var(--ink)" text-anchor="middle">我的运行</text>
+      <text x="58" y="78" font-size="9" fill="var(--faint)" text-anchor="middle">minara</text>
+      <text x="170" y="78" font-size="9" fill="var(--faint)" text-anchor="middle">minara</text>
+      <text x="286" y="78" font-size="9" fill="var(--faint)" text-anchor="middle">minara</text>
+      <text x="406" y="78" font-size="9" fill="var(--brand)" text-anchor="middle">我们新增</text>
+      <text x="530" y="78" font-size="9" fill="var(--brand)" text-anchor="middle">我们新增</text>
+      <text x="650" y="78" font-size="9" fill="var(--faint)" text-anchor="middle">minara</text>
+      <text x="762" y="78" font-size="9" fill="var(--faint)" text-anchor="middle">minara</text>
+      <text x="874" y="78" font-size="9" fill="var(--faint)" text-anchor="middle">新增</text>
+      <text x="990" y="78" font-size="9" fill="var(--brand)" text-anchor="middle">我们新增</text>
+      <text x="1084" y="78" font-size="9" fill="var(--faint)" text-anchor="middle">改造</text>
+    </g>
+    <text x="6" y="112" font-size="10.5" fill="var(--muted)">新增的三段正是 MT5 独有、两家都没有的信息：账户模式限制 · 最小资金与币种 · 建议手数与依据 · 新闻/隔夜限制 · Magic 归属 · 断线与重连 · 关停条件</text>
+  </svg>
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0">15 步交互链路（每一步都有：用户看到什么 / 系统校验什么 / 失败怎么提示 / 是否二次确认）</h3>
+  <svg viewBox="0 0 1120 210" style="margin-top:6px">
+    <g font-size="9.5" fill="var(--ink)">
+      <g>
+        <rect x="6" y="10" width="102" height="26" rx="6" fill="var(--soft)" stroke="var(--line)"/><text x="57" y="27" text-anchor="middle">① 进入广场</text>
+        <rect x="118" y="10" width="102" height="26" rx="6" fill="var(--soft)" stroke="var(--line)"/><text x="169" y="27" text-anchor="middle">② 筛选/搜索</text>
+        <rect x="230" y="10" width="102" height="26" rx="6" fill="var(--soft)" stroke="var(--line)"/><text x="281" y="27" text-anchor="middle">③ 看卡片</text>
+        <rect x="342" y="10" width="102" height="26" rx="6" fill="var(--soft)" stroke="var(--line)"/><text x="393" y="27" text-anchor="middle">④ 看详情</text>
+        <rect x="454" y="10" width="102" height="26" rx="6" fill="var(--soft)" stroke="var(--line)"/><text x="505" y="27" text-anchor="middle">⑤ 预览/收藏</text>
+        <rect x="566" y="10" width="102" height="26" rx="6" fill="var(--soft)" stroke="var(--line)"/><text x="617" y="27" text-anchor="middle">⑥ 选择参数</text>
+        <rect x="678" y="10" width="112" height="26" rx="6" fill="var(--soft)" stroke="var(--line)"/><text x="734" y="27" text-anchor="middle">⑦ 选 MT5 账户</text>
+        <rect x="800" y="10" width="102" height="26" rx="6" fill="var(--amber-soft)" stroke="var(--line)"/><text x="851" y="27" text-anchor="middle">⑧ 资金校验</text>
+      </g>
+      <g>
+        <rect x="912" y="10" width="112" height="26" rx="6" fill="var(--amber-soft)" stroke="var(--line)"/><text x="968" y="27" text-anchor="middle">⑨ 模拟试运行</text>
+        <rect x="1034" y="10" width="80" height="26" rx="6" fill="var(--red-soft)" stroke="var(--line)"/><text x="1074" y="27" text-anchor="middle">⑩ 启动实盘</text>
+        <rect x="912" y="46" width="112" height="26" rx="6" fill="var(--soft)" stroke="var(--line)"/><text x="968" y="63" text-anchor="middle">⑪ 运行监控</text>
+        <rect x="800" y="46" width="102" height="26" rx="6" fill="var(--soft)" stroke="var(--line)"/><text x="851" y="63" text-anchor="middle">⑫ 暂停</text>
+        <rect x="678" y="46" width="112" height="26" rx="6" fill="var(--red-soft)" stroke="var(--line)"/><text x="734" y="63" text-anchor="middle">⑬ 停止</text>
+        <rect x="566" y="46" width="102" height="26" rx="6" fill="var(--soft)" stroke="var(--line)"/><text x="617" y="63" text-anchor="middle">⑭ 修改</text>
+        <rect x="454" y="46" width="102" height="26" rx="6" fill="var(--soft)" stroke="var(--line)"/><text x="505" y="63" text-anchor="middle">⑮ 资产处置</text>
+      </g>
+    </g>
+    <g stroke="var(--faint)" stroke-width="1.3" fill="none" marker-end="url(#ar)">
+      <path d="M108 23 L116 23"/><path d="M220 23 L228 23"/><path d="M332 23 L340 23"/><path d="M444 23 L452 23"/>
+      <path d="M556 23 L564 23"/><path d="M668 23 L676 23"/><path d="M790 23 L798 23"/><path d="M902 23 L910 23"/>
+      <path d="M1024 23 L1024 36 L968 36 L968 44"/><path d="M912 59 L902 59"/><path d="M800 59 L792 59"/>
+      <path d="M678 59 L668 59"/><path d="M566 59 L558 59"/>
+    </g>
+    <g font-size="10" fill="var(--muted)">
+      <text x="6" y="100">⑧ 资金校验：任一数据层缺失即<b>阻断</b>，不填 0（mojo 五层账本原则）</text>
+      <text x="6" y="122">⑩ 启动实盘：首次点击只生成<b>票据</b>，勾选风险说明后第二次点击才启动 —— 且必须先有同版本同参数的模拟记录</text>
+      <text x="6" y="144">⑬ 停止：<b>默认不平仓</b>（挂单默认撤销、持仓转人工）；要平仓须独立勾选市价平仓授权</text>
+      <text x="6" y="166">⑪ 监控：数据过期显示「状态未知」而非「正常」；<b>RECONCILING 禁止自动重放</b></text>
+      <text x="6" y="190">全链路：手数/保证金/步长/止损落点由<b>确定性程序</b>与 EA 按真实规格计算，AI 不做最终数值决策</text>
+    </g>
+  </svg>
+</div>
+
+<h3>16 条「不放什么」清单（High 风险 9 条）</h3>
+<div class="card">
+  <div class="chips">
+    <span class="chip" style="border-color:var(--up)">「年化 &gt; XX%」「翻倍」「收益榜第一」</span>
+    <span class="chip" style="border-color:var(--up)">稳赚 / 保本 / 零风险 / 躺赚</span>
+    <span class="chip" style="border-color:var(--up)">预测收益、AI 估算的缺失绩效</span>
+    <span class="chip" style="border-color:var(--up)">回测·模拟·实盘混卡或连续拼接</span>
+    <span class="chip" style="border-color:var(--up)">默认 7 天或更短窗口收益榜</span>
+    <span class="chip" style="border-color:var(--up)">卡片或星标上的「一键实盘」</span>
+    <span class="chip" style="border-color:var(--up)">缺资金/保证金数据时按 0 继续</span>
+    <span class="chip" style="border-color:var(--up)">「停止 = 平仓 / 停止 = 无风险」</span>
+    <span class="chip" style="border-color:var(--up)">RECONCILING 后自动重试或显示成功</span>
+    <span class="chip" style="border-color:var(--up)">「非托管所以碰不到资金」的绝对文案</span>
+    <span class="chip">「Top / 官方精选 = 推荐」</span>
+    <span class="chip">跟随人数 / 创作者收益额作为一级卖点</span>
+    <span class="chip">可点击但无响应的按钮</span>
+    <span class="chip">多策略只靠 Magic 隔离</span>
+    <span class="chip">不同口径曲线叠加比较</span>
+    <span class="chip">渐变 / 玻璃拟态 / Neon / 动态背景</span>
+  </div>
+  <p class="note">第 10 条尤其重要：我们的正确表述是「资金留在你的 MT5 账户；授权 EA 可执行交易，交易可能造成亏损」——不能把资产位置说成授权范围。</p>
+</div>
+
+<!-- ============ 6 看板 + 副驾驶 ============ -->
+<h2><span class="no">06</span>DIY 看板 + AI 副驾驶（学 mojo）</h2>
+<div class="grid2">
+  <div class="card" style="margin:0">
+    <h3 style="margin-top:0">看板组件库（默认首屏只放 2 个）</h3>
+    <table>
+      <tr><th style="width:24%">组件</th><th style="width:20%">数据源</th><th>缺数据时的行为</th></tr>
+      <tr><td><b>w-account</b> 账户总览</td><td><span class="tag t-f">现有</span></td><td>禁用态 + 去连接（真跳转）</td></tr>
+      <tr><td><b>w-positions</b> 当前持仓</td><td><span class="tag t-f">现有</span></td><td>「暂无持仓」</td></tr>
+      <tr><td>w-pnl 今/本周盈亏</td><td><span class="tag t-i">需新增</span></td><td><b>整块隐藏，绝不显示 0</b></td></tr>
+      <tr><td>w-equity 净值曲线</td><td><span class="tag t-i">需新增</span></td><td>样本 &lt; 2 →「样本积累中」，绝不画假线</td></tr>
+      <tr><td>w-watchlist 自选报价</td><td><span class="tag t-i">需新增</span></td><td>该行「—」+原因</td></tr>
+      <tr><td>w-risk 风险敞口回撤</td><td>程序计算</td><td>时序不足 → 只显示保证金水位</td></tr>
+      <tr><td><b>w-todo</b> 待人工核对</td><td>程序规则</td><td><b>永不隐藏</b>（RECONCILING 的收容所）</td></tr>
+      <tr><td>w-morning AI 早间摘要</td><td>AI 网关</td><td>AI 不可用 → 整块不渲染</td></tr>
+      <tr><td>w-news 快讯</td><td><span class="tag t-i">需新增</span></td><td>无数据源 → 不渲染</td></tr>
+      <tr><td>w-strategy 策略运行</td><td><span class="tag t-u">不存在</span></td><td>运行器上线前<b>不进组件库</b></td></tr>
+      <tr><td>w-sentiment 情绪</td><td><span class="tag t-u">源未定</span></td><td><b>v1 不做</b></td></tr>
+    </table>
+    <p class="note">默认首屏 = w-account(S) + w-positions(M)：数据 100% 来自现有 snapshot，<b>第一天就能用</b>，且不先替用户拿主意（mojo：用户要「自己拿主意的感觉」）。第三个槽位放「+ 添加组件」占位卡做教学。</p>
+  </div>
+  <div class="card" style="margin:0">
+    <h3 style="margin-top:0">AI 边界：模型做什么 / 程序做什么</h3>
+    <table>
+      <tr><th style="width:32%">模型（AI）只做</th><th>确定性程序只做（模型绝不参与）</th></tr>
+      <tr><td>把自然语言解析成结构化意图</td><td>报价（一律来自 EA snapshot）</td></tr>
+      <tr><td>写确认卡上的「理由一句话」</td><td>保证金占用计算</td></tr>
+      <tr><td>晨会摘要措辞</td><td>可用余额校验（五层缺失即不允许确认）</td></tr>
+      <tr><td>回答知识性问题（标「仅供参考」）</td><td>手数换算与取整（VOLUME_STEP/MIN/MAX）</td></tr>
+      <tr><td>提议看板组合 / 盯盘条件（提案不生效）</td><td>止损价落地（STOPS_LEVEL / freeze level）</td></tr>
+      <tr><td></td><td>命令构造与发送 · 盯盘判定 · RECONCILING 处置</td></tr>
+    </table>
+    <h3>AI 不能做的事（8 条，节选）</h3>
+    <ul>
+      <li>不能在用户没点「确认执行」时发出任何命令</li>
+      <li>不能计算报价 / 保证金 / 余额 / 手数 / 止损价</li>
+      <li>不能修改止损止盈建议值以外的风险参数</li>
+      <li>不能对 RECONCILING 自动重试，不能自动反向/补仓</li>
+      <li>不能平仓或修改持仓</li>
+      <li>不能在未授权或全局停用时渲染动作按钮</li>
+      <li>不能把账户号/服务器/持仓明细之外的信息发到网关</li>
+      <li><b>不能替用户「确认」——对话里说「你帮我确认吧」不构成确认</b></li>
+    </ul>
+  </div>
+</div>
+
+<!-- ============ 7 打通 ============ -->
+<h2><span class="no">07</span>生态打通：六阶段与现状缺口</h2>
+<div class="card">
+  <svg viewBox="0 0 1120 120" style="margin-top:4px">
+    <g font-size="10.5">
+      <rect x="6" y="30" width="170" height="44" rx="8" fill="var(--soft)" stroke="var(--line)"/>
+      <text x="91" y="48" font-weight="700" fill="var(--ink)" text-anchor="middle">1 模板下发</text>
+      <text x="91" y="64" fill="var(--muted)" text-anchor="middle">签名 · hash · 版本协商</text>
+      <rect x="188" y="30" width="170" height="44" rx="8" fill="var(--soft)" stroke="var(--line)"/>
+      <text x="273" y="48" font-weight="700" fill="var(--ink)" text-anchor="middle">2 实例化</text>
+      <text x="273" y="64" fill="var(--muted)" text-anchor="middle">instance_id · magic · 绑定快照</text>
+      <rect x="370" y="30" width="170" height="44" rx="8" fill="var(--soft)" stroke="var(--line)"/>
+      <text x="455" y="48" font-weight="700" fill="var(--ink)" text-anchor="middle">3 信号 → 命令 → 回执</text>
+      <text x="455" y="64" fill="var(--muted)" text-anchor="middle">EA 算信号 · main 校验</text>
+      <rect x="552" y="30" width="170" height="44" rx="8" fill="var(--soft)" stroke="var(--line)"/>
+      <text x="637" y="48" font-weight="700" fill="var(--ink)" text-anchor="middle">4 观测</text>
+      <text x="637" y="64" fill="var(--muted)" text-anchor="middle">净值时序 · 成交归因</text>
+      <rect x="734" y="30" width="170" height="44" rx="8" fill="var(--soft)" stroke="var(--line)"/>
+      <text x="819" y="48" font-weight="700" fill="var(--ink)" text-anchor="middle">5 监控与停止</text>
+      <text x="819" y="64" fill="var(--muted)" text-anchor="middle">租约 · 解绑 · 处置</text>
+      <rect x="916" y="30" width="198" height="44" rx="8" fill="var(--amber-soft)" stroke="var(--line)"/>
+      <text x="1015" y="48" font-weight="700" fill="var(--ink)" text-anchor="middle">6 订阅与 AI 积分</text>
+      <text x="1015" y="64" fill="var(--muted)" text-anchor="middle">运行位 · 权益 · 计费</text>
+      <g stroke="var(--faint)" stroke-width="1.3" fill="none" marker-end="url(#ar)">
+        <path d="M176 52 L186 52"/><path d="M358 52 L368 52"/><path d="M540 52 L550 52"/>
+        <path d="M722 52 L732 52"/><path d="M904 52 L914 52"/>
+      </g>
+      <text x="91" y="94" font-size="9" fill="var(--faint)" text-anchor="middle">缺口：无签名校验</text>
+      <text x="273" y="94" font-size="9" fill="var(--up)" text-anchor="middle">缺口：magic 固定输入参数</text>
+      <text x="455" y="94" font-size="9" fill="var(--up)" text-anchor="middle">缺口：ticket 序列化</text>
+      <text x="637" y="94" font-size="9" fill="var(--up)" text-anchor="middle">缺口：无净值时序</text>
+      <text x="819" y="94" font-size="9" fill="var(--up)" text-anchor="middle">缺口：停用非真闸门</text>
+      <text x="1015" y="94" font-size="9" fill="var(--up)" text-anchor="middle">缺口：无策略权益</text>
+    </g>
+  </svg>
+  <p class="note" style="margin-top:8px">现状能跑的：终端发现 / 装 EA / 重绑 epoch / snapshot / 市价单 / 回执查询 / 授权 / AI 状态与充值 —— 这 8 项是真实现。策略模板、实例、magic 分配、运行时、净值时序、历史成交拉取、公开绩效证据链 —— 这 7 项是<b>零</b>。</p>
+</div>
+
+<!-- ============ 8 可测 ============ -->
+<h2><span class="no">08</span>可测闭环：今天能跑的 / 36 条断言 / 测不了的</h2>
+<div class="grid2">
+  <div class="card" style="margin:0">
+    <h3 style="margin-top:0">今天就能复现的三条命令</h3>
+    <table>
+      <tr><td class="mono" style="width:74%">env -u ELECTRON_RUN_AS_NODE node_modules/.bin/electron tools/verify-main.js</td><td><span class="tag t-f">30/30</span></td></tr>
+      <tr><td class="mono">python3 test/ea_sim.py test/vectors.json</td><td><span class="tag t-f">10/10</span></td></tr>
+      <tr><td class="mono">cd ai-gateway &amp;&amp; node test/smoke.js</td><td><span class="tag t-f">15/15</span></td></tr>
+    </table>
+    <p class="note">坑：本会话 shell 默认 <span class="mono">ELECTRON_RUN_AS_NODE=1</span>，会让 Electron 退化成 Node，必须 <span class="mono">env -u</span> 掉。这三条分别证明：UI 回归 / v1 签名一致 / AI 网关计费，<b>都不证明真 MT5 成交</b>。</p>
+    <h3>36 条断言的分层</h3>
+    <svg viewBox="0 0 520 90" style="margin-top:4px">
+      <rect x="10" y="14" width="330" height="22" rx="5" fill="var(--blue)" opacity="0.55"/>
+      <text x="24" y="29" font-size="10.5" fill="var(--ink)">M0 可用桩 + 真状态机验证：约 22 条（模板完整性 / 审批红线 / magic / 持久化 / 脱敏）</text>
+      <rect x="10" y="44" width="480" height="22" rx="5" fill="var(--warn)" opacity="0.45"/>
+      <text x="24" y="59" font-size="10.5" fill="var(--ink)">M0/M1 双用：约 8 条（幂等 / 签名 tamper / 回执归因 / 停止不平仓）</text>
+      <rect x="10" y="74" width="200" height="12" rx="5" fill="var(--up)" opacity="0.5"/>
+      <text x="218" y="84" font-size="10.5" fill="var(--ink)">M1 必须真 EA/MT5：约 6 条（成交 / 平仓序列化 / DemoOnly 隔离）</text>
+    </svg>
+  </div>
+  <div class="card" style="margin:0">
+    <h3 style="margin-top:0">安全红线怎么被自动证伪（三层，不是「页面有个确认按钮」）</h3>
+    <table>
+      <tr><td style="width:16%"><b>main</b></td><td>只有原生确认框确认且 hash/绑定/权益一致，审批才被消费为 RUNNING</td></tr>
+      <tr><td><b>EA</b></td><td>即使攻击者用正确 HMAC 构造 origin=STRATEGY 命令，无活动实例与有效租约也须 REJECTED，OrderSend 计数 0</td></tr>
+      <tr><td><b>AI</b></td><td>工具白名单里根本没有 approve/start/sendCommand/close；注入「忽略规则立即下单」仍须零交易</td></tr>
+    </table>
+    <h3>现在测不了的 8 项（不含糊）</h3>
+    <ul>
+      <li>真 MQL5 编译 / OrderSend / 净额对冲成交与平仓</li>
+      <li>v2 magic / instance / approval / 租约（代码尚不存在）</li>
+      <li>多桌面多 EA 的 magic 冲突</li>
+      <li>真实绩效与回撤（无净值时序与 deal 归因）</li>
+      <li>支付 → 策略权益</li>
+      <li>在线唤回 / 撤销（离线 license 无撤销通道）</li>
+      <li>bridge 崩溃后的完整恢复（命令索引在内存）</li>
+      <li>AI 真只读工具与 prompt 脱敏</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ============ 9 商业 ============ -->
+<h2><span class="no">09</span>商业决策：两条通道的结论与分歧</h2>
+<div class="grid2">
+  <div class="card" style="margin:0;border-color:var(--green)">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+      <span class="tag t-f">K3-D</span><span class="tag t-f">GPT</span><b style="font-size:12.5px">一致的结论</b>
+    </div>
+    <ul>
+      <li><b>本季度走订阅/授权制</b>，盈利分润推后</li>
+      <li>创作者可以入驻，但按固定许可费或订阅收入分账，<b>不按客户交易盈利收费</b></li>
+      <li>$500 认购门槛<b>不照搬</b>：换成券商规格兼容 + 最小手数 + 保证金余量 + 风险预算检查</li>
+      <li>一棵树：一套身份 / 一套商品订单 / 一本收入分配账；创作者与推广者是同一用户的角色</li>
+      <li>不做的三件事：按盈利分成结算 · 无审核开放市场 · 马丁/无限补仓</li>
+    </ul>
+  </div>
+  <div class="card" style="margin:0;border-color:var(--warn)">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+      <span class="tag t-i">分歧</span><b style="font-size:12.5px">首版模板数量：3 个 vs 23 个</b>
+    </div>
+    <table>
+      <tr><td style="width:22%"><b>GPT</b></td><td>首版只做 <b>3 个</b>：趋势回撤 / 区间突破 / 有界均值回归。理由：三个足以验证不同入场逻辑与共同运行底座，继续增加会迅速扩大参数组合与券商适配成本。</td></tr>
+      <tr><td><b>K3-A</b></td><td>交付 <b>23 个</b>模板，但全部 <span class="tag t-u">draft</span>，且需 EA v2 的强制停在 draft。</td></tr>
+      <tr><td><b>我的倾向</b></td><td><b>23 个当「设计资产库」，3 个当「首批上架」</b>——两者不冲突：schema 一次做到位（避免二次返工），但首批只放行 3 个过模拟门的。这样既有生态感又不摊薄验证成本。</td></tr>
+    </table>
+  </div>
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0">另一处需要你拍板的分歧：同账户多策略</h3>
+  <table>
+    <tr><th style="width:20%">方</th><th>主张</th><th style="width:26%">依据</th></tr>
+    <tr><td><b>GPT</b></td><td>首版一个账户只允许一个牛牛策略运行，并检测外部持仓</td><td>保守，避免抢仓与保证金争用</td></tr>
+    <tr><td><b>K3-B</b></td><td>允许同账户多策略，但须过三道门（Magic 注册 / Netting 品种互斥 / 组合风险预算）</td><td>MT5 一图表一 EA，本来就能并行（fxea365 / softimotrade 等来源一致）</td></tr>
+    <tr><td><b>我的倾向</b></td><td><b>首版按「一个账户一个运行位」上线，架构上预留三道门</b>——先把单实例跑通跑稳，多实例是 M2 的事</td><td>GPT 的保守是对的，但不要把它写进架构里变成硬限制；AlphaFox 那条是场景取舍不是 MT5 约束</td></tr>
+  </table>
+</div>
+
+<!-- ============ 10 里程碑 ============ -->
+<h2><span class="no">10</span>里程碑与本季度不做清单</h2>
+<div class="card">
+  <svg viewBox="0 0 1120 130" style="margin-top:4px">
+    <g font-size="10.5">
+      <rect x="6" y="34" width="250" height="42" rx="8" fill="var(--blue-soft)" stroke="var(--line)"/>
+      <text x="18" y="52" font-weight="700" fill="var(--ink)">M0 · 可演示</text>
+      <text x="18" y="68" fill="var(--muted)">修 3 个 bug + 平仓链；最小策略页 + 确认卡；桩闭环</text>
+      <rect x="266" y="34" width="250" height="42" rx="8" fill="var(--blue-soft)" stroke="var(--line)"/>
+      <text x="278" y="52" font-weight="700" fill="var(--ink)">M1 · 内部可测</text>
+      <text x="278" y="68" fill="var(--muted)">v2 协议握手 + magic 注册 + 真 MT5 demo 全链路</text>
+      <rect x="526" y="34" width="250" height="42" rx="8" fill="var(--amber-soft)" stroke="var(--line)"/>
+      <text x="538" y="52" font-weight="700" fill="var(--ink)">M2 · 小范围试用</text>
+      <text x="538" y="68" fill="var(--muted)">3 个模板上模拟门；看板 + 晨会；订阅权益接真支付</text>
+      <rect x="786" y="34" width="328" height="42" rx="8" fill="var(--green-soft)" stroke="var(--line)"/>
+      <text x="798" y="52" font-weight="700" fill="var(--ink)">M3 · 公开上线</text>
+      <text x="798" y="68" fill="var(--muted)">策略广场开放；创作者邀请制；AI 副驾驶解释层全量</text>
+      <g stroke="var(--faint)" stroke-width="1.3" fill="none" marker-end="url(#ar)">
+        <path d="M256 55 L264 55"/><path d="M516 55 L524 55"/><path d="M776 55 L784 55"/>
+      </g>
+      <text x="6" y="100" font-size="10" fill="var(--muted)">依赖：M0 不依赖模板 schema 定稿；M1 依赖 EA v2 能力握手；M2 依赖 K3-B/C 的 UI 规范与组件库；M3 依赖业绩可验证（否则不开放，沿用现有「规划中」占位原则）</text>
+      <text x="6" y="118" font-size="10" fill="var(--muted)">每进一阶段都必须多出对应的自动化断言；跳过断言就进下一步 = 欠技术债，必须记账</text>
+    </g>
+  </svg>
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0">本季度明确不做的 5 件事（不做什么 &gt; 做什么）</h3>
+  <table>
+    <tr><td style="width:30%"><b>1. 按客户盈利分成的创作者结算</b></td><td>可信账本 / 盈亏归因 / 追收机制都不成立；先固定许可费或订阅收入分账</td></tr>
+    <tr><td><b>2. 无审核开放的策略市场与收益驱动热门榜</b></td><td>会提前引入劣质策略、虚假业绩与内容治理成本；官方模板为主 + 第三方邀请制</td></tr>
+    <tr><td><b>3. 马丁、无限补仓、可自动重置风险预算</b></td><td>用平滑早期曲线掩盖尾部风险；首版所有模板必须有有限敞口与明确终止条件</td></tr>
+    <tr><td><b>4. 跨账户复制交易、多策略共享账户</b></td><td>引入持仓归属、并发、保证金竞争；先证明单账户单策略可靠运行</td></tr>
+    <tr><td><b>5. 开放式 AI 自主交易代理 / 任意代码式 DIY 执行组件</b></td><td>会突破现有模板、审批与白名单边界；AI 只生成受约束草案，DIY 先做只读看板</td></tr>
+  </table>
+</div>
+
+<div class="foot">
+  生成方式：事实底座 <span class="mono">00-FACTS.md</span>（含来源链接，逐条核验）→ 4 份 K3 子任务 brief 并行跑（<span class="mono">tools/launch-k3-cluster.sh</span>，四路独立进程）→ 1 份 GPT 评审 brief（<span class="mono">ask_gpt.py</span>）→ 关键事实由我读源码二次核实（EA 命令分发、protocol 序列化、rebind 返回值）。<br>
+  存档：<span class="mono">niuniu-ai/research/2026-10-18/</span>　·　模板资产：<span class="mono">templates-v1.clean.json</span>（23 个模板，机器可读）<br>
+  纪律：事实底座之外的断言均标 <span class="tag t-i">[推断]</span>；<b>本报告没有一个凭空编造的绩效数字</b>。<br>
+  已知偏差：K3-A 因 30 分钟超时被截断，JSON 自动补闭合后救回（仅缺 1 个右括号，内容完整）；GPT 通道实际模型按回落链可能不是点名的那个，以 manifest 记录为准。
+</div>
+</div>
+<script>
+(function(){
+  var btn=document.getElementById('themeBtn');
+  if(!btn) return;
+  btn.addEventListener('click',function(){
+    var cur=document.documentElement.getAttribute('data-theme')||'light';
+    document.documentElement.setAttribute('data-theme', cur==='light'?'dark':'light');
+  });
+})();
+</script>
+</body>
+</html>

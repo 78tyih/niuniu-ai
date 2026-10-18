@@ -1,0 +1,1163 @@
+{
+  "_note": "牛牛AI 策略模板体系 v1（K3-A 交付）。事实纪律：引用 00-FACTS.md / 01-CONTEXT.md / 本仓库源码的内容不加标记；其余断言一律标 [推断] 或 [未知]。所有绩效字段一律为「待填充 + 口径定义」，禁止填具体数字。",
+  "meta": {
+    "version": "1.0.0",
+    "date": "2026-10-18",
+    "sources": [
+      "research/2026-10-18/00-FACTS.md（minara / mojo / alphafox 已核实公开事实）",
+      "research/2026-10-18/01-CONTEXT.md（牛牛AI 现状）",
+      "src/bridge/protocol.js、src/bridge/index.js、ea/NiuNiuBridge.mq5（执行能力边界，源码事实）"
+    ]
+  },
+
+  "A1_taxonomy": {
+    "_note": "一级维度：决策方式 × 交易风格 × 风险档（+方向）。minara 的 Category/Style/Risk 骨架保留（事实：其 8 个筛选维度见 00-FACTS 1.3），但按 MT5 外汇/贵金属/CFD 场景改造。",
+    "why_fit_fx_cfd": [
+      "外汇/贵金属/CFD 是杠杆 + 点差计价的 OTC 市场，交易风格直接决定成本敏感度（剥头皮对点差/滑点极敏感，趋势对隔夜 swap 敏感），所以 style 必须是一等维度 [推断]",
+      "可交易品种池小（主流几十个），截面打分排序在计算与执行上都可行，cross_sectional 保留 [推断]",
+      "时段结构分明（亚洲/伦敦/纽约），session 不作为分类维度、但作为每个模板的一等参数字段 [推断]",
+      "客户资金在自己的 MT5 账户，方向（只多/只空/双向）涉及裸露风险敞口与合规话术，保留 minara 的 Direction 维度"
+    ],
+    "dimensions": {
+      "category": {
+        "label": "决策方式",
+        "values": {
+          "time_series": {
+            "def": "单个品种用自身的历史与状态产生信号，一个品种一套决策。",
+            "counter_example": "用 8 个货币的相对强弱打分后持前 2 名——那是 cross_sectional，即使每个持仓本身也看均线。"
+          },
+          "cross_sectional": {
+            "def": "同一时刻横切一个品种池，打分 → 排序 → 持前 N / 空后 N。",
+            "counter_example": "EURUSD 自己的 EMA20 上穿 EMA50 做多——没有任何横向比较，是 time_series。"
+          }
+        },
+        "note": "直接沿用 minara 的二分（Time-Series / Cross-Sectional），不加第三类；组合型模板按其子策略各自的 category 标注，自身记 hybrid [推断]。"
+      },
+      "style": {
+        "label": "交易风格",
+        "values": {
+          "trend":          { "def": "顺着已成立的方向持仓数天到数周，靠小亏大赢赚钱。", "counter_example": "价格触布林带上轨做空赌回归——方向相反，是 mean_reversion。" },
+          "swing":          { "def": "持仓数小时到数天，吃一段摆动，进出都基于摆动结构。", "counter_example": "持仓以秒计、一笔赚几个点就走——是 scalping。" },
+          "mean_reversion": { "def": "赌价格偏离后回到均值/区间内，逆着短期极值做。", "counter_example": "突破区间上沿后追多——是 breakout，不是回归。" },
+          "breakout":       { "def": "在区间边界/关键位被击穿后顺势追入。", "counter_example": "区间内高抛低吸等回归——是 mean_reversion。" },
+          "scalping":       { "def": "持仓秒到分钟级，单笔利润以点计，对点差/滑点/延迟极敏感。", "counter_example": "H4 双均线穿越持仓两周——是 trend。" },
+          "grid":           { "def": "按固定价格间隔布一组单，不预测方向，靠震荡反复收割价差。", "counter_example": "浮亏后按计划加倍摊平回本——是 dca_martingale，网格每笔有独立止盈、不靠摊平。" },
+          "dca_martingale": { "def": "浮亏后按既定计划加仓摊平成本（等倍加 DCA，倍增即马丁）。", "counter_example": "盈利后金字塔加仓——那是 trend 的加仓技巧，不是摊平。", "hard_rule": "risk 必须 = aggressive，且强制 max_lots / max_open_positions / 净值熔断三重上限（见 A3 batch5）。" },
+          "arbitrage":      { "def": "赚两个相关标的/市场之间相对定价的偏差，而非单边方向。", "counter_example": "只做多黄金赌上涨——是 trend/directional，两条腿缺一不可。" },
+          "other":          { "def": "不属于以上任何一类，且必须在描述里自证归类理由。", "counter_example": "能塞进上面任何一类的都不许标 other——other 是兜底不是避风港 [推断]。" }
+        },
+        "removed_from_minara": {
+          "market_making": "砍掉。做市 = 持续双边报价赚买卖价差；零售 MT5 客户是券商/做市商的价格接受方，没有挂双边报价被当成流动性的市场结构 [推断]。其「被动接单、赚来回价差」的形似部分已由 grid 覆盖。",
+          "crypto_asset_groups": "minara 的 Asset 维度（Coin 30/50 等资产组）改为 markets[] 品种清单 + negative list，MT5 没有币安式资产组概念。"
+        },
+        "added": {
+          "grid / scalping / dca_martingale": "来自 AlphaFox 的模板形态（网格/DCA/趋势/马丁「拿来就用」，事实见 00-FACTS 3.1）+ 外汇场景剥头皮的普遍性 [推断]。"
+        }
+      },
+      "risk": {
+        "label": "风险档",
+        "values": {
+          "conservative": { "def": "单笔风险低、总敞口小、有硬熔断；自评标签。", "counter_example": "任何 dca_martingale 标 conservative → A4 硬否决 #7。" },
+          "balanced":     { "def": "介于两者之间；自评标签。", "counter_example": "同 conservative。" },
+          "aggressive":   { "def": "加仓/高频/高杠杆/高换手任一成立即激进；自评标签。", "counter_example": "低杠杆日线趋势标 aggressive 会误导用户，但不算硬否决 [推断]。" }
+        },
+        "note": "沿用 minara 三档。minara 官方明确：Conservative 标签不保证回撤可控（00-FACTS 1.4）——UI 必须带这句免责。"
+      },
+      "direction": {
+        "label": "方向",
+        "values": {
+          "long_only":  { "def": "只开多。", "counter_example": "均值回归模板双向都做就不是 long_only。" },
+          "short_only": { "def": "只开空。", "counter_example": "同上。" },
+          "both":       { "def": "双向。", "counter_example": "—" }
+        }
+      }
+    }
+  },
+
+  "A2_schema": {
+    "_note": "模板对象 JSON Schema 草案（typed，可直接落库）。规则引擎形状设计的核心约束：现阶段 EA 只执行命令、不计算指标（源码事实：ea/NiuNiuBridge.mq5 全文无任何指标计算，dispatch 仅 ORDER_MARKET / POSITION_CLOSE / SYNC_STATE），因此 entry_rules 由桌面端/网关求值，EA 只收执行指令。",
+    "template_object": {
+      "id":              { "type": "string", "pattern": "^TPL-[A-Z0-9-]+$", "desc": "全局唯一，禁止复用已下架 id" },
+      "name":            { "type": "string", "desc": "展示名，中文优先" },
+      "version":         { "type": "string", "desc": "semver；逻辑修改必须升 major/minor 并重走生命周期（minara 做法，见 A4）" },
+      "author_type":     { "type": "enum", "values": ["platform_official", "partner", "user_created"], "desc": "平台官方 / 入驻策略方 / 用户自建" },
+      "category":        { "type": "enum", "values": ["time_series", "cross_sectional", "hybrid"] },
+      "style":           { "type": "enum", "values": ["trend", "swing", "mean_reversion", "breakout", "scalping", "grid", "dca_martingale", "arbitrage", "other"] },
+      "risk":            { "type": "enum", "values": ["conservative", "balanced", "aggressive"], "desc": "自评标签，UI 强制带免责" },
+      "direction":       { "type": "enum", "values": ["long_only", "short_only", "both"] },
+      "markets":         { "type": "object", "shape": "{ allow: string[], deny: string[], deny_reason: string }", "desc": "deny 是 negative list，校验优先级高于 allow" },
+      "timeframes":      { "type": "array", "items": "enum[M5,M15,M30,H1,H4,D1,W1]", "desc": "第一个为执行周期，其余为过滤周期" },
+      "session":         { "type": "object", "shape": "{ limited: bool, allow: enum[asia,london,ny,ln_ny_overlap][], news_blackout: { enabled: bool, minutes_before: int, minutes_after: int, source: string } }", "desc": "news_blackout 依赖外部日历数据源，当前未接入 [未知]" },
+      "entry_rules":     { "type": "array", "items": "rule_node（见下）", "desc": "全部规则 AND 关系" },
+      "exit_rules":      { "type": "array", "items": "rule_node", "desc": "任一命中即触发（OR）；SL/TP 走 risk_defaults，不写在这里" },
+      "filters":         { "type": "array", "items": "rule_node", "desc": "入场过滤器，全部 AND；典型：点差、时段、趋势方向、新闻黑名单" },
+      "params":          { "type": "array", "items": "{ key, label, type: enum[int,number,bool,select], default, min, max, step, unit, desc }", "desc": "暴露给用户的可调参数；范围即合法域，超出拒绝保存" },
+      "risk_defaults":   { "type": "object", "shape": "{ sl_points, tp_points, max_lots_per_trade, max_open_positions, max_daily_loss_pct, max_drawdown_stop_pct, trailing: null|{trigger_points, step_points}, portfolio_budget_pct }", "desc": "单位一律 points（_Point 整数倍，不是 pip——源码事实：protocol.js 头部单位约定）。portfolio_budget_pct = 组合风险预算折减后的该策略额度（00-FACTS 5.4）" },
+      "required_data":   { "type": "array", "items": "enum（见 required_data_enum）", "desc": "EA/桌面端执行该模板必须能拿到的数据，缺一不可订阅（mojo 五层账本原则：任何一层缺失就不下单，不用 0 填）" },
+      "execution_map":   { "type": "object", "shape": "{ uses: cmd[], ea_v1_supported: cmd[], needs_ea_v2: cmd[], notes: string }", "desc": "uses = 模板用到的命令类型；ea_v1_supported = 当前 EA 真能执行的；needs_ea_v2 = 白名单有但 EA 回『暂不支持』的" },
+      "verification":    { "type": "array", "items": "gate_id 或 { rule, params }", "desc": "上线前必须通过的验证清单，gate 定义见 A4.gates" },
+      "invalidation_signals": { "type": "array", "items": "{ metric, threshold, action }", "desc": "必须先看哪个指标判断失效；action: demote(降权) / halt(暂停订阅) / review(人工复核)" },
+      "display":         { "type": "object", "shape": "{ card: string[2..3], list: string[], detail: string[] }", "desc": "一级=卡片 2~3 个字段；二级=列表页；三级=仅详情页。绩效口径见 performance_caliber" },
+      "performance":     { "type": "object", "desc": "全部字段待实盘/回测填充，口径见 performance_caliber；任何状态下不得填无出处的数字" },
+      "lifecycle_state": { "type": "enum", "values": ["draft", "backtested", "paper_verified", "published", "subscribable", "delisted"] },
+      "magic_seed":      { "type": "int", "desc": "magic number 分配种子；运行时 magic = f(template_id, account, chart)，注册制，防重复（00-FACTS 5.5 翻车清单 #1）" },
+      "account_mode_constraint": { "type": "enum", "values": ["any", "hedging_only", "netting_ok_with_exclusivity"], "desc": "netting 下同品种只有一个净头寸，magic 隔离失效（00-FACTS 5.3）" }
+    },
+    "rule_node": {
+      "shape": "{ left: operand, op: enum, right: operand, on: enum[close, tick, bar_open], note?: string }",
+      "operand": "{ indicator: string, params: object, timeframe?: string } 或 { const: number } 或 { field: enum[close,open,high,low,spread_points,equity_pct] }",
+      "op_enum": {
+        "price_relation": ["gt", "gte", "lt", "lte", "cross_above", "cross_below", "touch_upper", "touch_lower", "enter_zone", "exit_zone"],
+        "shape":          ["slope_up", "slope_down", "pct_change_gte", "pct_change_lte"],
+        "cross_sectional":["rank_in_top_n", "rank_in_bottom_n", "zscore_gte", "zscore_lte"],
+        "filter_only":    ["spread_lte", "session_in", "news_blackout_clear", "positions_eq", "positions_lt", "daily_loss_lt", "drawdown_lt", "time_since_last_exit_gte"]
+      },
+      "indicator_enum_v1": ["EMA", "SMA", "RSI", "ATR", "BBANDS", "DONCHIAN", "ADX", "MACD", "STOCH", "ROC", "OPEN_RANGE", "SPREAD", "TIME", "SESSION"],
+      "on_semantics": {
+        "close": "K 线收盘确认后求值——默认且强制用于一切会进广场的模板（防未来函数/重绘，A4 硬否决 #6）",
+        "tick": "逐笔即时——仅 scalping/grid/假突破类可选，且必须在 verification 里加滑点容忍项",
+        "bar_open": "新 K 线开盘价求值"
+      }
+    },
+    "required_data_enum": ["quotes", "spread_points", "bars:M5", "bars:M15", "bars:H1", "bars:H4", "bars:D1", "bars:W1", "account_mode(netting|hedging)", "symbol_spec(point,digits,stops_level,volume_step,min_lot)", "tick_value", "swap_long_short", "session_clock", "news_calendar(外部源，当前未接入 [未知])", "positions_and_tickets", "equity_and_margin"],
+    "ea_capability_facts": {
+      "_note": "以下全部来自源码，不加 [推断]。",
+      "implemented_dispatch": ["ORDER_MARKET", "POSITION_CLOSE", "SYNC_STATE"],
+      "whitelist_but_not_implemented": ["ORDER_PENDING", "ORDER_CANCEL", "ORDER_MODIFY", "POSITION_MODIFY"],
+      "payload_fields": ["symbol", "side", "volume_lots", "sl_points", "tp_points", "max_deviation_points", "comment"],
+      "gaps": [
+        "payload 无 price 字段 → 挂单（限价/止损单）需要协议 v2 加 price 且进 canonical 签名（canonical 字段集改动必须双端同步，protocol.js 注释明示）",
+        "无 trailing stop → 只能由桌面端循环发 POSITION_MODIFY 实现，依赖 needs_ea_v2",
+        "EA 不计算任何指标 → 所有 entry_rules 求值在桌面端；断线期间信号不执行",
+        "TTL 只限制『允许开始提交的时间』，不保证成交期限（protocol.js 注释明示）",
+        "EA 已校验 STOPS_LEVEL（止损距离不足直接 REJECTED，NiuNiuBridge.mq5:526）",
+        "POSITION_CLOSE 在 netting 账户平的是该品种净头寸，不是独立 ticket（00-FACTS 5.3）"
+      ]
+    },
+    "performance_caliber": {
+      "fields": { "window_return_pct": "待填充", "annualized_return_pct": "待填充", "sharpe": "待填充", "max_drawdown_pct": "待填充", "trades": "待填充", "win_rate_pct": "待填充", "profit_factor": "待填充", "window_days": "待填充", "data_source": "backtest | paper | live" },
+      "rules": [
+        "年化收益 = 展示窗口折算，不代表全年真实收益（minara 官方口径，00-FACTS 1.4）",
+        "最大回撤 = 该记录内最大峰谷回落，不是未来损失上限（minara 官方口径）",
+        "回测段与 live-forward 段不得被读成一条连续实盘曲线（minara 官方要求）",
+        "榜单排序只使用 live-forward 段数据；回测段永不参与排序 [推断：防回测过拟合冲榜]",
+        "所有数值必须带 window_days 与 data_source 一起展示，缺一则不渲染"
+      ]
+    },
+    "filled_example_ref": "A3_templates.templates[0]（TPL-TREND-EMAX-H4 为完整填好的样例，所有字段齐备）"
+  },
+
+  "A3_templates": {
+    "_note": "23 个模板实例，覆盖任务书 9 个批次。绩效字段一律待填充。所有 sl/tp 单位 = points。execution_map 中 needs_ea_v2 非空的模板，lifecycle_state 不得超过 draft（硬约束）。",
+    "templates": [
+    {
+      "id": "TPL-TREND-EMAX-H4", "name": "双均线趋势（H4 经典版）", "version": "1.0.0",
+      "author_type": "platform_official", "category": "time_series", "style": "trend",
+      "risk": "balanced", "direction": "both",
+      "one_liner": "EMA20/50 金叉死叉进出场，ATR 定止损，吃中期趋势段。",
+      "suitable_env": "有持续方向性行情的主流通对/黄金；ADX 偏高的环境。",
+      "unsuitable_env": "长周期横盘震荡（连续假穿越会反复止损）；点差大的 exotic 品种。",
+      "markets": { "allow": ["EURUSD", "GBPUSD", "USDJPY", "AUDUSD", "XAUUSD"], "deny": ["exotics", "低流动性交叉盘"], "deny_reason": "点差与滑点侵蚀趋势利润 [推断]" },
+      "timeframes": ["H4"],
+      "session": { "limited": false, "allow": [], "news_blackout": { "enabled": false, "minutes_before": 0, "minutes_after": 0, "source": "" } },
+      "entry_rules": [
+        { "left": { "indicator": "EMA", "params": { "period": 20 }, "timeframe": "H4" }, "op": "cross_above", "right": { "indicator": "EMA", "params": { "period": 50 }, "timeframe": "H4" }, "on": "close", "note": "金叉 → 多；死叉 → 空（对称规则，direction=both）" }
+      ],
+      "exit_rules": [
+        { "left": { "indicator": "EMA", "params": { "period": 20 }, "timeframe": "H4" }, "op": "cross_below", "right": { "indicator": "EMA", "params": { "period": 50 }, "timeframe": "H4" }, "on": "close", "note": "反向穿越离场（多头侧；空头对称）" }
+      ],
+      "filters": [
+        { "left": { "field": "spread_points" }, "op": "spread_lte", "right": { "const": 30 }, "on": "tick", "note": "点差上限按品种在 params 覆盖" }
+      ],
+      "params": [
+        { "key": "ema_fast", "label": "快线周期", "type": "int", "default": 20, "min": 5, "max": 60, "step": 1, "unit": "根K线", "desc": "参数敏感性须在回测验证（±20% 不崩）" },
+        { "key": "ema_slow", "label": "慢线周期", "type": "int", "default": 50, "min": 20, "max": 200, "step": 5, "unit": "根K线", "desc": "必须 > ema_fast，保存时校验" },
+        { "key": "atr_sl_mult", "label": "ATR 止损倍数", "type": "number", "default": 2.0, "min": 1.0, "max": 4.0, "step": 0.25, "unit": "×ATR(14)", "desc": "换算成 sl_points 时按 symbol _Point 取整" }
+      ],
+      "risk_defaults": { "sl_points": 0, "tp_points": 0, "sl_note": "sl = atr_sl_mult × ATR(14,H4)，动态计算，0 表示不用固定值", "max_lots_per_trade": 1.0, "max_open_positions": 1, "max_daily_loss_pct": 2.0, "max_drawdown_stop_pct": 10.0, "trailing": null, "portfolio_budget_pct": 0.7 },
+      "required_data": ["quotes", "spread_points", "bars:H4", "symbol_spec(point,digits,stops_level,volume_step,min_lot)", "tick_value", "positions_and_tickets", "equity_and_margin"],
+      "execution_map": { "uses": ["ORDER_MARKET", "POSITION_CLOSE", "SYNC_STATE"], "ea_v1_supported": ["ORDER_MARKET", "POSITION_CLOSE", "SYNC_STATE"], "needs_ea_v2": [], "notes": "完全落在现有 EA 能力内，可作为首个端到端打通模板" },
+      "verification": ["G2_backtest", "G3_paper", { "rule": "slippage_tolerance", "max_deviation_points": 30 }],
+      "invalidation_signals": [
+        { "metric": "rolling_50_trade_profit_factor", "threshold": "< 1.0 持续一个季度", "action": "review" },
+        { "metric": "live_vs_backtest_expectancy_deviation", "threshold": "> 50%", "action": "halt" }
+      ],
+      "mt5_caveats": ["持仓常跨夜：swap_long_short 必须在详情页披露，空单/多单库存费方向不同", "netting 账户下反向信号 = 净头寸反手，确认用户理解这不是『先平后开』两笔"],
+      "display": { "card": ["window_return_pct", "max_drawdown_pct", "window_days"], "list": ["trades", "win_rate_pct", "risk", "style"], "detail": ["profit_factor", "swap 口径", "参数表", "失效信号"] },
+      "performance": { "_status": "全部字段待实盘/回测填充，口径见 A2.performance_caliber" },
+      "lifecycle_state": "draft",
+      "magic_seed": 1001, "account_mode_constraint": "any"
+    },
+    {
+      "id": "TPL-TREND-EMAX-FILTER-H1", "name": "均线穿越 + 大周期趋势过滤（H1）", "version": "1.0.0",
+      "author_type": "platform_official", "category": "time_series", "style": "trend",
+      "risk": "balanced", "direction": "both",
+      "one_liner": "H1 金叉死叉做触发，D1 EMA200 定多空许可，ADX 过滤震荡。",
+      "suitable_env": "大周期方向明确时的中频趋势交易。",
+      "unsuitable_env": "D1 价格缠绕 EMA200 的转换期（过滤条件频繁翻转）。",
+      "markets": { "allow": ["EURUSD", "GBPUSD", "USDJPY", "XAUUSD"], "deny": ["exotics"], "deny_reason": "同上" },
+      "timeframes": ["H1", "D1"],
+      "session": { "limited": false, "allow": [], "news_blackout": { "enabled": false, "minutes_before": 0, "minutes_after": 0, "source": "" } },
+      "entry_rules": [
+        { "left": { "indicator": "EMA", "params": { "period": 20 }, "timeframe": "H1" }, "op": "cross_above", "right": { "indicator": "EMA", "params": { "period": 50 }, "timeframe": "H1" }, "on": "close" }
+      ],
+      "exit_rules": [
+        { "left": { "indicator": "EMA", "params": { "period": 20 }, "timeframe": "H1" }, "op": "cross_below", "right": { "indicator": "EMA", "params": { "period": 50 }, "timeframe": "H1" }, "on": "close" }
+      ],
+      "filters": [
+        { "left": { "field": "close" }, "op": "gt", "right": { "indicator": "EMA", "params": { "period": 200 }, "timeframe": "D1" }, "on": "close", "note": "多头许可；空头对称 lt" },
+        { "left": { "indicator": "ADX", "params": { "period": 14 }, "timeframe": "H1" }, "op": "gte", "right": { "const": 25 }, "on": "close" },
+        { "left": { "field": "spread_points" }, "op": "spread_lte", "right": { "const": 30 }, "on": "tick" }
+      ],
+      "params": [
+        { "key": "adx_min", "label": "ADX 下限", "type": "int", "default": 25, "min": 15, "max": 40, "step": 1, "unit": "", "desc": "震荡市过滤强度" },
+        { "key": "atr_sl_mult", "label": "ATR 止损倍数", "type": "number", "default": 2.0, "min": 1.0, "max": 4.0, "step": 0.25, "unit": "×ATR(14,H1)", "desc": "" }
+      ],
+      "risk_defaults": { "sl_points": 0, "sl_note": "ATR 动态", "tp_points": 0, "max_lots_per_trade": 1.0, "max_open_positions": 1, "max_daily_loss_pct": 2.0, "max_drawdown_stop_pct": 10.0, "trailing": null, "portfolio_budget_pct": 0.7 },
+      "required_data": ["quotes", "spread_points", "bars:H1", "bars:D1", "symbol_spec(point,digits,stops_level,volume_step,min_lot)", "positions_and_tickets", "equity_and_margin"],
+      "execution_map": { "uses": ["ORDER_MARKET", "POSITION_CLOSE", "SYNC_STATE"], "ea_v1_supported": ["ORDER_MARKET", "POSITION_CLOSE", "SYNC_STATE"], "needs_ea_v2": [], "notes": "现可执行" },
+      "verification": ["G2_backtest", "G3_paper"],
+      "invalidation_signals": [
+        { "metric": "filter_flip_count", "threshold": "D1 价格 20 根 K 线内 3 次穿越 EMA200", "action": "demote" },
+        { "metric": "rolling_50_trade_profit_factor", "threshold": "< 1.0", "action": "review" }
+      ],
+      "mt5_caveats": ["同 TPL-TREND-EMAX-H4 的 swap 与 netting 提示"],
+      "display": { "card": ["window_return_pct", "max_drawdown_pct", "window_days"], "list": ["trades", "risk"], "detail": ["profit_factor", "参数表"] },
+      "performance": { "_status": "待填充，口径见 A2.performance_caliber" },
+      "lifecycle_state": "draft",
+      "magic_seed": 1002, "account_mode_constraint": "any"
+    },
+    {
+      "id": "TPL-TREND-DONCHIAN-D1", "name": "唐奇安通道趋势（日线·海龟骨架）", "version": "1.0.0",
+      "author_type": "platform_official", "category": "time_series", "style": "trend",
+      "risk": "balanced", "direction": "both",
+      "one_liner": "突破 55 日高低点入场，跌破 20 日反向极值离场，ATR 定仓。",
+      "suitable_env": "长周期大趋势（黄金、日元系在大行情年份）[推断]。",
+      "unsuitable_env": "无趋势年份：胜率天然偏低，连续止损期长，用户心理门槛 High [推断]。",
+      "markets": { "allow": ["XAUUSD", "USDJPY", "EURUSD", "GBPUSD"], "deny": ["exotics"], "deny_reason": "滑点" },
+      "timeframes": ["D1"],
+      "session": { "limited": false, "allow": [], "news_blackout": { "enabled": false, "minutes_before": 0, "minutes_after": 0, "source": "" } },
+      "entry_rules": [
+        { "left": { "field": "close" }, "op": "gt", "right": { "indicator": "DONCHIAN", "params": { "period": 55, "band": "upper" }, "timeframe": "D1" }, "on": "close", "note": "空头对称 lt lower" }
+      ],
+      "exit_rules": [
+        { "left": { "field": "close" }, "op": "lt", "right": { "indicator": "DONCHIAN", "params": { "period": 20, "band": "lower" }, "timeframe": "D1" }, "on": "close", "note": "多头离场；空头对称" }
+      ],
+      "filters": [
+        { "left": { "field": "spread_points" }, "op": "spread_lte", "right": { "const": 40 }, "on": "tick" }
+      ],
+      "params": [
+        { "key": "entry_channel", "label": "入场通道", "type": "int", "default": 55, "min": 20, "max": 120, "step": 5, "unit": "日", "desc": "" },
+        { "key": "exit_channel", "label": "离场通道", "type": "int", "default": 20, "min": 10, "max": 60, "step": 5, "unit": "日", "desc": "" },
+        { "key": "atr_risk_mult", "label": "ATR 风险倍数", "type": "number", "default": 2.0, "min": 1.0, "max": 4.0, "step": 0.25, "unit": "×ATR(20,D1)", "desc": "仓位 = 预算 / (倍数×ATR 点值)" }
+      ],
+      "risk_defaults": { "sl_points": 0, "sl_note": "ATR 动态", "tp_points": 0, "max_lots_per_trade": 2.0, "max_open_positions": 1, "max_daily_loss_pct": 2.0, "max_drawdown_stop_pct": 15.0, "trailing": null, "portfolio_budget_pct": 0.5 },
+      "required_data": ["quotes", "spread_points", "bars:D1", "symbol_spec", "tick_value", "swap_long_short", "positions_and_tickets", "equity_and_margin"],
+      "execution_map": { "uses": ["ORDER_MARKET", "POSITION_CLOSE", "SYNC_STATE"], "ea_v1_supported": ["ORDER_MARKET", "POSITION_CLOSE", "SYNC_STATE"], "needs_ea_v2": [], "notes": "现可执行；经典版本用 STOP 挂单追突破，那是 needs_ea_v2 的变体（见 TPL-BRK-DONCHIAN-D1）" },
+      "verification": ["G2_backtest", "G3_paper"],
+      "invalidation_signals": [
+        { "metric": "consecutive_losses", "threshold": "> 历史回测最大连亏 × 1.5", "action": "review" },
+        { "metric": "rolling_annual_return", "threshold": "连续 12 个月为负", "action": "demote" }
+      ],
+      "mt5_caveats": ["长持仓 swap 累积显著，必须披露", "D1 信号在收盘确认 → 实际成交价是次日开盘附近，回测必须用 open-of-next-bar 口径 [推断：口径选择建议]"],
+      "display": { "card": ["window_return_pct", "max_drawdown_pct", "trades"], "list": ["win_rate_pct", "risk"], "detail": ["profit_factor", "swap 口径"] },
+      "performance": { "_status": "待填充" },
+      "lifecycle_state": "draft",
+      "magic_seed": 1003, "account_mode_constraint": "any"
+    },
+    {
+      "id": "TPL-TREND-PULLBACK-H4", "name": "趋势回调入场（H4 顺大逆小）", "version": "1.0.0",
+      "author_type": "platform_official", "category": "time_series", "style": "trend",
+      "risk": "balanced", "direction": "both",
+      "one_liner": "D1 定方向，H4 回调到 EMA50 且 RSI 回落后再顺大方向进场。",
+      "suitable_env": "强趋势中的回调段；比追突破入场价更优 [推断]。",
+      "unsuitable_env": "V 型反转行情（回调演变成反转时连续止损）。",
+      "markets": { "allow": ["EURUSD", "GBPUSD", "XAUUSD", "USDJPY"], "deny": ["exotics"], "deny_reason": "" },
+      "timeframes": ["H4", "D1"],
+      "session": { "limited": false, "allow": [], "news_blackout": { "enabled": false, "minutes_before": 0, "minutes_after": 0, "source": "" } },
+      "entry_rules": [
+        { "left": { "indicator": "RSI", "params": { "period": 14 }, "timeframe": "H4" }, "op": "cross_above", "right": { "const": 50 }, "on": "close", "note": "回调后动能复位 → 多；前提见 filters" }
+      ],
+      "exit_rules": [
+        { "left": { "field": "close" }, "op": "lt", "right": { "indicator": "EMA", "params": { "period": 50 }, "timeframe": "H4" }, "on": "close", "note": "跌破回调锚点离场" }
+      ],
+      "filters": [
+        { "left": { "field": "close" }, "op": "gt", "right": { "indicator": "EMA", "params": { "period": 200 }, "timeframe": "D1" }, "on": "close", "note": "大周期多头许可" },
+        { "left": { "indicator": "ADX", "params": { "period": 14 }, "timeframe": "D1" }, "op": "gte", "right": { "const": 20 }, "on": "close" },
+        { "left": { "field": "spread_points" }, "op": "spread_lte", "right": { "const": 30 }, "on": "tick" }
+      ],
+      "params": [
+        { "key": "rsi_reset", "label": "RSI 复位线", "type": "int", "default": 50, "min": 40, "max": 60, "step": 1, "unit": "", "desc": "" },
+        { "key": "atr_sl_mult", "label": "ATR 止损倍数", "type": "number", "default": 1.5, "min": 1.0, "max": 3.0, "step": 0.25, "unit": "×ATR(14,H4)", "desc": "" }
+      ],
+      "risk_defaults": { "sl_points": 0, "sl_note": "ATR 动态", "tp_points": 0, "max_lots_per_trade": 1.0, "max_open_positions": 1, "max_daily_loss_pct": 2.0, "max_drawdown_stop_pct": 10.0, "trailing": null, "portfolio_budget_pct": 0.7 },
+      "required_data": ["quotes", "spread_points", "bars:H4", "bars:D1", "symbol_spec", "positions_and_tickets", "equity_and_margin"],
+      "execution_map": { "uses": ["ORDER_MARKET", "POSITION_CLOSE", "SYNC_STATE"], "ea_v1_supported": ["ORDER_MARKET", "POSITION_CLOSE", "SYNC_STATE"], "needs_ea_v2": [], "notes": "现可执行" },
+      "verification": ["G2_backtest", "G3_paper"],
+      "invalidation_signals": [
+        { "metric": "adx_regime", "threshold": "D1 ADX < 20 持续 30 根", "action": "demote" },
+        { "metric": "rolling_50_trade_profit_factor", "threshold": "< 1.0", "action": "review" }
+      ],
+      "mt5_caveats": ["swap 披露同趋势类"],
+      "display": { "card": ["window_return_pct", "max_drawdown_pct", "window_days"], "list": ["trades", "risk"], "detail": ["参数表"] },
+      "performance": { "_status": "待填充" },
+      "lifecycle_state": "draft",
+      "magic_seed": 1004, "account_mode_constraint": "any"
+    },
+    {
+      "id": "TPL-MR-BBAND-H1", "name": "布林带均值回归（H1）", "version": "1.0.0",
+      "author_type": "platform_official", "category": "time_series", "style": "mean_reversion",
+      "risk": "balanced", "direction": "both",
+      "one_liner": "收盘刺破布林外轨后反向做回中轨，只在低 ADX 震荡市启用。",
+      "suitable_env": "区间震荡、ADX 低、无重大数据日历的时段。",
+      "unsuitable_env": "趋势启动段——回归单会一路逆势加仓式亏损 [推断]；必须靠 ADX 过滤硬关掉。",
+      "markets": { "allow": ["EURUSD", "USDCHF", "EURGBP", "AUDUSD"], "deny": ["XAUUSD 高波动日", "exotics"], "deny_reason": "黄金趋势日刺穿外轨后常不回头 [推断]" },
+      "timeframes": ["H1"],
+      "session": { "limited": true, "allow": ["asia", "london"], "news_blackout": { "enabled": true, "minutes_before": 30, "minutes_after": 30, "source": "待接入 [未知]" } },
+      "entry_rules": [
+        { "left": { "field": "close" }, "op": "touch_lower", "right": { "indicator": "BBANDS", "params": { "period": 20, "mult": 2.0 }, "timeframe": "H1" }, "on": "close", "note": "收盘在下轨外 → 多；上轨外 → 空" }
+      ],
+      "exit_rules": [
+        { "left": { "field": "close" }, "op": "cross_above", "right": { "indicator": "BBANDS", "params": { "period": 20, "mult": 2.0, "band": "mid" }, "timeframe": "H1" }, "on": "close", "note": "回到中轨止盈离场" }
+      ],
+      "filters": [
+        { "left": { "indicator": "ADX", "params": { "period": 14 }, "timeframe": "H1" }, "op": "lt", "right": { "const": 20 }, "on": "close", "note": "震荡市硬门槛" },
+        { "left": { "field": "spread_points" }, "op": "spread_lte", "right": { "const": 25 }, "on": "tick" }
+      ],
+      "params": [
+        { "key": "bb_period", "label": "布林周期", "type": "int", "default": 20, "min": 10, "max": 40, "step": 1, "unit": "根K线", "desc": "" },
+        { "key": "bb_mult", "label": "布林倍数", "type": "number", "default": 2.0, "min": 1.5, "max": 3.0, "step": 0.1, "unit": "σ", "desc": "" },
+        { "key": "adx_max", "label": "ADX 上限", "type": "int", "default": 20, "min": 12, "max": 30, "step": 1, "unit": "", "desc": "高于此值本模板禁止开仓" }
+      ],
+      "risk_defaults": { "sl_points": 0, "sl_note": "固定 sl = 1.5×ATR(14,H1)", "tp_points": 0, "tp_note": "中轨动态止盈 + 固定 ATR 止损双保险", "max_lots_per_trade": 1.0, "max_open_positions": 1, "max_daily_loss_pct": 1.5, "max_drawdown_stop_pct": 8.0, "trailing": null, "portfolio_budget_pct": 0.5 },
+      "required_data": ["quotes", "spread_points", "bars:H1", "symbol_spec", "session_clock", "news_calendar(外部源，当前未接入 [未知])", "positions_and_tickets", "equity_and_margin"],
+      "execution_map": { "uses": ["ORDER_MARKET", "POSITION_CLOSE", "SYNC_STATE"], "ea_v1_supported": ["ORDER_MARKET", "POSITION_CLOSE", "SYNC_STATE"], "needs_ea_v2": [], "notes": "新闻黑名单数据源未接入前，session.news_blackout.enabled 只能为 false，否则不得上架 [推断：产品决策]" },
+      "verification": ["G2_backtest", "G3_paper", { "rule": "news_calendar_dependency", "status": "blocked_until_data_source" }],
+      "invalidation_signals": [
+        { "metric": "adx_regime_share", "threshold": "过去 30 天 ADX≥20 的 H1 占比 > 60%", "action": "demote" },
+        { "metric": "rolling_50_trade_win_rate", "threshold": "低于回测值 15 个百分点", "action": "review" }
+      ],
+      "mt5_caveats": ["点差扩大时段（ rollover 前后）必须停开新仓——点差过滤在 tick 级执行", "回归类单笔利润薄，tick_value 与点差成本必须在详情页披露"],
+      "display": { "card": ["window_return_pct", "max_drawdown_pct", "win_rate_pct"], "list": ["trades", "risk"], "detail": ["成本口径", "参数表"] },
+      "performance": { "_status": "待填充" },
+      "lifecycle_state": "draft",
+      "magic_seed": 1005, "account_mode_constraint": "any"
+    },
+    {
+      "id": "TPL-MR-RSI2-M15", "name": "RSI(2) 极值回归（M15）", "version": "1.0.0",
+      "author_type": "platform_official", "category": "time_series", "style": "mean_reversion",
+      "risk": "balanced", "direction": "both",
+      "one_liner": "RSI(2) 打进极端区（<10 / >90）后反向做短回归，快进快出。",
+      "suitable_env": "日内震荡、流动性好的时段。",
+      "unsuitable_env": "单边行情与数据公布前后；RSI(2) 在趋势日会长期贴极端区 [推断]。",
+      "markets": { "allow": ["EURUSD", "GBPUSD", "USDJPY"], "deny": ["exotics", "XAUUSD"], "deny_reason": "黄金 M15 噪声/点差比不合算 [推断]" },
+      "timeframes": ["M15"],
+      "session": { "limited": true, "allow": ["london", "ny"], "news_blackout": { "enabled": true, "minutes_before": 30, "minutes_after": 30, "source": "待接入 [未知]" } },
+      "entry_rules": [
+        { "left": { "indicator": "RSI", "params": { "period": 2 }, "timeframe": "M15" }, "op": "lt", "right": { "const": 10 }, "on": "close", "note": "超卖 → 多；>90 → 空" }
+      ],
+      "exit_rules": [
+        { "left": { "indicator": "RSI", "params": { "period": 2 }, "timeframe": "M15" }, "op": "cross_above", "right": { "const": 50 }, "on": "close", "note": "回到中轴离场；另加时间止损：持仓超 max_bars_hold 根未回中轴也走" }
+      ],
+      "filters": [
+        { "left": { "indicator": "ADX", "params": { "period": 14 }, "timeframe": "H1" }, "op": "lt", "right": { "const": 25 }, "on": "close" },
+        { "left": { "field": "spread_points" }, "op": "spread_lte", "right": { "const": 20 }, "on": "tick" }
+      ],
+      "params": [
+        { "key": "rsi_low", "label": "超卖线", "type": "int", "default": 10, "min": 5, "max": 20, "step": 1, "unit": "", "desc": "" },
+        { "key": "rsi_high", "label": "超买线", "type": "int", "default": 90, "min": 80, "max": 95, "step": 1, "unit": "", "desc": "" },
+        { "key": "max_bars_hold", "label": "时间止损", "type": "int", "default": 12, "min": 4, "max": 48, "step": 1, "unit": "根M15", "desc": "" }
+      ],
+      "risk_defaults": { "sl_points": 0, "sl_note": "1.2×ATR(14,M15)", "tp_points": 0, "max_lots_per_trade": 1.0, "max_open_positions": 1, "max_daily_loss_pct": 1.5, "max_drawdown_stop_pct": 8.0, "trailing": null, "portfolio_budget_pct": 0.5 },
+      "required_data": ["quotes", "spread_points", "bars:M15", "bars:H1", "symbol_spec", "session_clock", "positions_and_tickets", "equity_and_margin"],
+      "execution_map": { "uses": ["ORDER_MARKET", "POSITION_CLOSE", "SYNC_STATE"], "ea_v1_supported": ["ORDER_MARKET", "POSITION_CLOSE", "SYNC_STATE"], "needs_ea_v2": [], "notes": "时间止损由桌面端计时后发 POSITION_CLOSE" },
+      "verification": ["G2_backtest", "G3_paper"],
+      "invalidation_signals": [
+        { "metric": "avg_profit_per_trade_vs_spread", "threshold": "单笔均盈 < 3× 平均点差", "action": "halt" },
+        { "metric": "rolling_50_trade_win_rate", "threshold": "低于回测 15pp", "action": "review" }
+      ],
+      "mt5_caveats": ["单笔利润以点计，点差/滑点成本占比 High，verification 必须含滑点容忍", "M15 信号频率高，注意终端负载（00-FACTS 5.5 #6）"],
+      "display": { "card": ["win_rate_pct", "max_drawdown_pct", "trades"], "list": ["window_return_pct"], "detail": ["成本口径"] },
+      "performance": { "_status": "待填充" },
+      "lifecycle_state": "draft",
+      "magic_seed": 1006, "account_mode_constraint": "any"
+    },
+    {
+      "id": "TPL-MR-ASIA-RANGE", "name": "亚洲盘区间回归（时段限定）", "version": "1.0.0",
+      "author_type": "platform_official", "category": "time_series", "style": "mean_reversion",
+      "risk": "conservative", "direction": "both",
+      "one_liner": "只在亚洲时段运行：区间内高抛低吸，伦敦开盘前全部离场。",
+      "suitable_env": "亚洲时段低波动品种（USDJPY、AUDUSD）[推断]。",
+      "unsuitable_env": "东京时段有日本央行/澳联储等事件的日期；周一开盘缺口日。",
+      "markets": { "allow": ["USDJPY", "AUDUSD", "NZDUSD"], "deny": ["XAUUSD", "GBP系"], "deny_reason": "亚洲盘黄金/英镑波动不合算 [推断]" },
+      "timeframes": ["M15"],
+      "session": { "limited": true, "allow": ["asia"], "news_blackout": { "enabled": true, "minutes_before": 30, "minutes_after": 15, "source": "待接入 [未知]" } },
+      "entry_rules": [
+        { "left": { "field": "close" }, "op": "touch_lower", "right": { "indicator": "BBANDS", "params": { "period": 20, "mult": 2.0 }, "timeframe": "M15" }, "on": "close" }
+      ],
+      "exit_rules": [
+        { "left": { "indicator": "TIME", "params": {}, "timeframe": "M15" }, "op": "gte", "right": { "const": "session_end_minus_15m" }, "on": "bar_open", "note": "时段强制平仓，不接伦敦突破" },
+        { "left": { "field": "close" }, "op": "cross_above", "right": { "indicator": "BBANDS", "params": { "period": 20, "band": "mid" }, "timeframe": "M15" }, "on": "close" }
+      ],
+      "filters": [
+        { "left": { "indicator": "SESSION", "params": {}, "timeframe": "M15" }, "op": "session_in", "right": { "const": "asia" }, "on": "tick" },
+        { "left": { "field": "spread_points" }, "op": "spread_lte", "right": { "const": 20 }, "on": "tick" }
+      ],
+      "params": [
+        { "key": "session_end_buffer_min", "label": "收盘前缓冲", "type": "int", "default": 15, "min": 5, "max": 45, "step": 5, "unit": "分钟", "desc": "伦敦开盘前强制离场" }
+      ],
+      "risk_defaults": { "sl_points": 0, "sl_note": "1.0×ATR(14,M15)", "tp_points": 0, "max_lots_per_trade": 0.5, "max_open_positions": 1, "max_daily_loss_pct": 1.0, "max_drawdown_stop_pct": 5.0, "trailing": null, "portfolio_budget_pct": 0.3 },
+      "required_data": ["quotes", "spread_points", "bars:M15", "symbol_spec", "session_clock", "positions_and_tickets", "equity_and_margin"],
+      "execution_map": { "uses": ["ORDER_MARKET", "POSITION_CLOSE", "SYNC_STATE"], "ea_v1_supported": ["ORDER_MARKET", "POSITION_CLOSE", "SYNC_STATE"], "needs_ea_v2": [], "notes": "时段强平由桌面端发 POSITION_CLOSE；服务器时区 vs 本地时区换算必须在 session_clock 里解决 [推断]" },
+      "verification": ["G2_backtest", "G3_paper"],
+      "invalidation_signals": [
+        { "metric": "avg_profit_per_trade_vs_spread", "threshold": "< 3× 平均点差", "action": "halt" },
+        { "metric": "asia_session_volatility", "threshold": "亚洲时段 ATR 较模板回测期翻倍", "action": "demote" }
+      ],
+      "mt5_caveats": ["rollover 时段点差扩大是硬约束，spread 过滤器必须在 tick 级", "session_clock 需以券商服务器时间为准，不同时区券商时段边界不同 [推断]"],
+      "display": { "card": ["win_rate_pct", "max_drawdown_pct", "trades"], "list": ["risk"], "detail": ["时段口径"] },
+      "performance": { "_status": "待填充" },
+      "lifecycle_state": "draft",
+      "magic_seed": 1007, "account_mode_constraint": "any"
+    },
+    {
+      "id": "TPL-BRK-LONDON-ORB", "name": "伦敦开盘区间突破（ORB）", "version": "1.0.0",
+      "author_type": "platform_official", "category": "time_series", "style": "breakout",
+      "risk": "balanced", "direction": "both",
+      "one_liner": "取亚洲盘高低点为区间，伦敦时段放量破区间边就追，日内了结。",
+      "suitable_env": "伦敦开盘常有方向性推动的交易日 [推断]。",
+      "unsuitable_env": "区间过宽（亚洲盘已大动）或当天重大数据前的假突破高发日。",
+      "markets": { "allow": ["GBPUSD", "EURUSD", "XAUUSD"], "deny": ["exotics"], "deny_reason": "" },
+      "timeframes": ["M15"],
+      "session": { "limited": true, "allow": ["london"], "news_blackout": { "enabled": true, "minutes_before": 15, "minutes_after": 30, "source": "待接入 [未知]" } },
+      "entry_rules": [
+        { "left": { "field": "close" }, "op": "gt", "right": { "indicator": "OPEN_RANGE", "params": { "ref_session": "asia", "band": "high" }, "timeframe": "M15" }, "on": "close", "note": "破亚洲高点 → 多；破低点 → 空" }
+      ],
+      "exit_rules": [
+        { "left": { "indicator": "TIME", "params": {}, "timeframe": "M15" }, "op": "gte", "right": { "const": "ny_open" }, "on": "bar_open", "note": "纽约开盘前了结，不过夜" }
+      ],
+      "filters": [
+        { "left": { "indicator": "OPEN_RANGE", "params": { "ref_session": "asia", "field": "width_atr_ratio" }, "timeframe": "M15" }, "op": "lte", "right": { "const": 0.8 }, "on": "close", "note": "亚洲区间太宽则放弃——赔率差 [推断]" },
+        { "left": { "field": "spread_points" }, "op": "spread_lte", "right": { "const": 30 }, "on": "tick" }
+      ],
+      "params": [
+        { "key": "range_max_atr", "label": "区间宽度上限", "type": "number", "default": 0.8, "min": 0.4, "max": 1.5, "step": 0.1, "unit": "×ATR(14,D1)", "desc": "" },
+        { "key": "rr_target", "label": "盈亏比目标", "type": "number", "default": 1.5, "min": 1.0, "max": 3.0, "step": 0.25, "unit": "R", "desc": "tp = rr × sl" }
+      ],
+      "risk_defaults": { "sl_points": 0, "sl_note": "sl = 区间对侧或 1×ATR(M15)，取近", "tp_points": 0, "tp_note": "1.5R", "max_lots_per_trade": 1.0, "max_open_positions": 1, "max_daily_loss_pct": 1.5, "max_drawdown_stop_pct": 8.0, "trailing": null, "portfolio_budget_pct": 0.5 },
+      "required_data": ["quotes", "spread_points", "bars:M15", "bars:D1", "symbol_spec", "session_clock", "positions_and_tickets", "equity_and_margin"],
+      "execution_map": { "uses": ["ORDER_MARKET", "POSITION_CLOSE", "SYNC_STATE"], "ea_v1_supported": ["ORDER_MARKET", "POSITION_CLOSE", "SYNC_STATE"], "needs_ea_v2": [], "notes": "收盘确认版本现可执行；tick 级追突破是变体，需加滑点容忍验证" },
+      "verification": ["G2_backtest", "G3_paper", { "rule": "slippage_tolerance", "max_deviation_points": 30 }],
+      "invalidation_signals": [
+        { "metric": "false_breakout_rate", "threshold": "突破后 3 根内收回区间的比例 > 回测 +15pp", "action": "review" },
+        { "metric": "rolling_30_trade_expectancy", "threshold": "< 0", "action": "halt" }
+      ],
+      "mt5_caveats": ["开盘瞬间点差扩大 + 滑点是主要成本，max_deviation_points 必须在参数里暴露", "session_clock 时区问题同 TPL-MR-ASIA-RANGE"],
+      "display": { "card": ["window_return_pct", "win_rate_pct", "trades"], "list": ["max_drawdown_pct"], "detail": ["滑点口径"] },
+      "performance": { "_status": "待填充" },
+      "lifecycle_state": "draft",
+      "magic_seed": 1008, "account_mode_constraint": "any"
+    },
+    {
+      "id": "TPL-BRK-DONCHIAN-PEND-D1", "name": "唐奇安挂单突破（日线·STOP 单版）", "version": "1.0.0",
+      "author_type": "platform_official", "category": "time_series", "style": "breakout",
+      "risk": "balanced", "direction": "both",
+      "one_liner": "在 20 日高点上方挂 BUY STOP、低点下方挂 SELL STOP，让市场自己触发。",
+      "suitable_env": "趋势启动初期；挂单方式避免收盘确认的假突破 [推断]。",
+      "unsuitable_env": "横盘期：上下挂单会被反复触发又止损（双边挨打）[推断]。",
+      "markets": { "allow": ["XAUUSD", "EURUSD", "GBPUSD", "USDJPY"], "deny": ["exotics"], "deny_reason": "" },
+      "timeframes": ["D1"],
+      "session": { "limited": false, "allow": [], "news_blackout": { "enabled": false, "minutes_before": 0, "minutes_after": 0, "source": "" } },
+      "entry_rules": [
+        { "left": { "field": "high" }, "op": "touch_upper", "right": { "indicator": "DONCHIAN", "params": { "period": 20 }, "timeframe": "D1" }, "on": "tick", "note": "挂单触发即入场；规则本体由 EA/服务端挂 STOP 单实现" }
+      ],
+      "exit_rules": [
+        { "left": { "field": "close" }, "op": "lt", "right": { "indicator": "DONCHIAN", "params": { "period": 10, "band": "lower" }, "timeframe": "D1" }, "on": "close" }
+      ],
+      "filters": [
+        { "left": { "indicator": "ADX", "params": { "period": 14 }, "timeframe": "D1" }, "op": "gte", "right": { "const": 20 }, "on": "close" }
+      ],
+      "params": [
+        { "key": "entry_channel", "label": "突破通道", "type": "int", "default": 20, "min": 10, "max": 60, "step": 5, "unit": "日", "desc": "" },
+        { "key": "pending_expire_bars", "label": "挂单有效期", "type": "int", "default": 1, "min": 1, "max": 5, "step": 1, "unit": "日", "desc": "过期未触发则 ORDER_CANCEL" }
+      ],
+      "risk_defaults": { "sl_points": 0, "sl_note": "2×ATR(20,D1)", "tp_points": 0, "max_lots_per_trade": 1.0, "max_open_positions": 1, "max_daily_loss_pct": 2.0, "max_drawdown_stop_pct": 10.0, "trailing": null, "portfolio_budget_pct": 0.5 },
+      "required_data": ["quotes", "spread_points", "bars:D1", "symbol_spec", "positions_and_tickets", "equity_and_margin"],
+      "execution_map": { "uses": ["ORDER_PENDING", "ORDER_CANCEL", "ORDER_MODIFY", "POSITION_CLOSE", "SYNC_STATE"], "ea_v1_supported": ["POSITION_CLOSE", "SYNC_STATE"], "needs_ea_v2": ["ORDER_PENDING", "ORDER_CANCEL", "ORDER_MODIFY"], "notes": "阻塞项：payload 需加 price/expire 字段并进 canonical 签名；EA dispatch 需实现挂单三件套。在此之前本模板只能 draft" },
+      "verification": ["G2_backtest", "G3_paper", { "rule": "ea_v2_dependency", "blocked": true }],
+      "invalidation_signals": [
+        { "metric": "whipsaw_rate", "threshold": "触发后 3 日内止损比例 > 回测 +15pp", "action": "review" }
+      ],
+      "mt5_caveats": ["STOP 单挂单价受 STOPS_LEVEL 限制，距离太近会被券商拒单（EA 已有 STOPS_LEVEL 校验，市价单路径）", "挂单在 netting/hedging 下语义一致，但触发后 netting 下注意净头寸合并"],
+      "display": { "card": ["window_return_pct", "max_drawdown_pct", "trades"], "list": ["risk"], "detail": ["挂单逻辑说明"] },
+      "performance": { "_status": "待填充" },
+      "lifecycle_state": "draft",
+      "magic_seed": 1009, "account_mode_constraint": "any"
+    },
+    {
+      "id": "TPL-BRK-FADE-FAKE-M15", "name": "假突破反手（M15）", "version": "1.0.0",
+      "author_type": "platform_official", "category": "time_series", "style": "breakout",
+      "risk": "aggressive", "direction": "both",
+      "one_liner": "突破关键位后 N 根内收回区间 → 判定假突破 → 反手做回区间内。",
+      "suitable_env": "震荡市末端的假突破高发期；流动性好的品种。",
+      "unsuitable_env": "真趋势启动日——反手等于逆势接刀 [推断]；必须小止损快认赔。",
+      "markets": { "allow": ["EURUSD", "GBPUSD"], "deny": ["exotics", "低流动性时段"], "deny_reason": "" },
+      "timeframes": ["M15"],
+      "session": { "limited": true, "allow": ["london", "ny"], "news_blackout": { "enabled": true, "minutes_before": 30, "minutes_after": 30, "source": "待接入 [未知]" } },
+      "entry_rules": [
+        { "left": { "field": "close" }, "op": "cross_below", "right": { "indicator": "OPEN_RANGE", "params": { "ref_session": "prior_day", "band": "high" }, "timeframe": "M15" }, "on": "close", "note": "向上突破后又收回前日高点之下 → 空（反手）；向下假破对称" }
+      ],
+      "exit_rules": [
+        { "left": { "field": "close" }, "op": "touch_lower", "right": { "indicator": "OPEN_RANGE", "params": { "ref_session": "prior_day", "band": "mid" }, "timeframe": "M15" }, "on": "close", "note": "回到区间中枢止盈" }
+      ],
+      "filters": [
+        { "left": { "indicator": "ADX", "params": { "period": 14 }, "timeframe": "H1" }, "op": "lt", "right": { "const": 25 }, "on": "close", "note": "强趋势日禁用" },
+        { "left": { "field": "spread_points" }, "op": "spread_lte", "right": { "const": 25 }, "on": "tick" }
+      ],
+      "params": [
+        { "key": "confirm_bars", "label": "收回确认根数", "type": "int", "default": 3, "min": 1, "max": 6, "step": 1, "unit": "根M15", "desc": "突破后多少根内收回才算假突破" },
+        { "key": "sl_buffer_points", "label": "止损缓冲", "type": "int", "default": 150, "min": 50, "max": 400, "step": 10, "unit": "points", "desc": "放在假突破极值外侧" }
+      ],
+      "risk_defaults": { "sl_points": 150, "sl_note": "默认缓冲值，实际按极值+缓冲动态算", "tp_points": 0, "max_lots_per_trade": 0.5, "max_open_positions": 1, "max_daily_loss_pct": 1.5, "max_drawdown_stop_pct": 6.0, "trailing": null, "portfolio_budget_pct": 0.3 },
+      "required_data": ["quotes", "spread_points", "bars:M15", "bars:H1", "bars:D1", "symbol_spec", "session_clock", "positions_and_tickets", "equity_and_margin"],
+      "execution_map": { "uses": ["ORDER_MARKET", "POSITION_CLOSE", "SYNC_STATE"], "ea_v1_supported": ["ORDER_MARKET", "POSITION_CLOSE", "SYNC_STATE"], "needs_ea_v2": [], "notes": "现可执行" },
+      "verification": ["G2_backtest", "G3_paper", { "rule": "slippage_tolerance", "max_deviation_points": 20 }],
+      "invalidation_signals": [
+        { "metric": "rolling_30_trade_expectancy", "threshold": "< 0", "action": "halt" },
+        { "metric": "trend_day_share", "threshold": "H1 ADX≥25 的天数占比 > 50%", "action": "demote" }
+      ],
+      "mt5_caveats": ["反手类策略对执行延迟敏感：信号→下单延迟会直接改变成交价（00-FACTS 5.5 #6），verification 含延迟上限 [推断]"],
+      "display": { "card": ["win_rate_pct", "max_drawdown_pct", "trades"], "list": ["risk"], "detail": ["反手逻辑说明"] },
+      "performance": { "_status": "待填充" },
+      "lifecycle_state": "draft",
+      "magic_seed": 1010, "account_mode_constraint": "any"
+    },
+    {
+      "id": "TPL-GRID-RANGE-H1", "name": "区间震荡网格（正向）", "version": "1.0.0",
+      "author_type": "platform_official", "category": "time_series", "style": "grid",
+      "risk": "balanced", "direction": "both",
+      "one_liner": "在既定区间内等距布买单/卖单，每格独立止盈，靠震荡反复收割。",
+      "suitable_env": "边界清晰的中期震荡区间；低趋势环境。",
+      "unsuitable_env": "区间突破行情：单向挂单会一路接刀累积敞口 [推断]；必须有区间失效总开关。",
+      "markets": { "allow": ["EURUSD", "EURGBP", "USDCHF", "AUDNZD"], "deny": ["XAUUSD", "exotics"], "deny_reason": "黄金趋势段太长，网格易被单边带走 [推断]" },
+      "timeframes": ["H1"],
+      "session": { "limited": false, "allow": [], "news_blackout": { "enabled": true, "minutes_before": 30, "minutes_after": 30, "source": "待接入 [未知]" } },
+      "entry_rules": [
+        { "left": { "field": "close" }, "op": "enter_zone", "right": { "indicator": "GRID", "params": { "mode": "level" }, "timeframe": "H1" }, "on": "tick", "note": "价格触及网格层级即按该层预设方向下单；GRID 为引擎内建对象，参数见 params" }
+      ],
+      "exit_rules": [
+        { "left": { "field": "close" }, "op": "pct_change_gte", "right": { "const": "grid_step" }, "on": "tick", "note": "每格固定止盈 = 格距；区间整体失效由 risk_defaults 的熔断接管" }
+      ],
+      "filters": [
+        { "left": { "indicator": "ADX", "params": { "period": 14 }, "timeframe": "H4" }, "op": "lt", "right": { "const": 22 }, "on": "close", "note": "趋势启动硬停开新层" },
+        { "left": { "field": "spread_points" }, "op": "spread_lte", "right": { "const": 25 }, "on": "tick" }
+      ],
+      "params": [
+        { "key": "grid_step_points", "label": "格距", "type": "int", "default": 300, "min": 100, "max": 2000, "step": 50, "unit": "points", "desc": "必须 ≥ 3× 平均点差，保存时校验" },
+        { "key": "grid_levels", "label": "层数", "type": "int", "default": 5, "min": 2, "max": 10, "step": 1, "unit": "层", "desc": "与 max_open_positions 联动校验" },
+        { "key": "lots_per_level", "label": "每层手数", "type": "number", "default": 0.1, "min": 0.01, "max": 1.0, "step": 0.01, "unit": "手", "desc": "总敞口 = 层数×每层手数，须在保证金校验中预演满仓情形（00-FACTS 5.4）" },
+        { "key": "range_break_atr", "label": "区间失效阈值", "type": "number", "default": 2.0, "min": 1.0, "max": 4.0, "step": 0.25, "unit": "×ATR 超出区间边界", "desc": "触发即停止开新层并提示用户处置存量" }
+      ],
+      "risk_defaults": { "sl_points": 0, "sl_note": "单格无硬 SL，靠格距止盈 + 区间失效总熔断；总熔断 = max_drawdown_stop_pct", "tp_points": 300, "max_lots_per_trade": 0.1, "max_open_positions": 5, "max_daily_loss_pct": 2.0, "max_drawdown_stop_pct": 8.0, "trailing": null, "portfolio_budget_pct": 0.4 },
+      "required_data": ["quotes", "spread_points", "bars:H1", "bars:H4", "account_mode(netting|hedging)", "symbol_spec", "tick_value", "swap_long_short", "positions_and_tickets", "equity_and_margin"],
+      "execution_map": { "uses": ["ORDER_PENDING", "ORDER_CANCEL", "POSITION_CLOSE", "SYNC_STATE"], "ea_v1_supported": ["POSITION_CLOSE", "SYNC_STATE"], "needs_ea_v2": ["ORDER_PENDING", "ORDER_CANCEL"], "notes": "经典网格 = LIMIT 单阵列，阻塞于 EA v2 挂单；过渡方案：tick 触价发 ORDER_MARKET 模拟网格（滑点成本更高，verification 需额外滑点项）[推断]" },
+      "verification": ["G2_backtest", "G3_paper", { "rule": "margin_stress", "scenario": "全部层同时满仓 + 区间失效瞬间的保证金水位" }, { "rule": "ea_v2_dependency", "blocked": true }],
+      "invalidation_signals": [
+        { "metric": "range_break_events", "threshold": "30 天内 ≥ 2 次区间失效触发", "action": "demote" },
+        { "metric": "floating_loss_vs_realized", "threshold": "浮亏 > 累计已兑现盈利 × 2", "action": "halt" }
+      ],
+      "mt5_caveats": [
+        "netting 账户直接不可运行：同方向多层单会合并成一个净头寸，格层语义失效 → account_mode_constraint = hedging_only（00-FACTS 5.3）",
+        "多层持仓同时过夜的 swap 累积必须在详情页披露",
+        "网格的『胜率』天然虚高（每笔小盈 + 偶发大亏），卡片禁止把 win_rate 放一级展示 [推断：展示纪律]"
+      ],
+      "display": { "card": ["window_return_pct", "max_drawdown_pct", "window_days"], "list": ["trades"], "detail": ["格层结构", "保证金压力测试"] },
+      "performance": { "_status": "待填充" },
+      "lifecycle_state": "draft",
+      "magic_seed": 1011, "account_mode_constraint": "hedging_only"
+    },
+    {
+      "id": "TPL-GRID-TREND-FOLLOW", "name": "顺趋势网格（反向/趋势网格）", "version": "1.0.0",
+      "author_type": "platform_official", "category": "time_series", "style": "grid",
+      "risk": "aggressive", "direction": "both",
+      "one_liner": "只在 D1 趋势方向上布单：回调到格层接顺势单，格距止盈，逆趋势侧不布单。",
+      "suitable_env": "方向明确的单边行情；比经典网格抗单边 [推断]。",
+      "unsuitable_env": "无趋势震荡——只布一侧导致成交稀疏，收益口径失真 [推断]。",
+      "markets": { "allow": ["XAUUSD", "EURUSD", "USDJPY"], "deny": ["exotics"], "deny_reason": "" },
+      "timeframes": ["H1", "D1"],
+      "session": { "limited": false, "allow": [], "news_blackout": { "enabled": false, "minutes_before": 0, "minutes_after": 0, "source": "" } },
+      "entry_rules": [
+        { "left": { "field": "close" }, "op": "enter_zone", "right": { "indicator": "GRID", "params": { "mode": "level" }, "timeframe": "H1" }, "on": "tick", "note": "格层触价 + 趋势方向一致才下单" }
+      ],
+      "exit_rules": [
+        { "left": { "field": "close" }, "op": "pct_change_gte", "right": { "const": "grid_step" }, "on": "tick", "note": "格距止盈；趋势反转（D1 收破 EMA200）→ 全部平仓停止" }
+      ],
+      "filters": [
+        { "left": { "field": "close" }, "op": "gt", "right": { "indicator": "EMA", "params": { "period": 200 }, "timeframe": "D1" }, "on": "close", "note": "只布多侧；空头对称" },
+        { "left": { "field": "spread_points" }, "op": "spread_lte", "right": { "const": 35 }, "on": "tick" }
+      ],
+      "params": [
+        { "key": "grid_step_points", "label": "格距", "type": "int", "default": 500, "min": 200, "max": 3000, "step": 50, "unit": "points", "desc": "" },
+        { "key": "grid_levels", "label": "层数", "type": "int", "default": 4, "min": 2, "max": 8, "step": 1, "unit": "层", "desc": "" },
+        { "key": "lots_per_level", "label": "每层手数", "type": "number", "default": 0.1, "min": 0.01, "max": 1.0, "step": 0.01, "unit": "手", "desc": "" }
+      ],
+      "risk_defaults": { "sl_points": 0, "sl_note": "趋势反转信号 = 全部离场，无单格 SL", "tp_points": 500, "max_lots_per_trade": 0.1, "max_open_positions": 4, "max_daily_loss_pct": 2.0, "max_drawdown_stop_pct": 10.0, "trailing": null, "portfolio_budget_pct": 0.4 },
+      "required_data": ["quotes", "spread_points", "bars:H1", "bars:D1", "account_mode(netting|hedging)", "symbol_spec", "tick_value", "swap_long_short", "positions_and_tickets", "equity_and_margin"],
+      "execution_map": { "uses": ["ORDER_PENDING", "ORDER_CANCEL", "POSITION_CLOSE", "SYNC_STATE"], "ea_v1_supported": ["POSITION_CLOSE", "SYNC_STATE"], "needs_ea_v2": ["ORDER_PENDING", "ORDER_CANCEL"], "notes": "同 TPL-GRID-RANGE-H1 的挂单阻塞" },
+      "verification": ["G2_backtest", "G3_paper", { "rule": "margin_stress", "scenario": "全层满仓" }, { "rule": "ea_v2_dependency", "blocked": true }],
+      "invalidation_signals": [
+        { "metric": "trend_flip_while_loaded", "threshold": "满仓状态下 D1 收破 EMA200", "action": "review" },
+        { "metric": "floating_loss_vs_realized", "threshold": "浮亏 > 已兑现 × 2", "action": "halt" }
+      ],
+      "mt5_caveats": ["netting 不可运行（同正向网格）", "黄金版本 swap 与隔夜跳空风险必须披露 [推断]"],
+      "display": { "card": ["window_return_pct", "max_drawdown_pct", "window_days"], "list": ["risk"], "detail": ["格层结构"] },
+      "performance": { "_status": "待填充" },
+      "lifecycle_state": "draft",
+      "magic_seed": 1012, "account_mode_constraint": "hedging_only"
+    },
+    {
+      "id": "TPL-DCA-FIXED-H4", "name": "定投摊平 DCA（固定手数）", "version": "1.0.0",
+      "author_type": "platform_official", "category": "time_series", "style": "dca_martingale",
+      "risk": "aggressive", "direction": "long_only",
+      "one_liner": "初始信号开仓后，每浮亏一格按相同手数加一笔（不加倍），整体回本即全部离场。",
+      "suitable_env": "长期均值向上的品种的回调段；用户明确接受摊平逻辑。",
+      "unsuitable_env": "任何可能单边不回头数周的品种；杠杆已高的账户。",
+      "markets": { "allow": ["EURUSD", "XAUUSD"], "deny": ["exotics", "高 swap 空单方向"], "deny_reason": "" },
+      "timeframes": ["H4"],
+      "session": { "limited": false, "allow": [], "news_blackout": { "enabled": false, "minutes_before": 0, "minutes_after": 0, "source": "" } },
+      "entry_rules": [
+        { "left": { "indicator": "RSI", "params": { "period": 14 }, "timeframe": "H4" }, "op": "lt", "right": { "const": 35 }, "on": "close", "note": "首笔入场；后续加仓是状态机逻辑：浮亏 ≥ step_points 且层数 < max_layers → 同手数加一笔" }
+      ],
+      "exit_rules": [
+        { "left": { "field": "equity_pct" }, "op": "gte", "right": { "const": 0.3 }, "on": "tick", "note": "整组持仓合计盈利 ≥ 0.3% 净值 → 全部 POSITION_CLOSE" }
+      ],
+      "filters": [
+        { "left": { "field": "close" }, "op": "gt", "right": { "indicator": "EMA", "params": { "period": 200 }, "timeframe": "D1" }, "on": "close", "note": "大周期多头许可，熊市不摊 [推断]" }
+      ],
+      "params": [
+        { "key": "step_points", "label": "加仓间距", "type": "int", "default": 500, "min": 200, "max": 2000, "step": 50, "unit": "points", "desc": "" },
+        { "key": "max_layers", "label": "最大层数", "type": "int", "default": 4, "min": 2, "max": 6, "step": 1, "unit": "层", "desc": "硬上限之一，与 max_open_positions 联动" },
+        { "key": "lots_per_layer", "label": "每层手数（固定）", "type": "number", "default": 0.1, "min": 0.01, "max": 0.5, "step": 0.01, "unit": "手", "desc": "倍增 = 马丁，见 TPL-MART-2X-H4" }
+      ],
+      "risk_defaults": { "sl_points": 0, "sl_note": "无单笔 SL，整组熔断兜底", "tp_points": 0, "tp_note": "整组回本离场", "max_lots_per_trade": 0.5, "max_open_positions": 6, "max_daily_loss_pct": 2.0, "max_drawdown_stop_pct": 6.0, "trailing": null, "portfolio_budget_pct": 0.3, "triple_caps_enforced": ["max_lots_per_trade", "max_open_positions", "max_drawdown_stop_pct"] },
+      "required_data": ["quotes", "spread_points", "bars:H4", "bars:D1", "account_mode(netting|hedging)", "symbol_spec", "tick_value", "swap_long_short", "positions_and_tickets", "equity_and_margin"],
+      "execution_map": { "uses": ["ORDER_MARKET", "POSITION_CLOSE", "SYNC_STATE"], "ea_v1_supported": ["ORDER_MARKET", "POSITION_CLOSE", "SYNC_STATE"], "needs_ea_v2": [], "notes": "现可执行；netting 下加仓 = 扩大净头寸，整组离场 = 平净头寸，语义可行但层数不可分辨，显示层需自行记账 [推断]" },
+      "verification": ["G2_backtest", "G3_paper", { "rule": "margin_stress", "scenario": "满层 + 继续逆向 2×step 的保证金水位" }, { "rule": "triple_caps_present", "required": true }],
+      "invalidation_signals": [
+        { "metric": "max_layers_hit_frequency", "threshold": "90 天内 ≥ 2 次打满层数", "action": "halt" },
+        { "metric": "equity_drawdown", "threshold": "触及 max_drawdown_stop_pct", "action": "halt" }
+      ],
+      "mt5_caveats": [
+        "强制激进档 + 三重上限：缺一不得保存/上架（模板引擎硬校验）",
+        "netting 账户可跑但层不可分；hedging 下每层独立 ticket 更清晰",
+        "品牌合规：UI 与文案禁止出现『稳赚摊平』类话术，默认参数页强制展示最坏情形（满层 + 熔断触发）的亏损金额估算 [推断：合规立场]"
+      ],
+      "display": { "card": ["max_drawdown_pct", "window_return_pct", "trades"], "list": ["risk"], "detail": ["层数结构", "最坏情形测算"] },
+      "performance": { "_status": "待填充" },
+      "lifecycle_state": "draft",
+      "magic_seed": 1013, "account_mode_constraint": "any"
+    },
+    {
+      "id": "TPL-MART-2X-H4", "name": "马丁格尔倍增摊平（受限版）", "version": "1.0.0",
+      "author_type": "platform_official", "category": "time_series", "style": "dca_martingale",
+      "risk": "aggressive", "direction": "both",
+      "one_liner": "浮亏一格手数翻倍加仓，整组回本即走；层数、手数、净值熔断三重硬上限，默认不开放订阅。",
+      "suitable_env": "仅作为教育/对照样本存在；实盘适用性 Low [推断]。",
+      "unsuitable_env": "一切长单边行情——倍增结构在极端行情下亏损加速 [推断]。",
+      "markets": { "allow": ["EURUSD"], "deny": ["XAUUSD", "exotics", "JPY 系"], "deny_reason": "波动大品种倍增敞口失控风险 High [推断]" },
+      "timeframes": ["H4"],
+      "session": { "limited": false, "allow": [], "news_blackout": { "enabled": false, "minutes_before": 0, "minutes_after": 0, "source": "" } },
+      "entry_rules": [
+        { "left": { "indicator": "RSI", "params": { "period": 14 }, "timeframe": "H4" }, "op": "lt", "right": { "const": 40 }, "on": "close", "note": "首笔；加仓状态机：浮亏 ≥ step 且层数 < max_layers → 手数 ×2" }
+      ],
+      "exit_rules": [
+        { "left": { "field": "equity_pct" }, "op": "gte", "right": { "const": 0.2 }, "on": "tick", "note": "整组合计回本+微利 → 全部离场" }
+      ],
+      "filters": [
+        { "left": { "indicator": "ADX", "params": { "period": 14 }, "timeframe": "D1" }, "op": "lt", "right": { "const": 25 }, "on": "close" }
+      ],
+      "params": [
+        { "key": "step_points", "label": "加仓间距", "type": "int", "default": 400, "min": 200, "max": 1500, "step": 50, "unit": "points", "desc": "" },
+        { "key": "max_layers", "label": "最大层数", "type": "int", "default": 4, "min": 2, "max": 5, "step": 1, "unit": "层", "desc": "倍增结构下层数每 +1 总手数翻倍，上限 5 不可调更高" },
+        { "key": "base_lots", "label": "首层手数", "type": "number", "default": 0.05, "min": 0.01, "max": 0.1, "step": 0.01, "unit": "手", "desc": "第 5 层 = 首层 ×16，保存时强制展示该数字" }
+      ],
+      "risk_defaults": { "sl_points": 0, "tp_points": 0, "max_lots_per_trade": 1.6, "max_open_positions": 5, "max_daily_loss_pct": 2.0, "max_drawdown_stop_pct": 5.0, "trailing": null, "portfolio_budget_pct": 0.2, "triple_caps_enforced": ["max_lots_per_trade", "max_open_positions", "max_drawdown_stop_pct"] },
+      "required_data": ["quotes", "spread_points", "bars:H4", "bars:D1", "account_mode(netting|hedging)", "symbol_spec", "tick_value", "positions_and_tickets", "equity_and_margin"],
+      "execution_map": { "uses": ["ORDER_MARKET", "POSITION_CLOSE", "SYNC_STATE"], "ea_v1_supported": ["ORDER_MARKET", "POSITION_CLOSE", "SYNC_STATE"], "needs_ea_v2": [], "notes": "技术上现可执行；产品上 lifecycle_state 冻结在 draft，订阅闸门见 A4.hard_vetoes #5" },
+      "verification": ["G2_backtest", "G3_paper", { "rule": "margin_stress", "scenario": "满层 + 逆向 2×step" }, { "rule": "triple_caps_present", "required": true }, { "rule": "worst_case_disclosure", "required": true }],
+      "invalidation_signals": [
+        { "metric": "equity_drawdown", "threshold": "触及 max_drawdown_stop_pct", "action": "halt" },
+        { "metric": "max_layers_hit_frequency", "threshold": "任意 1 次打满", "action": "review" }
+      ],
+      "mt5_caveats": [
+        "AlphaFox 把马丁列为标准托管模板（事实），但其风险结构决定它只配做『受限展示模板』[推断]",
+        "止损 > TakeProfit 的品牌合规问题：马丁本质是『小赚大亏』结构，文案与 UI 不得诱导启用 [推断]",
+        "最坏情形测算（满层浮亏金额）必须保存时展示并二次确认"
+      ],
+      "display": { "card": ["max_drawdown_pct", "window_return_pct", "risk"], "list": ["trades"], "detail": ["最坏情形测算", "层数结构"] },
+      "performance": { "_status": "待填充" },
+      "lifecycle_state": "draft",
+      "magic_seed": 1014, "account_mode_constraint": "any"
+    },
+    {
+      "id": "TPL-SCALP-LDNY-M5", "name": "伦敦-纽约重叠剥头皮（M5）", "version": "1.0.0",
+      "author_type": "platform_official", "category": "time_series", "style": "scalping",
+      "risk": "aggressive", "direction": "both",
+      "one_liner": "只在伦敦-纽约重叠时段，顺 M5 EMA 方向吃 5-15 点小波段，点差超线即停。",
+      "suitable_env": "全天流动性最好的重叠时段（约 13:00-17:00 UTC）[推断]。",
+      "unsuitable_env": "点差扩大时段、数据公布前后、终端/网络延迟高的环境。",
+      "markets": { "allow": ["EURUSD", "GBPUSD"], "deny": ["exotics", "XAUUSD"], "deny_reason": "黄金 M5 点差/滑点比不合算 [推断]" },
+      "timeframes": ["M5"],
+      "session": { "limited": true, "allow": ["ln_ny_overlap"], "news_blackout": { "enabled": true, "minutes_before": 15, "minutes_after": 15, "source": "待接入 [未知]" } },
+      "entry_rules": [
+        { "left": { "field": "close" }, "op": "cross_above", "right": { "indicator": "EMA", "params": { "period": 20 }, "timeframe": "M5" }, "on": "tick", "note": "tick 级触发——scalping 豁免 on:close 强制，但 verification 必须含滑点与延迟项" }
+      ],
+      "exit_rules": [
+        { "left": { "field": "close" }, "op": "cross_below", "right": { "indicator": "EMA", "params": { "period": 20 }, "timeframe": "M5" }, "on": "tick", "note": "反向破线即走；固定 tp/sl 双保险走 risk_defaults" }
+      ],
+      "filters": [
+        { "left": { "indicator": "SESSION", "params": {}, "timeframe": "M5" }, "op": "session_in", "right": { "const": "ln_ny_overlap" }, "on": "tick" },
+        { "left": { "field": "spread_points" }, "op": "spread_lte", "right": { "const": 15 }, "on": "tick", "note": "剥头皮命门：点差过滤是所有 filter 里最硬的一条" }
+      ],
+      "params": [
+        { "key": "tp_points", "label": "止盈", "type": "int", "default": 100, "min": 50, "max": 200, "step": 10, "unit": "points", "desc": "即 10 个小点（5 位报价）" },
+        { "key": "sl_points", "label": "止损", "type": "int", "default": 80, "min": 40, "max": 150, "step": 10, "unit": "points", "desc": "必须 ≥ STOPS_LEVEL，EA 侧会拒过近的单（源码事实）" },
+        { "key": "max_trades_per_session", "label": "时段内最多笔数", "type": "int", "default": 5, "min": 1, "max": 15, "step": 1, "unit": "笔", "desc": "防过度交易 [推断]" }
+      ],
+      "risk_defaults": { "sl_points": 80, "tp_points": 100, "max_lots_per_trade": 0.5, "max_open_positions": 1, "max_daily_loss_pct": 1.0, "max_drawdown_stop_pct": 5.0, "trailing": null, "portfolio_budget_pct": 0.3 },
+      "required_data": ["quotes", "spread_points", "bars:M5", "symbol_spec", "session_clock", "positions_and_tickets", "equity_and_margin"],
+      "execution_map": { "uses": ["ORDER_MARKET", "POSITION_CLOSE", "SYNC_STATE"], "ea_v1_supported": ["ORDER_MARKET", "POSITION_CLOSE", "SYNC_STATE"], "needs_ea_v2": [], "notes": "现可执行；max_deviation_points 必须 ≤ 10 并暴露给用户" },
+      "verification": ["G2_backtest", "G3_paper", { "rule": "slippage_tolerance", "max_deviation_points": 10 }, { "rule": "latency_budget", "signal_to_order_ms_max": 2000 }],
+      "invalidation_signals": [
+        { "metric": "avg_profit_per_trade_vs_cost", "threshold": "单笔均盈 < 2.5×（点差+滑点）", "action": "halt" },
+        { "metric": "fill_deviation", "threshold": "平均成交偏离 > 5 points", "action": "review" }
+      ],
+      "mt5_caveats": ["STOPS_LEVEL 校验：部分券商剥头皮止损距离受限，接入时必须读 symbol_spec", "M5 高频命令注意终端负载与信号延迟（00-FACTS 5.5 #6）", "剥头皮对『券商是否允许』敏感 [未知：各券商条款差异]"],
+      "display": { "card": ["win_rate_pct", "trades", "max_drawdown_pct"], "list": ["window_return_pct"], "detail": ["成本口径", "滑点统计"] },
+      "performance": { "_status": "待填充" },
+      "lifecycle_state": "draft",
+      "magic_seed": 1015, "account_mode_constraint": "any"
+    },
+    {
+      "id": "TPL-SCALP-ASIA-M5", "name": "亚洲盘窄幅剥头皮（M5）", "version": "1.0.0",
+      "author_type": "platform_official", "category": "time_series", "style": "scalping",
+      "risk": "balanced", "direction": "both",
+      "one_liner": "亚洲时段低波动品种上做微型回归剥头皮，持仓以分钟计，伦敦开盘前收工。",
+      "suitable_env": "东京时段平静的 USDJPY/AUDUSD [推断]。",
+      "unsuitable_env": "亚洲时段有央行事件或周一开盘。",
+      "markets": { "allow": ["USDJPY", "AUDUSD"], "deny": ["XAUUSD", "GBP系", "exotics"], "deny_reason": "" },
+      "timeframes": ["M5"],
+      "session": { "limited": true, "allow": ["asia"], "news_blackout": { "enabled": true, "minutes_before": 30, "minutes_after": 15, "source": "待接入 [未知]" } },
+      "entry_rules": [
+        { "left": { "indicator": "RSI", "params": { "period": 7 }, "timeframe": "M5" }, "op": "lt", "right": { "const": 25 }, "on": "close", "note": "超卖→多；>75→空" }
+      ],
+      "exit_rules": [
+        { "left": { "indicator": "RSI", "params": { "period": 7 }, "timeframe": "M5" }, "op": "cross_above", "right": { "const": 50 }, "on": "close" },
+        { "left": { "indicator": "TIME", "params": {}, "timeframe": "M5" }, "op": "gte", "right": { "const": "session_end_minus_10m" }, "on": "bar_open" }
+      ],
+      "filters": [
+        { "left": { "indicator": "SESSION", "params": {}, "timeframe": "M5" }, "op": "session_in", "right": { "const": "asia" }, "on": "tick" },
+        { "left": { "field": "spread_points" }, "op": "spread_lte", "right": { "const": 18 }, "on": "tick" }
+      ],
+      "params": [
+        { "key": "tp_points", "label": "止盈", "type": "int", "default": 80, "min": 40, "max": 150, "step": 10, "unit": "points", "desc": "" },
+        { "key": "sl_points", "label": "止损", "type": "int", "default": 80, "min": 40, "max": 150, "step": 10, "unit": "points", "desc": "" }
+      ],
+      "risk_defaults": { "sl_points": 80, "tp_points": 80, "max_lots_per_trade": 0.3, "max_open_positions": 1, "max_daily_loss_pct": 1.0, "max_drawdown_stop_pct": 4.0, "trailing": null, "portfolio_budget_pct": 0.3 },
+      "required_data": ["quotes", "spread_points", "bars:M5", "symbol_spec", "session_clock", "positions_and_tickets", "equity_and_margin"],
+      "execution_map": { "uses": ["ORDER_MARKET", "POSITION_CLOSE", "SYNC_STATE"], "ea_v1_supported": ["ORDER_MARKET", "POSITION_CLOSE", "SYNC_STATE"], "needs_ea_v2": [], "notes": "现可执行" },
+      "verification": ["G2_backtest", "G3_paper", { "rule": "slippage_tolerance", "max_deviation_points": 10 }],
+      "invalidation_signals": [
+        { "metric": "avg_profit_per_trade_vs_cost", "threshold": "< 2.5× 成本", "action": "halt" }
+      ],
+      "mt5_caveats": ["rollover 前后点差扩大必须停开新仓", "session_clock 以券商服务器时间为准"],
+      "display": { "card": ["win_rate_pct", "trades", "max_drawdown_pct"], "list": ["risk"], "detail": ["成本口径"] },
+      "performance": { "_status": "待填充" },
+      "lifecycle_state": "draft",
+      "magic_seed": 1016, "account_mode_constraint": "any"
+    },
+    {
+      "id": "TPL-SESS-NY-MOMENTUM-M15", "name": "纽约开盘动量（M15）", "version": "1.0.0",
+      "author_type": "platform_official", "category": "time_series", "style": "swing",
+      "risk": "balanced", "direction": "both",
+      "one_liner": "纽约开盘首小时确立方向后顺势进场，当天了结，避开数据发布前后。",
+      "suitable_env": "纽约开盘常有真实资金流的交易日 [推断]。",
+      "unsuitable_env": "重大数据日（CPI/非农/议息）开盘前 30 分钟——news_blackout 强制回避。",
+      "markets": { "allow": ["EURUSD", "GBPUSD", "XAUUSD", "US30"], "deny": ["exotics"], "deny_reason": "" },
+      "timeframes": ["M15"],
+      "session": { "limited": true, "allow": ["ny"], "news_blackout": { "enabled": true, "minutes_before": 30, "minutes_after": 30, "source": "待接入 [未知]" } },
+      "entry_rules": [
+        { "left": { "field": "close" }, "op": "gt", "right": { "indicator": "OPEN_RANGE", "params": { "ref_session": "ny_first_hour", "band": "high" }, "timeframe": "M15" }, "on": "close", "note": "破首小时高点→多；破低点→空" }
+      ],
+      "exit_rules": [
+        { "left": { "indicator": "TIME", "params": {}, "timeframe": "M15" }, "op": "gte", "right": { "const": "ny_close_minus_30m" }, "on": "bar_open", "note": "日内了结不过夜" }
+      ],
+      "filters": [
+        { "left": { "indicator": "SESSION", "params": {}, "timeframe": "M15" }, "op": "session_in", "right": { "const": "ny" }, "on": "tick" },
+        { "left": { "indicator": "NEWS_CALENDAR", "params": {}, "timeframe": "M15" }, "op": "news_blackout_clear", "right": { "const": 0 }, "on": "tick" },
+        { "left": { "field": "spread_points" }, "op": "spread_lte", "right": { "const": 35 }, "on": "tick" }
+      ],
+      "params": [
+        { "key": "rr_target", "label": "盈亏比目标", "type": "number", "default": 1.5, "min": 1.0, "max": 3.0, "step": 0.25, "unit": "R", "desc": "" }
+      ],
+      "risk_defaults": { "sl_points": 0, "sl_note": "首小时区间对侧", "tp_points": 0, "tp_note": "1.5R", "max_lots_per_trade": 1.0, "max_open_positions": 1, "max_daily_loss_pct": 1.5, "max_drawdown_stop_pct": 8.0, "trailing": null, "portfolio_budget_pct": 0.5 },
+      "required_data": ["quotes", "spread_points", "bars:M15", "symbol_spec", "session_clock", "news_calendar(外部源，当前未接入 [未知])", "positions_and_tickets", "equity_and_margin"],
+      "execution_map": { "uses": ["ORDER_MARKET", "POSITION_CLOSE", "SYNC_STATE"], "ea_v1_supported": ["ORDER_MARKET", "POSITION_CLOSE", "SYNC_STATE"], "needs_ea_v2": [], "notes": "执行现可；但 news_calendar 数据源未接入前不得上架（filter 缺数据 = 用 0 填 = 违反 mojo 式账本原则）" },
+      "verification": ["G2_backtest", "G3_paper", { "rule": "news_calendar_dependency", "status": "blocked_until_data_source" }],
+      "invalidation_signals": [
+        { "metric": "false_breakout_rate", "threshold": "首小时突破后当日收回比例 > 回测 +15pp", "action": "review" }
+      ],
+      "mt5_caveats": ["开盘瞬间滑点：max_deviation_points 暴露给用户", "XAUUSD/US30 的 tick_value 差异必须在仓位计算里按 symbol_spec 走"],
+      "display": { "card": ["window_return_pct", "win_rate_pct", "trades"], "list": ["max_drawdown_pct"], "detail": ["时段口径"] },
+      "performance": { "_status": "待填充" },
+      "lifecycle_state": "draft",
+      "magic_seed": 1017, "account_mode_constraint": "any"
+    },
+    {
+      "id": "TPL-XS-MOMROT-D1", "name": "多品种动量轮动（D1 截面）", "version": "1.0.0",
+      "author_type": "platform_official", "category": "cross_sectional", "style": "trend",
+      "risk": "balanced", "direction": "long_only",
+      "one_liner": "品种池按 60 日动量打分排序，持前 2 名，周频调仓，掉出前 3 即换。",
+      "suitable_env": "品种间趋势分化明显的时期（强美元/弱美元的宏观段落）[推断]。",
+      "unsuitable_env": "全品种同涨同跌的宏观共振期——截面排序失去信息量 [推断]。",
+      "markets": { "allow": ["EURUSD", "GBPUSD", "USDJPY", "AUDUSD", "USDCAD", "XAUUSD"], "deny": ["exotics"], "deny_reason": "池子必须流动性好、点差低 [推断]" },
+      "timeframes": ["D1"],
+      "session": { "limited": false, "allow": [], "news_blackout": { "enabled": false, "minutes_before": 0, "minutes_after": 0, "source": "" } },
+      "entry_rules": [
+        { "left": { "indicator": "ROC", "params": { "period": 60 }, "timeframe": "D1" }, "op": "rank_in_top_n", "right": { "const": 2 }, "on": "close", "note": "截面打分：ROC(60) 在池内排名进前 2 → 持有" }
+      ],
+      "exit_rules": [
+        { "left": { "indicator": "ROC", "params": { "period": 60 }, "timeframe": "D1" }, "op": "rank_in_top_n", "right": { "const": 3 }, "on": "close", "note": "掉出前 3 才换（缓冲带防频繁调仓）" }
+      ],
+      "filters": [
+        { "left": { "indicator": "ROC", "params": { "period": 60 }, "timeframe": "D1" }, "op": "gt", "right": { "const": 0 }, "on": "close", "note": "绝对动量为负不买——排前 2 但动量为负时空仓等待" }
+      ],
+      "params": [
+        { "key": "lookback", "label": "动量回看", "type": "int", "default": 60, "min": 20, "max": 120, "step": 10, "unit": "日", "desc": "" },
+        { "key": "hold_top_n", "label": "持有前 N", "type": "int", "default": 2, "min": 1, "max": 3, "step": 1, "unit": "只", "desc": "与 max_open_positions 联动" },
+        { "key": "rebalance", "label": "调仓频率", "type": "select", "default": "weekly", "min": null, "max": null, "step": null, "unit": "", "desc": "weekly / biweekly" }
+      ],
+      "risk_defaults": { "sl_points": 0, "sl_note": "2.5×ATR(20,D1) 灾难止损", "tp_points": 0, "max_lots_per_trade": 1.0, "max_open_positions": 2, "max_daily_loss_pct": 2.0, "max_drawdown_stop_pct": 12.0, "trailing": null, "portfolio_budget_pct": 0.6 },
+      "required_data": ["quotes", "spread_points", "bars:D1", "symbol_spec", "tick_value", "swap_long_short", "positions_and_tickets", "equity_and_margin"],
+      "execution_map": { "uses": ["ORDER_MARKET", "POSITION_CLOSE", "SYNC_STATE"], "ea_v1_supported": ["ORDER_MARKET", "POSITION_CLOSE", "SYNC_STATE"], "needs_ea_v2": [], "notes": "现可执行；netting 账户注意『一个品种只分配给一个策略』（00-FACTS 5.3 行业建议）" },
+      "verification": ["G2_backtest", "G3_paper", { "rule": "turnover_cost_model", "note": "调仓换手的点差成本必须进回测 [推断]" }],
+      "invalidation_signals": [
+        { "metric": "pool_dispersion", "threshold": "池内 ROC 横截面标准差持续萎缩 [推断]", "action": "demote" },
+        { "metric": "rolling_annual_return", "threshold": "连续 12 个月为负", "action": "review" }
+      ],
+      "mt5_caveats": ["多品种持仓 = 多货币暴露：四个持仓可能本质同向押 USD（00-FACTS 5.5 #3），组合层需做单一货币暴露汇总", "换仓时 netting 下反手语义需用户知情"],
+      "display": { "card": ["window_return_pct", "max_drawdown_pct", "window_days"], "list": ["当前持仓品种", "risk"], "detail": ["打分表", "货币暴露汇总"] },
+      "performance": { "_status": "待填充" },
+      "lifecycle_state": "draft",
+      "magic_seed": 1018, "account_mode_constraint": "netting_ok_with_exclusivity"
+    },
+    {
+      "id": "TPL-XS-VOLADJ-MOMROT-D1", "name": "波动率调整动量轮动（D1 截面·保守版）", "version": "1.0.0",
+      "author_type": "platform_official", "category": "cross_sectional", "style": "trend",
+      "risk": "conservative", "direction": "long_only",
+      "one_liner": "动量 ÷ 波动率打分持前 2，仓位按波动率倒数配，总敞口随市场波动伸缩。",
+      "suitable_env": "想让轮动策略在黄金高波动期自动降仓的用户。",
+      "unsuitable_env": "同动量轮动；另外波动率飙升期会被动空仓，用户需理解 [推断]。",
+      "markets": { "allow": ["EURUSD", "GBPUSD", "USDJPY", "AUDUSD", "XAUUSD"], "deny": ["exotics"], "deny_reason": "" },
+      "timeframes": ["D1"],
+      "session": { "limited": false, "allow": [], "news_blackout": { "enabled": false, "minutes_before": 0, "minutes_after": 0, "source": "" } },
+      "entry_rules": [
+        { "left": { "indicator": "ROC", "params": { "period": 60, "normalize": "divide_by_atr" }, "timeframe": "D1" }, "op": "rank_in_top_n", "right": { "const": 2 }, "on": "close" }
+      ],
+      "exit_rules": [
+        { "left": { "indicator": "ROC", "params": { "period": 60, "normalize": "divide_by_atr" }, "timeframe": "D1" }, "op": "rank_in_top_n", "right": { "const": 3 }, "on": "close" }
+      ],
+      "filters": [
+        { "left": { "indicator": "ROC", "params": { "period": 60 }, "timeframe": "D1" }, "op": "gt", "right": { "const": 0 }, "on": "close" }
+      ],
+      "params": [
+        { "key": "lookback", "label": "动量回看", "type": "int", "default": 60, "min": 20, "max": 120, "step": 10, "unit": "日", "desc": "" },
+        { "key": "vol_target_pct", "label": "波动目标", "type": "number", "default": 0.5, "min": 0.2, "max": 1.0, "step": 0.1, "unit": "%净值/日 [推断：口径建议]", "desc": "仓位 = vol_target / 品种日波动" }
+      ],
+      "risk_defaults": { "sl_points": 0, "sl_note": "2.5×ATR(20,D1)", "tp_points": 0, "max_lots_per_trade": 1.0, "max_open_positions": 2, "max_daily_loss_pct": 1.5, "max_drawdown_stop_pct": 8.0, "trailing": null, "portfolio_budget_pct": 0.5 },
+      "required_data": ["quotes", "spread_points", "bars:D1", "symbol_spec", "tick_value", "positions_and_tickets", "equity_and_margin"],
+      "execution_map": { "uses": ["ORDER_MARKET", "POSITION_CLOSE", "ORDER_MODIFY", "SYNC_STATE"], "ea_v1_supported": ["ORDER_MARKET", "POSITION_CLOSE", "SYNC_STATE"], "needs_ea_v2": ["ORDER_MODIFY"], "notes": "波动目标调仓需要改已有仓位手数 → 依赖 ORDER_MODIFY（EA v2）；变通方案：先平后开（成本更高，verification 需注明）[推断]" },
+      "verification": ["G2_backtest", "G3_paper"],
+      "invalidation_signals": [
+        { "metric": "pool_dispersion", "threshold": "持续萎缩", "action": "demote" },
+        { "metric": "rolling_annual_return", "threshold": "连续 12 个月为负", "action": "review" }
+      ],
+      "mt5_caveats": ["同动量轮动的货币暴露汇总要求", "ORDER_MODIFY 未实现前用先平后开替代并在详情页披露成本差 [推断]"],
+      "display": { "card": ["window_return_pct", "max_drawdown_pct", "window_days"], "list": ["当前持仓", "risk"], "detail": ["波动目标口径"] },
+      "performance": { "_status": "待填充" },
+      "lifecycle_state": "draft",
+      "magic_seed": 1019, "account_mode_constraint": "netting_ok_with_exclusivity"
+    },
+    {
+      "id": "TPL-ARB-CORR-EUGU-H1", "name": "EURUSD/GBPUSD 相关性价差回归（H1）", "version": "1.0.0",
+      "author_type": "platform_official", "category": "time_series", "style": "arbitrage",
+      "risk": "balanced", "direction": "both",
+      "one_liner": "两个高相关品种的价差 z-score 打到极端 → 多弱空强各一腿，价差回归即双腿平仓。",
+      "suitable_env": "EURUSD 与 GBPUSD 相关性稳定的时期 [推断]。",
+      "unsuitable_env": "英欧基本面分化期（脱欧类事件）：相关性破裂，价差不回归 [推断]。",
+      "markets": { "allow": ["EURUSD", "GBPUSD"], "deny": ["一切第三品种"], "deny_reason": "双腿结构固定" },
+      "timeframes": ["H1"],
+      "session": { "limited": true, "allow": ["london", "ny"], "news_blackout": { "enabled": true, "minutes_before": 30, "minutes_after": 30, "source": "待接入 [未知]" } },
+      "entry_rules": [
+        { "left": { "indicator": "ZSCORE_SPREAD", "params": { "leg_a": "EURUSD", "leg_b": "GBPUSD", "lookback": 120 }, "timeframe": "H1" }, "op": "gte", "right": { "const": 2.0 }, "on": "close", "note": "z ≥ 2 → 空 A 多 B；z ≤ -2 对称。ZSCORE_SPREAD 为截面引擎内建对象" }
+      ],
+      "exit_rules": [
+        { "left": { "indicator": "ZSCORE_SPREAD", "params": { "leg_a": "EURUSD", "leg_b": "GBPUSD", "lookback": 120 }, "timeframe": "H1" }, "op": "cross_below", "right": { "const": 0 }, "on": "close", "note": "价差回到中轴 → 双腿同平" }
+      ],
+      "filters": [
+        { "left": { "indicator": "CORRELATION", "params": { "leg_a": "EURUSD", "leg_b": "GBPUSD", "lookback": 60 }, "timeframe": "D1" }, "op": "gte", "right": { "const": 0.7 }, "on": "close", "note": "相关性破裂硬停" },
+        { "left": { "field": "spread_points" }, "op": "spread_lte", "right": { "const": 30 }, "on": "tick", "note": "两腿分别校验" }
+      ],
+      "params": [
+        { "key": "z_entry", "label": "入场 z 值", "type": "number", "default": 2.0, "min": 1.5, "max": 3.0, "step": 0.1, "unit": "σ", "desc": "" },
+        { "key": "z_stop", "label": "止损 z 值", "type": "number", "default": 3.5, "min": 2.5, "max": 5.0, "step": 0.1, "unit": "σ", "desc": "价差继续扩大到此值双腿止损" },
+        { "key": "corr_min", "label": "相关性下限", "type": "number", "default": 0.7, "min": 0.5, "max": 0.9, "step": 0.05, "unit": "", "desc": "" }
+      ],
+      "risk_defaults": { "sl_points": 0, "sl_note": "z_stop 价差止损，非价格止损", "tp_points": 0, "max_lots_per_trade": 0.5, "max_open_positions": 2, "max_daily_loss_pct": 1.5, "max_drawdown_stop_pct": 8.0, "trailing": null, "portfolio_budget_pct": 0.4 },
+      "required_data": ["quotes", "spread_points", "bars:H1", "bars:D1", "account_mode(netting|hedging)", "symbol_spec", "tick_value", "swap_long_short", "positions_and_tickets", "equity_and_margin"],
+      "execution_map": { "uses": ["ORDER_MARKET", "POSITION_CLOSE", "SYNC_STATE"], "ea_v1_supported": ["ORDER_MARKET", "POSITION_CLOSE", "SYNC_STATE"], "needs_ea_v2": [], "notes": "双腿下单是两条独立命令，无法原子执行——腿 A 成交腿 B 被拒会留下裸敞口，必须有补偿逻辑（腿 B 失败 → 立即平腿 A）[推断：执行纪律]" },
+      "verification": ["G2_backtest", "G3_paper", { "rule": "leg_risk_drill", "scenario": "单腿成交另一腿被拒的处置演练" }, { "rule": "correlation_stability_check", "window_days": 60 }],
+      "invalidation_signals": [
+        { "metric": "rolling_correlation", "threshold": "60 日相关 < 0.7 持续一周", "action": "halt" },
+        { "metric": "zscore_excursions_no_revert", "threshold": "z 超 2 后 5 日内不回归的次数占比 > 回测 +15pp", "action": "review" }
+      ],
+      "mt5_caveats": [
+        "必须 hedging 账户：同一账户同时持有 EURUSD 多与 GBPUSD 空在 hedging 下是独立 ticket；netting 下两腿若同品种直接轧没（00-FACTS 5.3）",
+        "双腿 swap 方向相反，净库存费可正可负，必须披露",
+        "两腿保证金占用约等于两个独立头寸，组合预算里按 2 个敞口计 [推断]"
+      ],
+      "display": { "card": ["window_return_pct", "max_drawdown_pct", "当前价差z值"], "list": ["trades"], "detail": ["相关性监控", "双腿结构说明"] },
+      "performance": { "_status": "待填充" },
+      "lifecycle_state": "draft",
+      "magic_seed": 1020, "account_mode_constraint": "hedging_only"
+    },
+    {
+      "id": "TPL-ARB-GOLDSILVER-D1", "name": "金银比率回归（D1）", "version": "1.0.0",
+      "author_type": "platform_official", "category": "time_series", "style": "arbitrage",
+      "risk": "aggressive", "direction": "both",
+      "one_liner": "XAUUSD/XAGUSD 比率打到历史极端 → 多低估空高估，比率回归双腿平仓。",
+      "suitable_env": "贵金属同涨同跌、比率均值稳定的宏观环境 [推断]。",
+      "unsuitable_env": "白银工业属性驱动的独立行情期；白银点差/流动性比黄金差一档，滑点成本 High [推断]。",
+      "markets": { "allow": ["XAUUSD", "XAGUSD"], "deny": ["其他"], "deny_reason": "" },
+      "timeframes": ["D1"],
+      "session": { "limited": false, "allow": [], "news_blackout": { "enabled": false, "minutes_before": 0, "minutes_after": 0, "source": "" } },
+      "entry_rules": [
+        { "left": { "indicator": "ZSCORE_SPREAD", "params": { "leg_a": "XAUUSD", "leg_b": "XAGUSD", "lookback": 250, "form": "ratio" }, "timeframe": "D1" }, "op": "gte", "right": { "const": 2.0 }, "on": "close", "note": "比率 z ≥ 2 → 空金多银；对称" }
+      ],
+      "exit_rules": [
+        { "left": { "indicator": "ZSCORE_SPREAD", "params": { "leg_a": "XAUUSD", "leg_b": "XAGUSD", "lookback": 250, "form": "ratio" }, "timeframe": "D1" }, "op": "cross_below", "right": { "const": 0.5 }, "on": "close" }
+      ],
+      "filters": [
+        { "left": { "field": "spread_points" }, "op": "spread_lte", "right": { "const": 60 }, "on": "tick", "note": "白银点差上限单列" }
+      ],
+      "params": [
+        { "key": "z_entry", "label": "入场 z 值", "type": "number", "default": 2.0, "min": 1.5, "max": 3.0, "step": 0.1, "unit": "σ", "desc": "" },
+        { "key": "z_stop", "label": "止损 z 值", "type": "number", "default": 3.5, "min": 2.5, "max": 5.0, "step": 0.1, "unit": "σ", "desc": "" },
+        { "key": "notional_ratio", "label": "两腿名义比", "type": "number", "default": 1.0, "min": 0.5, "max": 2.0, "step": 0.1, "unit": "", "desc": "按 tick_value 折算后对齐名义敞口" }
+      ],
+      "risk_defaults": { "sl_points": 0, "sl_note": "z_stop", "tp_points": 0, "max_lots_per_trade": 0.5, "max_open_positions": 2, "max_daily_loss_pct": 2.0, "max_drawdown_stop_pct": 10.0, "trailing": null, "portfolio_budget_pct": 0.3 },
+      "required_data": ["quotes", "spread_points", "bars:D1", "account_mode(netting|hedging)", "symbol_spec", "tick_value", "swap_long_short", "positions_and_tickets", "equity_and_margin"],
+      "execution_map": { "uses": ["ORDER_MARKET", "POSITION_CLOSE", "SYNC_STATE"], "ea_v1_supported": ["ORDER_MARKET", "POSITION_CLOSE", "SYNC_STATE"], "needs_ea_v2": [], "notes": "双腿补偿逻辑同 TPL-ARB-CORR-EUGU-H1" },
+      "verification": ["G2_backtest", "G3_paper", { "rule": "leg_risk_drill", "scenario": "单腿裸敞口处置" }],
+      "invalidation_signals": [
+        { "metric": "ratio_regime_shift", "threshold": "比率 250 日均值漂移 > 历史区间 [推断]", "action": "review" }
+      ],
+      "mt5_caveats": ["hedging 必需", "XAGUSD 的 tick_value / volume_step 与 XAUUSD 差异大，名义对齐必须按 symbol_spec 计算", "白银隔夜 swap 与展期结构可能显著不同 [未知：因券商而异]"],
+      "display": { "card": ["window_return_pct", "max_drawdown_pct", "当前比率z值"], "list": ["risk"], "detail": ["比率历史带"] },
+      "performance": { "_status": "待填充" },
+      "lifecycle_state": "draft",
+      "magic_seed": 1021, "account_mode_constraint": "hedging_only"
+    },
+    {
+      "id": "TPL-COMBO-CORE-SAT", "name": "核心-卫星组合（趋势核心 + 回归卫星）", "version": "1.0.0",
+      "author_type": "platform_official", "category": "hybrid", "style": "other",
+      "risk": "balanced", "direction": "both",
+      "one_liner": "TPL-TREND-EMAX-H4 作核心（60% 预算）+ TPL-MR-BBAND-H1 作卫星（40%），共用一个组合风险预算与总熔断。",
+      "suitable_env": "趋势与震荡环境互补：趋势腿赚单边，回归腿赚震荡，组合平滑净值 [推断]。",
+      "unsuitable_env": "两条腿同时失效的环境（低波动阴跌）[推断]；组合不消灭风险只分散风险。",
+      "markets": { "allow": ["EURUSD", "GBPUSD", "USDJPY"], "deny": ["exotics"], "deny_reason": "" },
+      "timeframes": ["H4", "H1"],
+      "session": { "limited": false, "allow": [], "news_blackout": { "enabled": false, "minutes_before": 0, "minutes_after": 0, "source": "" } },
+      "entry_rules": [
+        { "left": { "indicator": "SUBSTRATEGY", "params": { "ref": "TPL-TREND-EMAX-H4" } }, "op": "signal", "right": { "const": 1 }, "on": "close", "note": "组合型模板的规则 = 子策略引用 + 资金分配；子策略规则不重复展开" },
+        { "left": { "indicator": "SUBSTRATEGY", "params": { "ref": "TPL-MR-BBAND-H1" } }, "op": "signal", "right": { "const": 1 }, "on": "close" }
+      ],
+      "exit_rules": [],
+      "filters": [
+        { "left": { "field": "equity_pct" }, "op": "drawdown_lt", "right": { "const": 8 }, "on": "tick", "note": "组合级熔断：净值回撤 8% 全部子策略停止开新仓" }
+      ],
+      "params": [
+        { "key": "core_weight", "label": "核心腿预算占比", "type": "number", "default": 0.6, "min": 0.4, "max": 0.8, "step": 0.05, "unit": "", "desc": "两腿预算合计 = portfolio_budget_pct" },
+        { "key": "symbol_mutex", "label": "品种互斥", "type": "bool", "default": true, "min": null, "max": null, "step": null, "unit": "", "desc": "netting 强制开启：两腿不得同时持有同品种反向仓（00-FACTS 5.3）" }
+      ],
+      "risk_defaults": { "sl_points": 0, "sl_note": "由子策略各自接管", "tp_points": 0, "max_lots_per_trade": 1.0, "max_open_positions": 2, "max_daily_loss_pct": 2.0, "max_drawdown_stop_pct": 8.0, "trailing": null, "portfolio_budget_pct": 1.0, "combo_budget_note": "组合合计风险预算 ≤ 2%（00-FACTS 5.4 组合折减口径）" },
+      "required_data": ["quotes", "spread_points", "bars:H1", "bars:H4", "account_mode(netting|hedging)", "symbol_spec", "positions_and_tickets", "equity_and_margin"],
+      "execution_map": { "uses": ["ORDER_MARKET", "POSITION_CLOSE", "SYNC_STATE"], "ea_v1_supported": ["ORDER_MARKET", "POSITION_CLOSE", "SYNC_STATE"], "needs_ea_v2": [], "notes": "每个子策略独立 magic（注册制，防误平，00-FACTS 5.5 #1）" },
+      "verification": ["G2_backtest", "G3_paper", { "rule": "combo_correlation_check", "note": "两腿信号相关性必须在回测中测量并披露 [推断]" }, { "rule": "kill_criteria_defined", "required": true }],
+      "invalidation_signals": [
+        { "metric": "combo_drawdown", "threshold": "触及 8%", "action": "halt" },
+        { "metric": "leg_correlation", "threshold": "两腿日收益相关 > 0.8（分散失效）[推断]", "action": "review" }
+      ],
+      "mt5_caveats": ["组合内每个子策略独立 magic；停止组合 ≠ 平仓，持仓处置必须显式选择（与 mojo 一致，00-FACTS 2.2）", "两腿同账户共享保证金：满仓情形压力测试必做（00-FACTS 5.4）"],
+      "display": { "card": ["window_return_pct", "max_drawdown_pct", "window_days"], "list": ["两腿各自收益"], "detail": ["资金分配", "相关性披露"] },
+      "performance": { "_status": "待填充" },
+      "lifecycle_state": "draft",
+      "magic_seed": 1022, "account_mode_constraint": "netting_ok_with_exclusivity"
+    },
+    {
+      "id": "TPL-COMBO-RISK-PARITY", "name": "风险平价多策略组合", "version": "1.0.0",
+      "author_type": "platform_official", "category": "hybrid", "style": "other",
+      "risk": "conservative", "direction": "both",
+      "one_liner": "三个子策略（趋势/回归/剥头皮）按各自近期波动率倒数分配预算，月度再平衡。",
+      "suitable_env": "希望单账户多策略并行、又不想手动调权重的用户。",
+      "unsuitable_env": "任一子策略历史太短（波动率估计不稳）[推断]。",
+      "markets": { "allow": ["EURUSD", "GBPUSD", "USDJPY", "AUDUSD"], "deny": ["exotics"], "deny_reason": "" },
+      "timeframes": ["H4", "H1", "M5"],
+      "session": { "limited": false, "allow": [], "news_blackout": { "enabled": false, "minutes_before": 0, "minutes_after": 0, "source": "" } },
+      "entry_rules": [
+        { "left": { "indicator": "SUBSTRATEGY", "params": { "ref": "TPL-TREND-EMAX-FILTER-H1" } }, "op": "signal", "right": { "const": 1 }, "on": "close" },
+        { "left": { "indicator": "SUBSTRATEGY", "params": { "ref": "TPL-MR-RSI2-M15" } }, "op": "signal", "right": { "const": 1 }, "on": "close" },
+        { "left": { "indicator": "SUBSTRATEGY", "params": { "ref": "TPL-SCALP-ASIA-M5" } }, "op": "signal", "right": { "const": 1 }, "on": "close" }
+      ],
+      "exit_rules": [],
+      "filters": [
+        { "left": { "field": "equity_pct" }, "op": "drawdown_lt", "right": { "const": 6 }, "on": "tick" }
+      ],
+      "params": [
+        { "key": "vol_lookback", "label": "波动率回看", "type": "int", "default": 60, "min": 20, "max": 120, "step": 10, "unit": "日", "desc": "各腿预算 ∝ 1/近期波动" },
+        { "key": "rebalance", "label": "再平衡频率", "type": "select", "default": "monthly", "min": null, "max": null, "step": null, "unit": "", "desc": "monthly / quarterly" }
+      ],
+      "risk_defaults": { "sl_points": 0, "sl_note": "子策略接管", "tp_points": 0, "max_lots_per_trade": 1.0, "max_open_positions": 3, "max_daily_loss_pct": 1.5, "max_drawdown_stop_pct": 6.0, "trailing": null, "portfolio_budget_pct": 1.0, "combo_budget_note": "三腿合计 ≤ 2%（00-FACTS 5.4）" },
+      "required_data": ["quotes", "spread_points", "bars:M5", "bars:H1", "bars:H4", "account_mode(netting|hedging)", "symbol_spec", "session_clock", "positions_and_tickets", "equity_and_margin"],
+      "execution_map": { "uses": ["ORDER_MARKET", "POSITION_CLOSE", "ORDER_MODIFY", "SYNC_STATE"], "ea_v1_supported": ["ORDER_MARKET", "POSITION_CLOSE", "SYNC_STATE"], "needs_ea_v2": ["ORDER_MODIFY"], "notes": "再平衡调手数依赖 ORDER_MODIFY；变通 = 先平后开" },
+      "verification": ["G2_backtest", "G3_paper", { "rule": "combo_correlation_check" }, { "rule": "kill_criteria_defined", "required": true }, { "rule": "margin_stress", "scenario": "三腿同时满仓" }],
+      "invalidation_signals": [
+        { "metric": "combo_drawdown", "threshold": "触及 6%", "action": "halt" },
+        { "metric": "single leg decay", "threshold": "任一腿触发自身 halt 信号", "action": "review", "note": "kill criteria 必须在订阅前向用户展示（00-FACTS 5.5 #4）" }
+      ],
+      "mt5_caveats": ["三腿三图表三 magic；单点故障提示：终端挂了全部停（00-FACTS 5.5 #5），需监控告警", "品种互斥：两腿不得在同品种反向（netting 强制）"],
+      "display": { "card": ["window_return_pct", "max_drawdown_pct", "window_days"], "list": ["各腿权重"], "detail": ["再平衡记录", "kill criteria"] },
+      "performance": { "_status": "待填充" },
+      "lifecycle_state": "draft",
+      "magic_seed": 1023, "account_mode_constraint": "netting_ok_with_exclusivity"
+    }
+  ],
+
+  "A4_lifecycle": {
+    "_note": "阶段门设计，强烈参考 minara 的三段披露（回测段 / Publish marker / live-forward 段，且不得连成一条实盘曲线读——事实）。所有阈值数字均为建议值 [推断]，需老板拍板后冻结进代码。",
+    "stages": [
+      {
+        "state": "draft",
+        "enter": "创建即得",
+        "exit_min_evidence": "规则结构化完整（可解析、无自然语言散文）；params 全量带 min/max；risk_defaults 齐备；required_data 每一项标注来源；execution_map.needs_ea_v2 为空或已声明阻塞",
+        "note": "needs_ea_v2 非空的模板永远停在 draft，直到 EA v2 落地（源码事实：当前 EA 只支持 ORDER_MARKET/POSITION_CLOSE/SYNC_STATE）"
+      },
+      {
+        "state": "backtested",
+        "enter": "通过 G2 回测门",
+        "exit_min_evidence": "回测：样本 ≥ 100 笔且时间跨度 ≥ 3 年 [推断：建议值]；含点差 + 滑点成本模型；样本外（OOS）段 ≥ 30%；参数敏感性 ±20% 不崩（收益不变号）；最大回撤、profit factor、连亏次数全部落库",
+        "note": "任何逻辑修改 → 版本号升级 + 回测重跑（minara 做法：改逻辑重跑回测并重发版本）"
+      },
+      {
+        "state": "paper_verified",
+        "enter": "通过 G3 模拟盘门",
+        "exit_min_evidence": "模拟盘 live-forward ≥ 20 个交易日且 ≥ 30 笔；低频模板（D1/W1）放宽笔数到 ≥ 15 笔但延长到 ≥ 60 天 [推断：建议值]；模拟结果与回测期望的偏离可解释（方向一致、偏离 < 50%）；滑点/成交偏离记录完整",
+        "note": "AlphaFox 的做法：先模拟再实盘（00-FACTS 3.3 安全四条 #4），且模拟交易所不要真实 API Key——对应我们：模拟门跑在 demo MT5 账户"
+      },
+      {
+        "state": "published",
+        "enter": "人工审核通过",
+        "exit_min_evidence": "绩效口径按 A2.performance_caliber 全字段披露；失效信号写进详情页；kill criteria 明示；风险档自评与参数一致性人工核对",
+        "note": "published = 可被发现/查看，不等于可订阅（对应 minara Public 与 Subscribable 两个独立开关，00-FACTS 1.5）"
+      },
+      {
+        "state": "subscribable",
+        "enter": "实盘/长模拟证据 + 闸门复核",
+        "exit_min_evidence": "live-forward 总时长 ≥ 60 天（模拟或实盘）[推断：建议值]；已披露最大回撤未被刷新 1.5×；风控参数冻结（订阅期间作者改逻辑必须升版本，订阅者留在旧版本直到主动升级）；作者身份核验（partner 级）[推断]",
+        "note": "我们不设最低认购金额门槛（不做 minara $500 那套，见 A5 #1），但订阅动作本身必须过策略卡确认（mojo 做法：卡上确认手数与止损后才启动）"
+      },
+      {
+        "state": "delisted",
+        "enter": "触发下架条件任一",
+        "exit_min_evidence": "下架即终态；重上 = 新 id 新流程",
+        "triggers": ["实盘/模拟与回测显著背离且 30 天内无解释", "最大回撤超披露值 1.5×", "90 天无交易且无合理解释", "作者失联或主动下架", "触发任一硬否决的事后发现"],
+        "note": "下架时正在运行的订阅：停止开新仓，存量持仓处置方式由用户显式选择（停止 ≠ 平仓，mojo 原则）"
+      }
+    ],
+    "re_verification_on_change": {
+      "rule": "entry_rules / exit_rules / filters / risk_defaults 任一变化 = 逻辑修改 → major/minor 版本升级 → G2 回测重跑 → G3 模拟钟重置；仅 params 默认值在已声明 min/max 域内调整 = patch 版本 → 回测重跑但模拟钟不重置，变更记录公示",
+      "source": "minara：改逻辑要重跑回测并重发版本（00-FACTS 任务书转述）；此处加 patch 细分 [推断]"
+    },
+    "three_curves_display": {
+      "rules": [
+        "同一张图分三段：回测段（灰底阴影 + 标注『历史模拟』）、Publish marker 竖线、live-forward 段（实线主色）",
+        "回测段与 live 段之间必须有可见断裂/marker，禁止视觉连续（minara 官方明确要求不得读成一条连续实盘曲线）",
+        "hover 任何一点显示该点所属段（backtest / paper / live）",
+        "榜单排序指标只用 live-forward 段；回测段永不参与排序 [推断]",
+        "卡片上的迷你图只画 live-forward 段；没有 live 数据的模板卡片显示『回测数据，详见内页』水印",
+        "年化收益旁必须带窗口长度（minara：短窗口年化会非常大，年化 ≠ 这一年真赚到）"
+      ]
+    },
+    "gates": {
+      "G2_backtest": "回测门：样本/成本模型/OOS/参数敏感性，见 backtested 阶段",
+      "G3_paper": "模拟盘门：时长/笔数/偏离度，见 paper_verified 阶段",
+      "slippage_tolerance": "max_deviation_points 上限声明 + 回测滑点假设覆盖",
+      "margin_stress": "满仓/满层情形保证金水位预演（00-FACTS 5.4）",
+      "triple_caps_present": "dca_martingale 类强制：max_lots_per_trade + max_open_positions + max_drawdown_stop_pct 三字段非空且超域拒绝保存",
+      "leg_risk_drill": "双腿套利：单腿成交另一腿失败的补偿演练",
+      "news_calendar_dependency": "依赖新闻黑名单的模板在数据源接入前不得越过 draft",
+      "ea_v2_dependency": "needs_ea_v2 非空即阻塞",
+      "turnover_cost_model": "调仓/换手的点差成本必须进回测",
+      "combo_correlation_check": "组合型：子策略相关性测量并披露",
+      "kill_criteria_defined": "组合型/马丁类：订阅前向用户展示关停标准（00-FACTS 5.5 #4）",
+      "worst_case_disclosure": "马丁类：最坏情形（满层+熔断）亏损金额估算保存时强制展示",
+      "latency_budget": "剥头皮类：信号→下单延迟上限声明与实测"
+    },
+    "hard_vetoes": [
+      "#1 样本不足：回测 < 100 笔或 < 3 年（低频模板另行核定）→ 不许进广场",
+      "#2 实盘/模拟与回测显著背离（期望符号相反或偏离 > 50% 且 30 天内无可解释说明）→ 下架",
+      "#3 未披露最大回撤或绩效口径字段不全 → 不许 published",
+      "#4 含不可解释的超额收益：回测显著优于同类且规则无法复现（疑似过拟合/未来函数）→ 拒绝上架",
+      "#5 dca_martingale 类缺三重上限任一 → 引擎级拒绝保存（不是审核问题，是 schema 硬约束）",
+      "#6 未来函数/重绘：规则在 bar 未收盘即用收盘价决策（on ≠ close 且无豁免声明）→ 拒绝上架",
+      "#7 风险档自评与参数明显不符（如倍增加仓标 conservative）→ 拒绝上架",
+      "#8 依赖未接入数据源（如 news_calendar）或未实现 EA 能力（needs_ea_v2 非空）却申请 subscribable → 拒绝"
+    ]
+  },
+
+  "A5_three_donts": {
+    "_note": "产品经理视角：哪些 minara / AlphaFox / mojo 的功能照搬会死。每条 = 照搬会怎样 + 我们怎么做。合规判断均为 [推断]，正式对外前需法务复核。",
+    "items": [
+      {
+        "dont": "不做收益分润/绩效费模式（minara：订阅者已实现盈利最高 30% 分润 + 周期结算）",
+        "why_die": "客户资金 + 按盈利分成 ≈ 代客理财/资管外观，国内合规红线 [推断]；且结算系统（周期结算、亏损期不分润）是重资产工程",
+        "we_do": "只收软件订阅费（现有 ZPay/Stripe 订阅体系已支持，01-CONTEXT）；不设 minara 式 $500 最低认购门槛——那是托管资金池语境的产物，我们的 EA 跑在客户自己的 MT5 上，天然不需要"
+      },
+      {
+        "dont": "不把『年化收益 APY』作为榜单默认排序",
+        "why_die": "minara 自己都警告：短窗口高收益年化后会非常大、年化 ≠ 这一年真赚到；按 APY 排序 = 把最误导的数字放第一位，等于鼓励用户追短期爆发曲线 [推断]",
+        "we_do": "默认排序 = 运行天数 × 最大回撤升序（AlphaFox 官方新手建议：切 90 天以上、先看回撤和数据天数）；收益一律带窗口长度展示；回测段永不参与排序"
+      },
+      {
+        "dont": "不照搬 crypto 分类层（Market making 做市、DEX/钱包/资产组 Coin30 等）",
+        "why_die": "MT5 零售客户是价格接受方，没有做市的市场结构 [推断]；DEX/CEX 区分、五层资金账本（mojo）在『一个 MT5 账户一个余额』的世界里全部是空层",
+        "we_do": "分类树砍掉 market_making（形似部分由 grid 承接）；资产维度改为 markets[] 品种白名单 + negative list；资金校验只有一层（MT5 账户净值/保证金），但按 mojo 原则：读不到就不下单，不用 0 填"
+      },
+      {
+        "dont": "不做『一账户一策略』硬限制（AlphaFox 约束）",
+        "why_die": "那是加密货币场景取舍，不是 MT5 现实：MT5 一个图表挂一个 EA，开几个图表就能跑几个策略（00-FACTS 5.1）——照搬会平白砍掉我们的能力",
+        "we_do": "三件套替代：magic 注册制（防误平）+ 品种互斥（netting 强制，同品种只归一个策略）+ 组合风险预算（随并行策略数折减，00-FACTS 5.4 口径），并做满仓保证金压力预演"
+      },
+      {
+        "dont": "不做社交跟单/带单员逐笔跟随（AlphaFox 的带单员广场模式）",
+        "why_die": "跟随他人账户逐笔开平仓 ≈ 代客操作外观，合规风险 High [推断]；AlphaFox 自己都把『带单员广场』和『策略排行榜』做成两个池，因为混在一起用户必然误读",
+        "we_do": "只复制模板参数，不跟随任何个人账户（AlphaFox Copy 模式：复制的是参数不是收益，由你自己的账户独立运行）；广场上不出现『跟随人数』这种社交证明字段冲一级展示 [推断：避免羊群效应话术]"
+      },
+      {
+        "dont": "不做『停止策略 = 自动平仓』的默认行为",
+        "why_die": "mojo 明确：停止 Agent 不会自动平掉已开仓仓位；自动平仓替用户做了处置决定，出事时责任不清 [推断]",
+        "we_do": "停止 = 停止开新仓；存量持仓弹处置三选一（立即全平 / 仅保留 SLTP 托管 / 完全人工接管），选择留痕进事件日志（桌面端已有事件回执日志基建，01-CONTEXT）"
+      }
+    ]
+  }
+}

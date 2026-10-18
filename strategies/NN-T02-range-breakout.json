@@ -1,0 +1,77 @@
+{
+  "_note": "绩效字段全部为 null 且 evidence=NOT_RUN：本模板尚未回测，禁止在对外材料里填任何数字。回测后填 metrics 并把 evidence 改成 BACKTEST_ONLY。",
+  "id": "NN-T02",
+  "version": "1.0.0",
+  "name_zh": "区间突破",
+  "name_en": "Range Breakout",
+  "one_liner_zh": "价格收出 N 根 K 线的通道之外才动手；通道太窄视为震荡，不做。",
+  "one_liner_en": "Enter only when price closes outside the N-bar Donchian channel; skip when the channel is too narrow.",
+  "engine": {
+    "ea": "NiuNiuStrategy.mq5",
+    "strategy_enum": "NN_RANGE_BREAKOUT",
+    "strategy_value": 1,
+    "primitives_used": ["市价开仓", "按单号平仓", "改止盈止损"],
+    "primitives_not_used": ["挂单", "加仓", "网格", "马丁"]
+  },
+  "params": {
+    "InpStrategy": 1,
+    "InpDirection": 0,
+    "InpMagic": 810002,
+    "InpTag": "NNS",
+    "InpFastPeriod": 20,
+    "InpSlowPeriod": 60,
+    "InpChannelPeriod": 20,
+    "InpStdK": 2.0,
+    "InpAtrPeriod": 14,
+    "InpAtrSlMult": 1.5,
+    "InpAtrTpMult": 3.0,
+    "InpFixedSlPoints": 0,
+    "InpFixedTpPoints": 0,
+    "InpPullbackTolAtr": 0.5,
+    "InpMinChannelAtr": 0.8,
+    "InpRiskPct": 0.5,
+    "InpFixedLots": 0.0,
+    "InpMaxPositions": 1,
+    "InpMaxDailyLossPct": 2.0,
+    "InpMaxSpreadPoints": 30,
+    "InpMaxDeviationPoints": 20,
+    "InpMaxHoldBars": 0,
+    "InpUseTrailing": true,
+    "InpTrailPoints": 0,
+    "InpSessionFromHour": 0,
+    "InpSessionToHour": 0,
+    "InpVerbose": true,
+    "InpCloseOnStop": false
+  },
+  "param_notes": {
+    "InpMagic": "与 T01 必须不同（810002）。同账户跑多模板时靠它区分是谁的仓。",
+    "InpMinChannelAtr": "窄幅过滤器：通道宽度 < ATR × 该倍数时不开仓。这是本模板最重要的一条，去掉它假突破会明显变多。",
+    "InpAtrSlMult": "突破策略止损比趋势策略更紧（1.5 vs 2.0），因为突破失败通常很快就能确认。",
+    "InpUseTrailing": "突破走顺时靠移动止损保护浮盈，回撤距离默认用 ATR × 止损倍数。"
+  },
+  "markets": {
+    "suggested_symbols": ["XAUUSD", "USOIL", "NAS100"],
+    "suggested_timeframe": "H1 / H4",
+    "avoid": ["长期横盘的品种（通道一直打不开，会被窄幅过滤全部挡掉，等于白跑）"]
+  },
+  "risk": {
+    "single_trade_risk_pct": 0.5,
+    "daily_stop_pct": 2.0,
+    "max_concurrent_positions": 1,
+    "stop_is_mandatory": true,
+    "known_weakness": "震荡市里会连续被假突破打止损。这是这类策略的结构性成本，不是参数没调好。"
+  },
+  "metrics": {
+    "evidence": "NOT_RUN",
+    "window_return_pct": null,
+    "max_drawdown_pct": null,
+    "sharpe": null,
+    "trades": null,
+    "days_recorded": null,
+    "source": null
+  },
+  "lifecycle": {
+    "state": "backtest_pending",
+    "gates_to_publish": ["在 MT5 策略测试器跑完至少 1 个完整样本区间", "与另外两个模板同账户跑满 30 天模拟盘", "最大回撤未超过日限的 3 倍"]
+  }
+}

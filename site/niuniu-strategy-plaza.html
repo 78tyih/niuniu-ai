@@ -1,0 +1,533 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>牛牛 AI · 策略广场</title>
+<style>
+:root{
+  --bg:#FCFBF7; --panel:#FFFFFF; --ink:#1F2A37; --ink2:#5B6875; --ink3:#8A949F;
+  --line:#E6E2D9; --line2:#F0EDE6;
+  --accent:#FF6A1A; --accent-deep:#E2560B; --accent-soft:#FFF1E7;
+  --up:#E23B2E; --down:#17995B;
+  --navy:#1F3A5F; --amber:#B45309; --green:#116945; --red:#9C2A2A;
+  --chip:#F4F1EA;
+}
+html[data-theme="dark"]{
+  --bg:#0B0C0E; --panel:#101216; --ink:#E8EAED; --ink2:#A8B0BA; --ink3:#6E7681;
+  --line:#23262C; --line2:#191C21;
+  --accent:#FF8250; --accent-deep:#FF6A1A; --accent-soft:#2A1A12;
+  --up:#FF7A66; --down:#3DDC97;
+  --navy:#7FA6FF; --amber:#E0A458; --green:#4CBF89; --red:#E8776B;
+  --chip:#171A1F;
+}
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:"Hiragino Sans GB","PingFang SC","Microsoft YaHei",system-ui,-apple-system,sans-serif;
+  font-size:15px; line-height:1.75; -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1080px; margin:0 auto; padding:0 28px}
+a{color:var(--accent); text-decoration:none}
+a:hover{text-decoration:underline}
+
+/* 顶栏 */
+.top{position:sticky; top:0; z-index:50; background:var(--bg); border-bottom:1px solid var(--line)}
+.top .wrap{display:flex; align-items:center; gap:18px; height:60px}
+.logo{display:flex; align-items:center; gap:9px; font-weight:700; letter-spacing:.5px}
+.logo .mk{width:26px;height:26px;border-radius:7px;background:var(--accent);display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;font-weight:800}
+.top nav{margin-left:auto; display:flex; gap:22px; font-size:14px; color:var(--ink2)}
+.top nav a{color:var(--ink2)}
+.top nav a:hover{color:var(--accent); text-decoration:none}
+.sw{display:flex; gap:6px; align-items:center}
+.sw button{
+  border:1px solid var(--line); background:transparent; color:var(--ink2);
+  border-radius:8px; padding:5px 10px; font-size:12px; cursor:pointer; font-family:inherit;
+}
+.sw button.on{background:var(--accent); color:#fff; border-color:var(--accent)}
+
+/* Hero */
+.hero{padding:74px 0 52px; border-bottom:1px solid var(--line)}
+.eyebrow{display:inline-flex; align-items:center; gap:8px; font-size:12px; letter-spacing:2px;
+  color:var(--accent); background:var(--accent-soft); border-radius:999px; padding:5px 14px; margin-bottom:22px}
+h1{font-size:42px; line-height:1.28; margin:0 0 18px; letter-spacing:-.5px; font-weight:800}
+h1 em{font-style:normal; color:var(--accent)}
+.lede{font-size:17px; color:var(--ink2); max-width:720px; margin:0 0 30px}
+.cta{display:flex; gap:12px; flex-wrap:wrap}
+.btn{display:inline-flex; align-items:center; gap:8px; padding:12px 22px; border-radius:10px;
+  font-size:15px; font-weight:600; cursor:pointer; border:1px solid transparent; font-family:inherit}
+.btn.p{background:var(--accent); color:#fff}
+.btn.p:hover{background:var(--accent-deep); text-decoration:none}
+.btn.s{border-color:var(--line); color:var(--ink); background:var(--panel)}
+.btn.s:hover{text-decoration:none; border-color:var(--accent); color:var(--accent)}
+
+/* 区块 */
+section{padding:64px 0; border-bottom:1px solid var(--line)}
+h2{font-size:26px; margin:0 0 10px; letter-spacing:-.2px; font-weight:800}
+.sub{color:var(--ink2); margin:0 0 34px; max-width:760px; font-size:15px}
+h3{font-size:17px; margin:0 0 8px; font-weight:700}
+p{margin:0 0 14px}
+
+/* 卡片 */
+.grid3{display:grid; grid-template-columns:repeat(3,1fr); gap:18px}
+.grid2{display:grid; grid-template-columns:1fr 1fr; gap:18px}
+.card{background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:24px}
+.card .tag{font-size:11px; letter-spacing:1.5px; color:var(--ink3); margin-bottom:10px}
+.card .nm{font-size:19px; font-weight:800; margin:0 0 6px}
+.card .ln{color:var(--ink2); font-size:14px; margin:0 0 18px; min-height:52px}
+.kv{display:flex; justify-content:space-between; font-size:13px; padding:7px 0; border-top:1px solid var(--line2)}
+.kv span:first-child{color:var(--ink3)}
+.kv span:last-child{font-weight:600}
+.pending{
+  margin-top:16px; background:var(--chip); border-radius:9px; padding:12px 14px;
+  font-size:13px; color:var(--ink2); display:flex; gap:9px; align-items:flex-start;
+}
+.pending b{color:var(--amber)}
+
+/* 真话区 */
+.truth{background:var(--panel); border:1px solid var(--line); border-left:3px solid var(--accent);
+  border-radius:12px; padding:22px 26px}
+.truth ul{margin:8px 0 0; padding-left:20px}
+.truth li{margin-bottom:7px; color:var(--ink2); font-size:14px}
+
+/* 入口双栏 */
+.entry{display:grid; grid-template-columns:1fr 1fr; gap:18px}
+.entry .card .who{font-size:12px; letter-spacing:1.5px; color:var(--accent); margin-bottom:8px}
+.steps{margin:14px 0 0; padding:0; list-style:none; counter-reset:s}
+.steps li{counter-increment:s; position:relative; padding-left:30px; margin-bottom:11px; font-size:14px; color:var(--ink2)}
+.steps li::before{
+  content:counter(s); position:absolute; left:0; top:1px; width:21px; height:21px; border-radius:50%;
+  background:var(--accent-soft); color:var(--accent); font-size:11px; font-weight:800;
+  display:flex; align-items:center; justify-content:center;
+}
+
+/* 表格 */
+table{width:100%; border-collapse:collapse; font-size:14px}
+th,td{text-align:left; padding:11px 12px; border-bottom:1px solid var(--line2)}
+th{color:var(--ink3); font-weight:600; font-size:12px; letter-spacing:1px}
+td:last-child{font-weight:600}
+
+/* 里程碑 */
+.mile{display:flex; flex-direction:column; gap:0}
+.mile .row{display:grid; grid-template-columns:92px 1fr; gap:18px; padding:16px 0; border-top:1px solid var(--line2)}
+.mile .row .k{font-weight:800; color:var(--accent); font-size:14px}
+.mile .row .d{font-size:14px; color:var(--ink2)}
+.mile .row .d b{color:var(--ink); font-weight:700}
+
+/* 页脚 */
+footer{padding:40px 0 60px; color:var(--ink3); font-size:13px}
+footer .wrap{display:flex; justify-content:space-between; gap:20px; flex-wrap:wrap}
+
+.svgbox{background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:22px; margin:22px 0}
+.mono{font-family:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace}
+
+@media (max-width:900px){
+  .grid3,.grid2,.entry{grid-template-columns:1fr}
+  h1{font-size:32px}
+  .top nav{display:none}
+}
+</style>
+</head>
+<body>
+
+<div class="top">
+  <div class="wrap">
+    <div class="logo"><span class="mk">牛</span><span>牛牛 AI</span></div>
+    <nav>
+      <a href="#tpl" data-i18n="nav.tpl">策略模板</a>
+      <a href="#how" data-i18n="nav.how">怎么打通</a>
+      <a href="#join" data-i18n="nav.join">接入生态</a>
+      <a href="#truth" data-i18n="nav.truth">边界</a>
+      <a href="#road" data-i18n="nav.road">路线</a>
+    </nav>
+    <div class="sw">
+      <button id="lzh" class="on">中</button><button id="len">EN</button>
+      <button id="tday" class="on" style="margin-left:8px">日</button><button id="tnight">夜</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ HERO ============ -->
+<header class="hero">
+  <div class="wrap">
+    <div class="eyebrow" data-i18n="eyebrow">MT5 策略模板 · 首批 3 个</div>
+    <h1 data-i18n="h1">把 MT5 策略做成<em>能复用、能订阅</em>的模板</h1>
+    <p class="lede" data-i18n="lede">
+      一个 EA 承载三种策略，靠参数切换，不改代码、不用重新编译。
+      策略方上传模板，交易者订阅运行，执行全程留在你自己的 MT5 里。
+    </p>
+    <div class="cta">
+      <a class="btn p" href="#join" data-i18n="cta1">接入生态</a>
+      <a class="btn s" href="#tpl" data-i18n="cta2">看首批模板</a>
+    </div>
+
+    <div class="svgbox">
+      <svg viewBox="0 0 1000 250" width="100%" height="250" role="img" aria-label="生态飞轮">
+        <defs>
+          <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="var(--accent)"/>
+          </marker>
+        </defs>
+        <!-- 四个节点 -->
+        <g font-family="Hiragino Sans GB, sans-serif">
+          <rect x="30" y="92" width="180" height="66" rx="12" fill="var(--accent-soft)" stroke="var(--accent)"/>
+          <text x="120" y="120" text-anchor="middle" font-size="15" font-weight="700" fill="var(--ink)" data-i18n="svg.a1">策略方</text>
+          <text x="120" y="140" text-anchor="middle" font-size="12" fill="var(--ink2)" data-i18n="svg.a1s">上传规则与参数</text>
+
+          <rect x="290" y="92" width="180" height="66" rx="12" fill="var(--chip)" stroke="var(--line)"/>
+          <text x="380" y="120" text-anchor="middle" font-size="15" font-weight="700" fill="var(--ink)" data-i18n="svg.a2">模板化</text>
+          <text x="380" y="140" text-anchor="middle" font-size="12" fill="var(--ink2)" data-i18n="svg.a2s">参数表 + 风控口径</text>
+
+          <rect x="550" y="92" width="180" height="66" rx="12" fill="var(--chip)" stroke="var(--line)"/>
+          <text x="640" y="120" text-anchor="middle" font-size="15" font-weight="700" fill="var(--ink)" data-i18n="svg.a3">订阅运行</text>
+          <text x="640" y="140" text-anchor="middle" font-size="12" fill="var(--ink2)" data-i18n="svg.a3s">在你的 MT5 里跑</text>
+
+          <rect x="790" y="92" width="180" height="66" rx="12" fill="var(--chip)" stroke="var(--line)"/>
+          <text x="880" y="120" text-anchor="middle" font-size="15" font-weight="700" fill="var(--ink)" data-i18n="svg.a4">分润回流</text>
+          <text x="880" y="140" text-anchor="middle" font-size="12" fill="var(--ink2)" data-i18n="svg.a4s">按已实现盈利结算</text>
+
+          <line x1="212" y1="125" x2="286" y2="125" stroke="var(--accent)" stroke-width="2" marker-end="url(#ar)"/>
+          <line x1="472" y1="125" x2="546" y2="125" stroke="var(--accent)" stroke-width="2" marker-end="url(#ar)"/>
+          <line x1="732" y1="125" x2="786" y2="125" stroke="var(--accent)" stroke-width="2" marker-end="url(#ar)"/>
+          <path d="M880,160 C880,215 120,215 120,162" fill="none" stroke="var(--accent)" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#ar)"/>
+          <text x="500" y="228" text-anchor="middle" font-size="12" fill="var(--ink3)" data-i18n="svg.note">飞轮：越多人跑 → 数据越全 → 越值得跑</text>
+        </g>
+      </svg>
+    </div>
+  </div>
+</header>
+
+<!-- ============ 策略模板 ============ -->
+<section id="tpl">
+  <div class="wrap">
+    <h2 data-i18n="tpl.h">首批三个模板</h2>
+    <p class="sub" data-i18n="tpl.s">
+      三个模板共用同一个 EA（NiuNiuStrategy.mq5），靠 <span class="mono">InpStrategy</span> 参数切换。
+      首批只上架三个——剩下 20 个进了设计资产库，没跑完回测不上架。
+    </p>
+
+    <div class="grid3">
+      <div class="card">
+        <div class="tag">NN-T01 · TREND</div>
+        <div class="nm" data-i18n="t1.n">趋势回撤</div>
+        <p class="ln" data-i18n="t1.d">顺着趋势方向，等价格回踩到快线附近再进，不追高不抄底。</p>
+        <div class="kv"><span data-i18n="k.sym">建议品种</span><span>XAUUSD · EURUSD</span></div>
+        <div class="kv"><span data-i18n="k.tf">建议周期</span><span>H1</span></div>
+        <div class="kv"><span data-i18n="k.risk">单笔风险</span><span>0.5%</span></div>
+        <div class="kv"><span data-i18n="k.stop">止损</span><span>ATR × 2.0</span></div>
+        <div class="pending"><b>◷</b><span data-i18n="t1.p">绩效待回测。我们会把真实结果填进来，在那之前这里就是空的。</span></div>
+      </div>
+
+      <div class="card">
+        <div class="tag">NN-T02 · BREAKOUT</div>
+        <div class="nm" data-i18n="t2.n">区间突破</div>
+        <p class="ln" data-i18n="t2.d">价格收出 N 根 K 线的通道之外才动手；通道太窄视为震荡，不做。</p>
+        <div class="kv"><span data-i18n="k.sym">建议品种</span><span>XAUUSD · USOIL</span></div>
+        <div class="kv"><span data-i18n="k.tf">建议周期</span><span>H1 / H4</span></div>
+        <div class="kv"><span data-i18n="k.risk">单笔风险</span><span>0.5%</span></div>
+        <div class="kv"><span data-i18n="k.stop">止损</span><span>ATR × 1.5</span></div>
+        <div class="pending"><b>◷</b><span data-i18n="t2.p">绩效待回测。震荡市里会连续被假突破打止损，这是结构性成本。</span></div>
+      </div>
+
+      <div class="card">
+        <div class="tag">NN-T03 · MEAN REVERSION</div>
+        <div class="nm" data-i18n="t3.n">有界均值回归</div>
+        <p class="ln" data-i18n="t3.d">价格插到轨道外不算信号，收回轨道内才算；强制止损 + 强制最长持有时间。</p>
+        <div class="kv"><span data-i18n="k.sym">建议品种</span><span>EURUSD · GBPUSD</span></div>
+        <div class="kv"><span data-i18n="k.tf">建议周期</span><span>H1</span></div>
+        <div class="kv"><span data-i18n="k.risk">单笔风险</span><span>0.5%</span></div>
+        <div class="kv"><span data-i18n="k.stop">持有上限</span><span>48 根 K 线</span></div>
+        <div class="pending"><b>◷</b><span data-i18n="t3.p">绩效待回测。「有界」两个字落在持有上限上：到点无条件平仓。</span></div>
+      </div>
+    </div>
+
+    <div class="truth" style="margin-top:26px">
+      <h3 data-i18n="noperf.h">为什么不给你看收益率曲线</h3>
+      <ul>
+        <li data-i18n="noperf.1">三个模板都还没跑完回测。填一个好看的数字进去只要三秒钟，但那会让后面所有判断失真。</li>
+        <li data-i18n="noperf.2">年化收益率不等于那一年真的赚到；最大回撤也不是未来的上限。</li>
+        <li data-i18n="noperf.3">回测曲线与实盘曲线不会接成一条线，中间断开才是诚实画法。</li>
+        <li data-i18n="noperf.4">我们的规矩：未回测就写 <span class="mono">null</span>，回测了就标「回测」，跑过实盘才标「实盘」。三者不混榜。</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 怎么打通 ============ -->
+<section id="how">
+  <div class="wrap">
+    <h2 data-i18n="how.h">钱和指令是怎么走过去的</h2>
+    <p class="sub" data-i18n="how.s">
+      桌面端不碰你的 MT5 进程，也不监听任何端口。命令走本地文件，密钥只在本地两台进程之间流转。
+    </p>
+
+    <div class="svgbox">
+      <svg viewBox="0 0 1000 210" width="100%" height="210" role="img" aria-label="执行链路">
+        <g font-family="Hiragino Sans GB, sans-serif">
+          <rect x="20" y="66" width="150" height="58" rx="10" fill="var(--chip)" stroke="var(--line)"/>
+          <text x="95" y="90" text-anchor="middle" font-size="13" font-weight="700" fill="var(--ink)" data-i18n="svg.c1">桌面端 UI</text>
+          <text x="95" y="108" text-anchor="middle" font-size="11" fill="var(--ink2)" data-i18n="svg.c1s">渲染层 · 无权限</text>
+
+          <rect x="205" y="66" width="150" height="58" rx="10" fill="var(--accent-soft)" stroke="var(--accent)"/>
+          <text x="280" y="90" text-anchor="middle" font-size="13" font-weight="700" fill="var(--ink)" data-i18n="svg.c2">主进程</text>
+          <text x="280" y="108" text-anchor="middle" font-size="11" fill="var(--ink2)" data-i18n="svg.c2s">授权 + 停用闸门</text>
+
+          <rect x="390" y="66" width="150" height="58" rx="10" fill="var(--accent-soft)" stroke="var(--accent)"/>
+          <text x="465" y="90" text-anchor="middle" font-size="13" font-weight="700" fill="var(--ink)" data-i18n="svg.c3">桥进程</text>
+          <text x="465" y="108" text-anchor="middle" font-size="11" fill="var(--ink2)" data-i18n="svg.c3s">持有密钥 · 签名</text>
+
+          <rect x="575" y="66" width="150" height="58" rx="10" fill="var(--chip)" stroke="var(--line)"/>
+          <text x="650" y="90" text-anchor="middle" font-size="13" font-weight="700" fill="var(--ink)" data-i18n="svg.c4">MT5 EA</text>
+          <text x="650" y="108" text-anchor="middle" font-size="11" fill="var(--ink2)" data-i18n="svg.c4s">二次鉴权 · 执行</text>
+
+          <rect x="760" y="66" width="190" height="58" rx="10" fill="var(--chip)" stroke="var(--line)"/>
+          <text x="855" y="90" text-anchor="middle" font-size="13" font-weight="700" fill="var(--ink)" data-i18n="svg.c5">券商</text>
+          <text x="855" y="108" text-anchor="middle" font-size="11" fill="var(--ink2)" data-i18n="svg.c5s">唯一能下单的地方</text>
+
+          <g stroke="var(--accent)" stroke-width="2" marker-end="url(#ar)">
+            <line x1="172" y1="95" x2="201" y2="95"/>
+            <line x1="357" y1="95" x2="386" y2="95"/>
+            <line x1="542" y1="95" x2="571" y2="95"/>
+            <line x1="727" y1="95" x2="756" y2="95"/>
+          </g>
+          <text x="95" y="152" text-anchor="middle" font-size="11" fill="var(--ink3)" data-i18n="svg.p1">看不见密钥</text>
+          <text x="280" y="152" text-anchor="middle" font-size="11" fill="var(--ink3)" data-i18n="svg.p2">看不到文件</text>
+          <text x="465" y="152" text-anchor="middle" font-size="11" fill="var(--ink3)" data-i18n="svg.p3">不监听端口</text>
+          <text x="650" y="152" text-anchor="middle" font-size="11" fill="var(--ink3)" data-i18n="svg.p4">没签名就拒绝</text>
+          <text x="855" y="152" text-anchor="middle" font-size="11" fill="var(--ink3)" data-i18n="svg.p5">不知道有我们</text>
+          <line x1="20" y1="172" x2="950" y2="172" stroke="var(--line2)"/>
+          <text x="20" y="194" font-size="12" fill="var(--ink2)" data-i18n="svg.rcpt">回执两阶段：先受理（ACCEPTED），再成交（EXECUTED）。结果不明一律标「待核对」并禁止自动重放。</text>
+        </g>
+      </svg>
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <h3 data-i18n="cap.h">现在真能跑的原语</h3>
+        <p style="color:var(--ink2);font-size:14px" data-i18n="cap.d">
+          EA 只实现了三种命令，所以模板 v1 只能由这三个原语组成。这不是偷懒，是刻意的收缩。
+        </p>
+        <div class="kv"><span class="mono">ORDER_MARKET</span><span data-i18n="cap.1">市价开仓</span></div>
+        <div class="kv"><span class="mono">POSITION_CLOSE</span><span data-i18n="cap.2">按单号平仓</span></div>
+        <div class="kv"><span class="mono">SYNC_STATE</span><span data-i18n="cap.3">刷新状态（只读）</span></div>
+      </div>
+      <div class="card">
+        <h3 data-i18n="budge.h">同账户跑多个模板的风险预算</h3>
+        <p style="color:var(--ink2);font-size:14px" data-i18n="budge.d">
+          Magic 只做逻辑隔离，不做风险隔离：余额、净值、保证金、回撤全部共享。
+        </p>
+        <table>
+          <tr><th data-i18n="budge.th1">同时跑</th><th data-i18n="budge.th2">每个模板风险</th></tr>
+          <tr><td>1 个</td><td>1.0%</td></tr>
+          <tr><td>2–3 个</td><td>0.5–0.7%</td></tr>
+          <tr><td>4–6 个</td><td>0.3–0.5%</td></tr>
+          <tr><td>7 个以上</td><td>0.2–0.3%</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 接入生态 ============ -->
+<section id="join">
+  <div class="wrap">
+    <h2 data-i18n="join.h">两种接入方式</h2>
+    <p class="sub" data-i18n="join.s">无论哪一侧，执行都留在你自己的 MT5 和自己的券商账户里。我们不代持、不托管。</p>
+
+    <div class="entry">
+      <div class="card">
+        <div class="who" data-i18n="join.a">我是策略方</div>
+        <h3 data-i18n="join.ah">把你的规则做成模板</h3>
+        <ol class="steps">
+          <li data-i18n="join.a1">提交规则说明 + 参数表（不需要交源码）</li>
+          <li data-i18n="join.a2">过五道门：有止损 / 不加仓 / 能过回测 / 有回撤口径 / 有失效条件</li>
+          <li data-i18n="join.a3">在 MT5 策略测试器跑完整样本，结果公开（含回撤期）</li>
+          <li data-i18n="join.a4">模拟盘跑满 30 天，才允许进广场</li>
+          <li data-i18n="join.a5">上架后按已实现盈利分润，亏损期不分</li>
+        </ol>
+      </div>
+      <div class="card">
+        <div class="who" data-i18n="join.b">我是交易者</div>
+        <h3 data-i18n="join.bh">在自己的 MT5 里跑起来</h3>
+        <ol class="steps">
+          <li data-i18n="join.b1">装桌面端，授权激活</li>
+          <li data-i18n="join.b2">一键把桥接 EA 装进你的 MT5 终端</li>
+          <li data-i18n="join.b3">挑模板 → 设手数与风险上限 → 上模拟盘</li>
+          <li data-i18n="join.b4">模拟盘跑满意了再上真仓，随时一键停用</li>
+          <li data-i18n="join.b5">「一键停用」是主进程里的真闸门，不是界面上的开关</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 边界 ============ -->
+<section id="truth">
+  <div class="wrap">
+    <h2 data-i18n="truth.h">先把边界讲清楚</h2>
+    <p class="sub" data-i18n="truth.s">这些话现在说比出事后再说便宜得多。</p>
+    <div class="grid2">
+      <div class="card">
+        <h3 style="color:var(--green)" data-i18n="truth.doh">我们会做的</h3>
+        <ul style="padding-left:20px;color:var(--ink2);font-size:14px">
+          <li data-i18n="truth.d1">每一笔都带止损，没有止损的模板不上架</li>
+          <li data-i18n="truth.d2">移除 EA 默认不平仓，要平由你显式决定</li>
+          <li data-i18n="truth.d3">结果不明时标「待核对」并禁止自动重放</li>
+          <li data-i18n="truth.d4">净额账户下检测到同品种已有别的 Magic 持仓就自动跳过</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3 style="color:var(--red)" data-i18n="truth.donth">我们不会做的</h3>
+        <ul style="padding-left:20px;color:var(--ink2);font-size:14px">
+          <li data-i18n="truth.n1">不碰你的资金，不做代持与托管</li>
+          <li data-i18n="truth.n2">不做马丁、网格、逆势加仓类模板</li>
+          <li data-i18n="truth.n3">不承诺收益率，也不展示未回测的数字</li>
+          <li data-i18n="truth.n4">不把回测曲线和实盘曲线接成一条线</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 路线 ============ -->
+<section id="road">
+  <div class="wrap">
+    <h2 data-i18n="road.h">路线</h2>
+    <p class="sub" data-i18n="road.s">已经做完的、正在做的、明确不做的。</p>
+    <div class="mile">
+      <div class="row"><div class="k">M0 · 已完成</div><div class="d"><b>交易链打通。</b>协议、桥、EA 三层断言 27 项全通过；UI 30 项全通过。修掉 8 个真 bug，其中 3 个会让功能完全不可用。</div></div>
+      <div class="row"><div class="k">M1 · 进行中</div><div class="d"><b>首批模板回测。</b>三个模板跑完 MT5 策略测试器，把真实绩效填进卡片；同期跑 30 天模拟盘。</div></div>
+      <div class="row"><div class="k">M2 · 下一步</div><div class="d"><b>广场与订阅。</b>模板卡、详情页、订阅与分润结算；AI 副驾驶只做总结，不下单。</div></div>
+      <div class="row"><div class="k">M3 · 之后</div><div class="d"><b>策略方接入。</b>模板提交、五道审核门、公开回测报告。</div></div>
+      <div class="row"><div class="k">不做</div><div class="d"><b>本季度明确不做：</b>信号托管、代客理财、保本承诺、无止损模板、跨账户资金池。</div></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div>牛牛 AI · niuniuai.app</div>
+    <div data-i18n="foot">本页所有绩效位为空，因为它们还没被跑出来。</div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var root = document.documentElement;
+
+  // ---------- i18n ----------
+  var ZH = {}, EN = {
+    'eyebrow':'MT5 STRATEGY TEMPLATES · FIRST 3',
+    'nav.tpl':'Templates','nav.how':'How it works','nav.join':'Join','nav.truth':'Limits','nav.road':'Roadmap',
+    'h1':'Turn MT5 strategies into <em>reusable, subscribable</em> templates',
+    'lede':'One EA, three strategies, switched by a parameter - no code changes, no recompiling. Authors publish templates; traders run them inside their own MT5.',
+    'cta1':'Join the ecosystem','cta2':'See the first three',
+    'tpl.h':'The first three templates',
+    'tpl.s':'All three share one EA (NiuNiuStrategy.mq5), switched via the InpStrategy parameter. Only three ship now - the other 20 sit in the design library until they have been backtested.',
+    't1.n':'Trend Pullback','t1.d':'Trade with the trend; enter on a pullback to the fast EMA. No chasing, no bottom-fishing.',
+    't2.n':'Range Breakout','t2.d':'Act only when price closes outside the N-bar channel; skip when the channel is too narrow.',
+    't3.n':'Bounded Mean Reversion','t3.d':'Touching the outer band is not a signal - closing back inside is. Hard stop plus hard time limit.',
+    'k.sym':'Symbols','k.tf':'Timeframe','k.risk':'Risk / trade','k.stop':'Stop','k.hold':'Max hold',
+    't1.p':'No performance data yet. Real numbers go here once they exist - until then this stays empty.',
+    't2.p':'No performance data yet. Ranging markets will stop this out repeatedly; that is structural, not a tuning issue.',
+    't3.p':'No performance data yet. "Bounded" means the time limit: it closes at 48 bars no matter what.',
+    'noperf.h':'Why there is no equity curve here',
+    'noperf.1':'None of the three has finished a backtest yet. Typing a nice number takes three seconds and distorts every judgement after it.',
+    'noperf.2':'Annualised return is not what you actually made that year; max drawdown is not a ceiling for the future.',
+    'noperf.3':'Backtest and live curves do not join into one line. Showing the break is the honest way to draw it.',
+    'noperf.4':'Our rule: unbacktested is null, backtested is labelled "backtest", live is labelled "live". The three never share one board.',
+    'how.h':'How orders and money actually move',
+    'how.s':'The desktop app never touches your MT5 process and listens on no port. Commands travel as local files; the secret lives only between two local processes.',
+    'cap.h':'The primitives that really work today',
+    'cap.d':'The EA implements exactly three commands, so v1 templates can only be built from these three. That is a deliberate narrowing, not laziness.',
+    'cap.1':'Market open','cap.2':'Close by ticket','cap.3':'Refresh state (read-only)',
+    'budge.h':'Risk budget when running several templates',
+    'budge.d':'Magic separates logic, not risk: balance, equity, margin and drawdown are all shared.',
+    'budge.th1':'Templates','budge.th2':'Risk each',
+    'join.h':'Two ways in',
+    'join.s':'Either way, execution stays in your MT5 and your broker account. We do not hold or custody funds.',
+    'join.a':'I am a strategy author','join.ah':'Turn your rules into a template',
+    'join.a1':'Submit a rule description plus a parameter table (source code not required)',
+    'join.a2':'Pass five gates: has a stop / no adding to losers / survives a backtest / has a drawdown definition / has an invalidation condition',
+    'join.a3':'Run a full-sample backtest in the MT5 tester and publish the result, drawdown periods included',
+    'join.a4':'30 days on a demo account before it is allowed into the plaza',
+    'join.a5':'Revenue share on realised profit only - nothing during losing periods',
+    'join.b':'I am a trader','join.bh':'Run it inside your own MT5',
+    'join.b1':'Install the desktop app and activate the licence',
+    'join.b2':'One click installs the bridge EA into your MT5 terminal',
+    'join.b3':'Pick a template, set size and risk caps, start on demo',
+    'join.b4':'Move to live only when demo convinces you; one click to halt at any time',
+    'join.b5':'"Halt" is a real gate in the main process, not a switch on the screen',
+    'truth.h':'Limits, stated up front','truth.s':'Saying this now is far cheaper than saying it after something goes wrong.',
+    'truth.doh':'What we do','truth.donth':'What we do not do',
+    'truth.d1':'Every trade carries a stop; templates without one are not listed',
+    'truth.d2':'Removing the EA does not close positions by default - closing is your explicit call',
+    'truth.d3':'Unknown outcomes are marked "needs review" and never auto-replayed',
+    'truth.d4':'On netting accounts we skip if another magic already holds the same symbol',
+    'truth.n1':'We never touch your funds - no custody, no holding',
+    'truth.n2':'No martingale, no grid, no averaging into losers',
+    'truth.n3':'No promised returns, no unbacktested numbers on screen',
+    'truth.n4':'Backtest and live curves are never stitched into one line',
+    'road.h':'Roadmap','road.s':'What is done, what is running, what is explicitly off the table.',
+    'svg.a1':'Strategy author','svg.a1s':'Uploads rules and params',
+    'svg.a2':'Templating','svg.a2s':'Parameter table + risk rules',
+    'svg.a3':'Subscribe and run','svg.a3s':'Runs in your own MT5',
+    'svg.a4':'Revenue share','svg.a4s':'Settled on realised profit',
+    'svg.note':'Flywheel: the more it runs, the more data, the more worth running',
+    'svg.c1':'Desktop UI','svg.c1s':'Render layer · no privileges',
+    'svg.c2':'Main process','svg.c2s':'Licence + halt gate',
+    'svg.c3':'Bridge','svg.c3s':'Holds the secret · signs',
+    'svg.c4':'MT5 EA','svg.c4s':'Second auth · executes',
+    'svg.c5':'Broker','svg.c5s':'The only place that fills orders',
+    'svg.p1':'Never sees the secret','svg.p2':'Cannot see files','svg.p3':'Listens on no port',
+    'svg.p4':'Unsigned = rejected','svg.p5':'Does not know we exist',
+    'svg.rcpt':'Two-stage receipts: accepted (ACCEPTED), then filled (EXECUTED). Unknown outcomes are marked for review and never auto-replayed.',
+    'foot':'Every performance slot on this page is empty because it has not been produced yet.'
+  };
+
+  function snap(){
+    document.querySelectorAll('[data-i18n]').forEach(function(el){
+      var k = el.getAttribute('data-i18n');
+      if(!ZH[k]) ZH[k] = el instanceof SVGElement ? el.textContent : el.innerHTML;
+    });
+  }
+  function applyLang(l){
+    root.setAttribute('lang', l === 'en' ? 'en' : 'zh-CN');
+    document.querySelectorAll('[data-i18n]').forEach(function(el){
+      var k = el.getAttribute('data-i18n');
+      var t = l === 'en' ? (EN[k] || ZH[k]) : ZH[k];
+      if(t === undefined) return;
+      // SVG 的 text 不支持 innerHTML 赋标签，走 textContent
+      if(el instanceof SVGElement) el.textContent = t;
+      else el.innerHTML = t;
+    });
+    document.getElementById('lzh').classList.toggle('on', l !== 'en');
+    document.getElementById('len').classList.toggle('on', l === 'en');
+  }
+
+  function applyTheme(t){
+    root.setAttribute('data-theme', t);
+    document.getElementById('tday').classList.toggle('on', t === 'light');
+    document.getElementById('tnight').classList.toggle('on', t === 'dark');
+  }
+
+  // ---------- 初始：URL 参数 > 本地存储 > 系统偏好 ----------
+  var q = new URLSearchParams(location.search);
+  var lang = (q.get('lang') || localStorage.getItem('nn-lang') || 'zh').toLowerCase();
+  var theme = (q.get('theme') || localStorage.getItem('nn-theme') || '').toLowerCase();
+  if(!theme){
+    try { theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'; }
+    catch(e){ theme = 'light'; }
+  }
+  snap();
+  applyLang(lang === 'en' ? 'en' : 'zh');
+  applyTheme(theme === 'dark' ? 'dark' : 'light');
+
+  document.getElementById('lzh').onclick = function(){ applyLang('zh'); localStorage.setItem('nn-lang','zh'); };
+  document.getElementById('len').onclick = function(){ applyLang('en'); localStorage.setItem('nn-lang','en'); };
+  document.getElementById('tday').onclick = function(){ applyTheme('light'); localStorage.setItem('nn-theme','light'); };
+  document.getElementById('tnight').onclick = function(){ applyTheme('dark'); localStorage.setItem('nn-theme','dark'); };
+})();
+</script>
+</body>
+</html>

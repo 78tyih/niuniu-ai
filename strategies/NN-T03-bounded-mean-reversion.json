@@ -1,0 +1,78 @@
+{
+  "_note": "绩效字段全部为 null 且 evidence=NOT_RUN：本模板尚未回测，禁止在对外材料里填任何数字。回测后填 metrics 并把 evidence 改成 BACKTEST_ONLY。",
+  "id": "NN-T03",
+  "version": "1.0.0",
+  "name_zh": "有界均值回归",
+  "name_en": "Bounded Mean Reversion",
+  "one_liner_zh": "价格插到轨道外不算信号，收回轨道内才算；强制止损 + 强制最长持有时间。",
+  "one_liner_en": "A touch of the outer band is not a signal - only a close back inside is. Hard stop plus hard time limit.",
+  "engine": {
+    "ea": "NiuNiuStrategy.mq5",
+    "strategy_enum": "NN_BOUNDED_MEANREV",
+    "strategy_value": 2,
+    "primitives_used": ["市价开仓", "按单号平仓", "改止盈止损"],
+    "primitives_not_used": ["挂单", "加仓", "网格", "马丁"]
+  },
+  "params": {
+    "InpStrategy": 2,
+    "InpDirection": 0,
+    "InpMagic": 810003,
+    "InpTag": "NNS",
+    "InpFastPeriod": 20,
+    "InpSlowPeriod": 60,
+    "InpChannelPeriod": 20,
+    "InpStdK": 2.0,
+    "InpAtrPeriod": 14,
+    "InpAtrSlMult": 2.0,
+    "InpAtrTpMult": 2.0,
+    "InpFixedSlPoints": 0,
+    "InpFixedTpPoints": 0,
+    "InpPullbackTolAtr": 0.5,
+    "InpMinChannelAtr": 0.8,
+    "InpRiskPct": 0.5,
+    "InpFixedLots": 0.0,
+    "InpMaxPositions": 1,
+    "InpMaxDailyLossPct": 2.0,
+    "InpMaxSpreadPoints": 30,
+    "InpMaxDeviationPoints": 20,
+    "InpMaxHoldBars": 48,
+    "InpUseTrailing": false,
+    "InpTrailPoints": 0,
+    "InpSessionFromHour": 0,
+    "InpSessionToHour": 0,
+    "InpVerbose": true,
+    "InpCloseOnStop": false
+  },
+  "param_notes": {
+    "InpMagic": "与 T01/T02 必须不同（810003）。",
+    "InpMaxHoldBars": "★「有界」两个字落在这里。48 = H1 下最多持有一天半，到点无条件平仓。这是本模板不变成马丁的唯一保证，不要改成 0。",
+    "InpStdK": "轨道 = 均线 ± k × 标准差。k 越小信号越多、质量越低。",
+    "InpAtrTpMult": "回归策略止盈比趋势策略更近（2.0 vs 3.0），目标是回到均线附近就走。"
+  },
+  "markets": {
+    "suggested_symbols": ["EURUSD", "GBPUSD", "AUDUSD"],
+    "suggested_timeframe": "H1",
+    "avoid": ["单边趋势强烈的行情（回归策略在这种行情里会被反复止损）", "有隔夜跳空风险的品种在持有时段"]
+  },
+  "risk": {
+    "single_trade_risk_pct": 0.5,
+    "daily_stop_pct": 2.0,
+    "max_concurrent_positions": 1,
+    "stop_is_mandatory": true,
+    "time_limit_bars": 48,
+    "anti_martingale": "本模板禁止任何形式的逆势加仓。持仓上限 1 笔、强制止损、强制最长持有时间，三条同时生效。"
+  },
+  "metrics": {
+    "evidence": "NOT_RUN",
+    "window_return_pct": null,
+    "max_drawdown_pct": null,
+    "sharpe": null,
+    "trades": null,
+    "days_recorded": null,
+    "source": null
+  },
+  "lifecycle": {
+    "state": "backtest_pending",
+    "gates_to_publish": ["在 MT5 策略测试器跑完至少 1 个完整样本区间", "与另外两个模板同账户跑满 30 天模拟盘", "最大回撤未超过日限的 3 倍"]
+  }
+}

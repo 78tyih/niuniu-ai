@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>牛牛 AI · AI 接入与积分体系方案</title>
+<style>
+:root{
+  --bg:#F5F6F8; --card:#FFFFFF; --soft:#F2F4F7; --line:#E4E7EC;
+  --ink:#14161A; --muted:#6B7280; --accent:#4F8CFF; --ok:#3F9C7C;
+  --warn:#D8624A; --amber:#B98B22;
+  --shadow:0 1px 2px rgba(20,22,26,.04),0 6px 20px rgba(20,22,26,.05);
+}
+[data-theme="dark"]{
+  --bg:#14161A; --card:#1B1E24; --soft:#22262E; --line:#2C313A;
+  --ink:#E9EBEE; --muted:#98A0AC; --accent:#6FA0FF; --ok:#5CBF9A;
+  --warn:#EE7F68; --amber:#D9A441;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.25);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);line-height:1.7;font-size:15px;
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  -webkit-font-smoothing:antialiased}
+header{position:sticky;top:0;z-index:60;background:color-mix(in srgb,var(--bg) 90%,transparent);
+  backdrop-filter:saturate(180%) blur(14px);border-bottom:1px solid var(--line)}
+.hbar{max-width:1080px;margin:0 auto;padding:11px 28px;display:flex;align-items:center;gap:14px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:15px;white-space:nowrap}
+.logo{width:27px;height:27px;border-radius:8px;background:var(--accent);color:#fff;
+  display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800}
+.brand span{color:var(--muted);font-weight:500;font-size:12px}
+.spacer{flex:1}
+.nav{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}
+.nav::-webkit-scrollbar{display:none}
+.nav a{font-size:12px;color:var(--muted);text-decoration:none;padding:5px 9px;border-radius:7px;white-space:nowrap}
+.nav a:hover{background:var(--soft);color:var(--ink)}
+.btn{border:1px solid var(--line);background:var(--card);color:var(--ink);font:inherit;font-size:12px;
+  padding:6px 11px;border-radius:8px;cursor:pointer}
+.wrap{max-width:1080px;margin:0 auto;padding:0 28px 110px}
+
+.hero{padding:56px 0 34px;border-bottom:1px solid var(--line)}
+.hero h1{font-size:38px;font-weight:780;letter-spacing:-1px;line-height:1.15}
+.hero .tag{font-size:16px;color:var(--muted);margin-top:12px}
+
+.verdict{margin:30px 0 0;padding:26px 30px;border-radius:16px;border:1.5px solid var(--accent);
+  background:var(--card);box-shadow:var(--shadow)}
+.verdict .lb{font-size:11.5px;font-weight:750;letter-spacing:.08em;color:var(--accent)}
+.verdict h2{font-size:24px;font-weight:760;line-height:1.45;margin:10px 0 12px;letter-spacing:-.4px}
+.verdict p{font-size:14.5px;color:var(--muted);line-height:1.75}
+.verdict b{color:var(--ink)}
+
+section{margin:64px 0 0;scroll-margin-top:70px}
+h2.s{font-size:25px;font-weight:740;letter-spacing:-.5px;margin:0 0 6px;display:flex;align-items:center;gap:11px}
+h2.s .n{display:inline-flex;min-width:32px;height:32px;border-radius:10px;background:var(--accent);
+  color:#fff;font-size:14px;align-items:center;justify-content:center;font-weight:800}
+.lead{color:var(--muted);font-size:14.5px;margin:0 0 20px}
+
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px 24px;box-shadow:var(--shadow)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+@media(max-width:860px){.grid2,.grid3,.grid4{grid-template-columns:1fr}}
+
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th{text-align:left;font-size:11px;letter-spacing:.4px;color:var(--muted);font-weight:700;
+  padding:9px 12px;border-bottom:1.5px solid var(--line)}
+td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top;line-height:1.5}
+tr:last-child td{border-bottom:none}
+td:first-child{font-weight:650}
+.tag{display:inline-block;font-size:10.5px;padding:2px 8px;border-radius:20px;font-weight:700}
+.t-ok{background:color-mix(in srgb,var(--ok) 15%,transparent);color:var(--ok)}
+.t-no{background:color-mix(in srgb,var(--warn) 14%,transparent);color:var(--warn)}
+.t-mid{background:color-mix(in srgb,var(--amber) 16%,transparent);color:var(--amber)}
+
+.opt{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px 22px;position:relative}
+.opt.pick{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 12%,transparent)}
+.opt h4{font-size:17px;font-weight:730;margin-bottom:4px}
+.opt .st{font-size:11.5px;font-weight:750;margin-bottom:12px}
+.opt ul{list-style:none}
+.opt li{position:relative;padding-left:18px;font-size:13px;margin:7px 0;line-height:1.6;color:var(--muted)}
+.opt li::before{content:"";position:absolute;left:3px;top:9px;width:5px;height:5px;border-radius:50%;background:var(--accent)}
+.opt li.no::before{background:var(--warn)}
+.opt li b{color:var(--ink)}
+
+figure{margin:20px 0 6px}
+figure svg{width:100%;height:auto;display:block;border:1px solid var(--line);border-radius:12px;
+  background:var(--card);box-shadow:var(--shadow)}
+figcaption{font-size:12px;color:var(--muted);margin-top:9px}
+
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px 22px}
+.kpi .v{font-size:29px;font-weight:780;letter-spacing:-.8px;line-height:1.2}
+.kpi .k{font-size:11.5px;color:var(--muted);font-weight:650;margin-bottom:6px}
+.kpi .d{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.6}
+
+.road{position:relative;padding-left:26px}
+.road::before{content:"";position:absolute;left:7px;top:8px;bottom:8px;width:2px;background:var(--line)}
+.rd{position:relative;margin-bottom:22px}
+.rd::before{content:"";position:absolute;left:-24px;top:7px;width:12px;height:12px;border-radius:50%;
+  background:var(--card);border:2.5px solid var(--accent)}
+.rd h4{font-size:16px;font-weight:730}
+.rd .m{font-size:11.5px;color:var(--accent);font-weight:700;margin-bottom:4px}
+.rd p{font-size:13.5px;color:var(--muted);line-height:1.65}
+.rd .done{font-size:12.5px;margin-top:7px;padding-left:14px;border-left:3px solid var(--ok);color:var(--ink)}
+
+.warnbar{background:color-mix(in srgb,var(--warn) 7%,var(--soft));border-left:4px solid var(--warn);
+  border-radius:0 11px 11px 0;padding:15px 18px;margin:16px 0;font-size:14px;line-height:1.65}
+.okbar{background:color-mix(in srgb,var(--ok) 8%,var(--soft));border-left:4px solid var(--ok);
+  border-radius:0 11px 11px 0;padding:15px 18px;margin:16px 0;font-size:14px;line-height:1.65}
+
+.src{font-size:11.5px;color:var(--muted);margin-top:10px;line-height:1.7}
+footer{margin-top:64px;padding-top:22px;border-top:1px solid var(--line);font-size:12px;color:var(--muted)}
+@media print{header{display:none}body{background:#fff}section{page-break-inside:avoid;margin-top:32px}}
+</style>
+</head>
+<body>
+
+<header><div class="hbar">
+  <div class="brand"><span class="logo">牛</span>牛牛 AI<span>· AI 接入方案</span></div>
+  <div class="nav">
+    <a href="#s1">结论</a><a href="#s2">三条路对比</a><a href="#s3">架构</a>
+    <a href="#s4">实时价格</a><a href="#s5">成本算账</a><a href="#s6">积分设计</a>
+    <a href="#s7">路线图</a><a href="#s8">红线</a>
+  </div>
+  <div class="spacer"></div>
+  <button class="btn" id="themeBtn">夜间</button>
+  <button class="btn" id="printBtn">打印 / PDF</button>
+</div></header>
+
+<div class="wrap">
+
+<div class="hero">
+  <h1>AI 到底接哪里？<br>以及积分体系怎么搭</h1>
+  <div class="tag">2026-10-16 · 面向牛牛 AI 桌面端 · 价格均为官方公开价（当日查询，见文末来源）</div>
+</div>
+
+<div class="verdict">
+  <div class="lb">先看结论</div>
+  <h2>自建中转网关 + 自研计费层，上游主接国产（DeepSeek V4-Flash 打底，豆包 / 千问做备份），GPT 只做「高端档」可选项。</h2>
+  <p>
+    理由三条：<b>①</b> 客户端绝对不能拿到模型 Key —— Electron 包一扒就光，必须服务端代理，这一步顺带就把积分、限流、审计都做进去了；
+    <b>②</b> 国产三家都兼容 OpenAI 协议，切换成本近乎为零，不会被单一厂商涨价绑架（DeepSeek 8 月刚涨过一轮，输出价 +350%）；
+    <b>③</b> 你<b>已经有</b> Supabase 账号体系 + ZPay/Stripe 支付 + Zeabur 部署 —— 积分直接长在这套上面，不用从零造。
+  </p>
+</div>
+
+<!-- 1 -->
+<section id="s1">
+  <h2 class="s"><span class="n">1</span>一句话回答「接哪里」</h2>
+  <p class="lead">按你现在的情况（客户在国内、软件是交易工具、要卖积分），答案不是"接某个模型"，而是"先有一层你自己的网关"。</p>
+  <div class="grid3">
+    <div class="kpi"><div class="k">默认主力</div><div class="v">DeepSeek<br>V4-Flash</div><div class="d">低谷 ¥1.5 / ¥4.5 每百万 token；缓存命中输入再降一个量级。快、便宜、工具调用齐全。</div></div>
+    <div class="kpi"><div class="k">备份 / 抗涨价</div><div class="v">豆包 · 千问</div><div class="d">同为 OpenAI 协议。豆包 turbo ¥3 / ¥15，千问 Flash ¥0.8 / ¥2.7（限时折扣）。上游一挂就切。</div></div>
+    <div class="kpi"><div class="k">高端档（可选）</div><div class="v">GPT / Claude</div><div class="d">给海外客户或"深度分析"档单独定价。走合规渠道，不作为默认。</div></div>
+  </div>
+  <div class="okbar"><b>关键顺序：先建网关，再挑模型。</b>网关在你手里，模型就是可替换的零件；反过来（先接模型再补网关）等于把命门交给别人。</div>
+</section>
+
+<!-- 2 -->
+<section id="s2">
+  <h2 class="s"><span class="n">2</span>三条路，为什么选第三条</h2>
+  <p class="lead">四种常见做法的取舍。</p>
+  <div class="grid2">
+    <div class="opt">
+      <h4>A · 客户端直连官方 API</h4>
+      <div class="st" style="color:var(--warn)">✕ 不可行</div>
+      <ul>
+        <li class="no"><b>Key 必然泄漏</b>：我们的包是 asar:false（沙箱写文件要求），一解包就是明文 Key</li>
+        <li class="no">无法扣积分、无法限流、无法封停某个用户</li>
+        <li class="no">国内用户直连 OpenAI 还有网络与 ToS 问题</li>
+      </ul>
+    </div>
+    <div class="opt">
+      <h4>B · 买现成中转站给客户用</h4>
+      <div class="st" style="color:var(--amber)">△ 只能当备胎</div>
+      <ul>
+        <li>省运维，接入快 —— 适合做<b>上游备线</b></li>
+        <li class="no">倍率和套餐不在你手里，积分毛利被压一层</li>
+        <li class="no">它自己涨价 / 跑路，你的产品跟着死</li>
+        <li class="no">等于替别人卖流量，不做</li>
+      </ul>
+    </div>
+    <div class="opt pick">
+      <h4>C · 自建网关 + 自研计费（推荐）</h4>
+      <div class="st" style="color:var(--ok)">✓ 主线</div>
+      <ul>
+        <li><b>New API / One API</b> 一类开源网关做上游聚合与故障切换</li>
+        <li>上面再叠<b>自己的计费层</b>：鉴权 → 查积分 → 扣减 → 调模型 → 记用量</li>
+        <li>成本、倍率、套餐、封停全在你手里</li>
+        <li>上游可热切换，涨价就换</li>
+      </ul>
+    </div>
+    <div class="opt">
+      <h4>D · 自建网关并对外卖 API</h4>
+      <div class="st" style="color:var(--warn)">✕ 现在别做</div>
+      <ul>
+        <li>看起来多一条收入线</li>
+        <li class="no">合规、滥用、内容审核都是新坑</li>
+        <li class="no">和"交易助手"品牌混在一起，风险外溢</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- 3 -->
+<section id="s3">
+  <h2 class="s"><span class="n">3</span>架构：请求怎么走</h2>
+  <p class="lead">客户端永远拿不到模型 Key，也永远不直接对模型厂商发请求。</p>
+  <figure>
+  <svg viewBox="0 0 1200 380" role="img" aria-label="AI 请求链路架构">
+    <defs>
+      <marker id="ar" markerWidth="10" markerHeight="10" refX="8" refY="3.5" orient="auto">
+        <path d="M0,0 L8,3.5 L0,7 z" fill="#6B7280"/>
+      </marker>
+    </defs>
+    <rect width="1200" height="380" fill="#FFFFFF"/>
+
+    <rect x="30" y="90" width="200" height="130" rx="14" fill="#F2F4F7" stroke="#E4E7EC"/>
+    <text x="130" y="128" font-size="15" font-weight="700" fill="#14161A" text-anchor="middle"
+          font-family="PingFang SC,sans-serif">牛牛 AI 客户端</text>
+    <text x="130" y="154" font-size="12" fill="#6B7280" text-anchor="middle" font-family="PingFang SC,sans-serif">Electron 桌面端</text>
+    <text x="130" y="178" font-size="12" fill="#6B7280" text-anchor="middle" font-family="PingFang SC,sans-serif">只带「用户 token」</text>
+    <text x="130" y="202" font-size="11.5" fill="#D8624A" text-anchor="middle" font-family="PingFang SC,sans-serif">✕ 不含任何模型 Key</text>
+
+    <line x1="230" y1="155" x2="320" y2="155" stroke="#6B7280" stroke-width="1.8" marker-end="url(#ar)"/>
+    <text x="275" y="143" font-size="11" fill="#6B7280" text-anchor="middle" font-family="PingFang SC,sans-serif">HTTPS</text>
+
+    <rect x="320" y="62" width="290" height="186" rx="14" fill="#EAF2FF" stroke="#4F8CFF"/>
+    <text x="465" y="92" font-size="15" font-weight="700" fill="#14161A" text-anchor="middle" font-family="PingFang SC,sans-serif">自家后端（Zeabur）</text>
+    <text x="465" y="120" font-size="12" fill="#6B7280" text-anchor="middle" font-family="PingFang SC,sans-serif">① 验用户 token（Supabase）</text>
+    <text x="465" y="144" font-size="12" fill="#6B7280" text-anchor="middle" font-family="PingFang SC,sans-serif">② 查积分 → 预扣 → 结算</text>
+    <text x="465" y="168" font-size="12" fill="#6B7280" text-anchor="middle" font-family="PingFang SC,sans-serif">③ 限流 / 审计 / 用量入库</text>
+    <text x="465" y="192" font-size="12" fill="#6B7280" text-anchor="middle" font-family="PingFang SC,sans-serif">④ 注入系统提示词（可缓存）</text>
+    <text x="465" y="216" font-size="12" fill="#6B7280" text-anchor="middle" font-family="PingFang SC,sans-serif">⑤ 转发给网关</text>
+    <text x="465" y="240" font-size="11.5" fill="#4F8CFF" text-anchor="middle" font-family="PingFang SC,sans-serif">这里才持有模型 Key</text>
+
+    <line x1="610" y1="155" x2="700" y2="155" stroke="#6B7280" stroke-width="1.8" marker-end="url(#ar)"/>
+
+    <rect x="700" y="90" width="200" height="130" rx="14" fill="#F2F4F7" stroke="#E4E7EC"/>
+    <text x="800" y="128" font-size="15" font-weight="700" fill="#14161A" text-anchor="middle" font-family="PingFang SC,sans-serif">中转网关</text>
+    <text x="800" y="154" font-size="12" fill="#6B7280" text-anchor="middle" font-family="PingFang SC,sans-serif">New API / One API</text>
+    <text x="800" y="178" font-size="12" fill="#6B7280" text-anchor="middle" font-family="PingFang SC,sans-serif">多上游 · 故障切换</text>
+    <text x="800" y="202" font-size="12" fill="#6B7280" text-anchor="middle" font-family="PingFang SC,sans-serif">统一 OpenAI 协议</text>
+
+    <line x1="900" y1="155" x2="985" y2="155" stroke="#6B7280" stroke-width="1.8" marker-end="url(#ar)"/>
+
+    <g font-family="PingFang SC,sans-serif">
+      <rect x="985" y="62" width="185" height="44" rx="10" fill="#E7F5EF" stroke="#3F9C7C"/>
+      <text x="1077" y="90" font-size="13" font-weight="700" fill="#14161A" text-anchor="middle">DeepSeek V4-Flash</text>
+      <rect x="985" y="114" width="185" height="38" rx="10" fill="#F2F4F7" stroke="#E4E7EC"/>
+      <text x="1077" y="138" font-size="12.5" fill="#6B7280" text-anchor="middle">豆包 / 千问（备份）</text>
+      <rect x="985" y="160" width="185" height="38" rx="10" fill="#F2F4F7" stroke="#E4E7EC"/>
+      <text x="1077" y="184" font-size="12.5" fill="#6B7280" text-anchor="middle">GPT / Claude（高端档）</text>
+      <rect x="985" y="206" width="185" height="38" rx="10" fill="#FBF4E5" stroke="#B98B22"/>
+      <text x="1077" y="230" font-size="12.5" fill="#B98B22" text-anchor="middle">现成中转（应急备线）</text>
+    </g>
+
+    <line x1="30" y1="290" x2="1170" y2="290" stroke="#E4E7EC"/>
+    <text x="30" y="322" font-size="13" font-weight="700" fill="#14161A" font-family="PingFang SC,sans-serif">复用你已有的资产（不用重新造）</text>
+    <text x="30" y="350" font-size="12.5" fill="#6B7280" font-family="PingFang SC,sans-serif">Supabase = 用户与订单　·　ZPay + Stripe = 收款　·　Zeabur = 部署　·　niuniuai.app 现有账号体系 = 直接接</text>
+    <text x="30" y="372" font-size="12" fill="#6B7280" font-family="PingFang SC,sans-serif">新增只有两件：一个 /v1/chat 代理服务 + 一张积分流水表 + 客户端聊天框</text>
+  </svg>
+  <figcaption>请求链路：客户端 → 自家后端（鉴权 / 积分 / 审计）→ 网关 → 模型厂商。模型 Key 只存在于服务端环境变量。</figcaption>
+  </figure>
+</section>
+
+<!-- 4 -->
+<section id="s4">
+  <h2 class="s"><span class="n">4</span>现在的价格是多少（官方公开价）</h2>
+  <p class="lead">单位：元 / 百万 token · 中国内地 · 查于 2026-10-16。<b>价格变动快，上线前请再核一次官方页。</b></p>
+  <div class="card">
+    <table>
+      <tr><th>模型</th><th>输入</th><th>输出</th><th>缓存命中输入</th><th>备注</th></tr>
+      <tr><td>DeepSeek-V4-Flash</td><td>3（高峰）/ 1.5（低谷）</td><td>9 / 4.5</td><td>0.1 / 0.05</td><td>工具调用齐全，1M 上下文</td></tr>
+      <tr><td>DeepSeek-V4-Pro</td><td>9 / 4.5</td><td>27 / 13.5</td><td>0.3 / 0.15</td><td>旗舰，深度分析档</td></tr>
+      <tr><td>豆包 Seed-2.1-turbo</td><td>3</td><td>15</td><td>0.6</td><td>效果与成本均衡</td></tr>
+      <tr><td>豆包 Seed-2.1-pro</td><td>6</td><td>30</td><td>1.2</td><td>生产级任务</td></tr>
+      <tr><td>Qwen3.8-Flash</td><td>0.8</td><td>2.7</td><td>—</td><td>限时最高 5 折</td></tr>
+      <tr><td>Qwen3.7-Plus</td><td>2</td><td>8</td><td>0.4</td><td>限时 8 折</td></tr>
+      <tr><td>Qwen3.8-Max</td><td>12</td><td>36</td><td>2.4</td><td>旗舰</td></tr>
+    </table>
+    <div class="src">
+      来源：DeepSeek 官方 Pricing 页（峰谷规则 2026-08-17 生效；2026-08-23 起周六周日全天按低谷价）·
+      火山方舟模型广场 · 阿里云百炼计费文档与价格页。
+      <b>峰谷时段 = 北京时间 9:00–12:00、14:00–18:00</b> —— 正好覆盖 A 股与大部分交易时段，这点要算进成本。
+    </div>
+  </div>
+</section>
+
+<!-- 5 -->
+<section id="s5">
+  <h2 class="s"><span class="n">5</span>算一笔账：一次问答成本多少</h2>
+  <p class="lead">以下为<b>基于上表价格的推算（Inferred）</b>，不是实测账单 —— 接入后要用真实用量校准一次。</p>
+  <div class="grid4">
+    <div class="kpi"><div class="k">一次「持仓体检」</div><div class="v">¥0.006<br>~0.012</div><div class="d">输入约 3k token（其中 1.5k 系统词命中缓存）+ 输出 0.8k，按 V4-Flash 算</div></div>
+    <div class="kpi"><div class="k">一次深度分析</div><div class="v">¥0.05<br>~0.3</div><div class="d">长上下文 30k+ 输入 + 3k 输出，V4-Pro 档低谷约 ¥0.13、高峰约 ¥0.26</div></div>
+    <div class="kpi"><div class="k">重度用户/月</div><div class="v">¥3<br>~10</div><div class="d">按每天 30 次快问 + 每周 2 次深度估</div></div>
+    <div class="kpi"><div class="k">毛利空间</div><div class="v">85%<br>~95%</div><div class="d">按 1 积分 = ¥0.1 计，未扣支付通道费（约 1–3%）</div></div>
+  </div>
+  <div class="warnbar">
+    <b>成本控制的两个杠杆：</b>① <b>系统提示词固定 + 前缀缓存</b> —— 命中后输入成本降一个量级（V4-Flash 缓存命中 ¥0.05/百万，几乎免费）；
+    ② <b>默认走 Flash 档</b>，只有用户主动点「深度分析」才上 Pro/Max。别让默认档吃掉毛利。
+  </div>
+</section>
+
+<!-- 6 -->
+<section id="s6">
+  <h2 class="s"><span class="n">6</span>积分体系怎么设计</h2>
+  <p class="lead">目标：客户看得懂、你算得清、薅不走。</p>
+  <div class="grid2">
+    <div class="card">
+      <h3 style="font-size:16px;font-weight:730;margin-bottom:12px">计价方式：卖积分，消耗按 token 折算</h3>
+      <table>
+        <tr><th>项目</th><th>建议</th></tr>
+        <tr><td>积分单价</td><td>1 积分 ≈ ¥0.1（套餐越大越便宜）</td></tr>
+        <tr><td>快问（默认档）</td><td><b>1 积分 / 次</b>（成本约 0.1 分，毛利 90%+）</td></tr>
+        <tr><td>深度分析</td><td>5–10 积分 / 次</td></tr>
+        <tr><td>注册赠送</td><td>50 积分（试用钩子，够用两三天）</td></tr>
+        <tr><td>套餐</td><td>¥29 = 300 积分 · ¥98 = 1200 积分 · ¥298 = 4000 积分</td></tr>
+      </table>
+      <div class="okbar" style="margin-top:16px;font-size:13.5px">
+        前端每次回答后显示「本次消耗 1 积分 · 剩余 287」—— <b>把消耗透明化</b>，比"无限使用"更让人放心，也防薅。
+      </div>
+    </div>
+    <div class="card">
+      <h3 style="font-size:16px;font-weight:730;margin-bottom:12px">四条必须写进代码</h3>
+      <ul style="list-style:none">
+        <li style="position:relative;padding-left:20px;margin:11px 0;font-size:14px">
+          <span style="position:absolute;left:2px;top:9px;width:6px;height:6px;border-radius:50%;background:var(--accent)"></span>
+          <b>预扣 + 结算</b>：请求前冻结，拿到真实用量后多退少补。中断/超时必须退回，否则客诉。</li>
+        <li style="position:relative;padding-left:20px;margin:11px 0;font-size:14px">
+          <span style="position:absolute;left:2px;top:9px;width:6px;height:6px;border-radius:50%;background:var(--accent)"></span>
+          <b>每日上限</b>：防脚本刷量，异常用量自动告警。</li>
+        <li style="position:relative;padding-left:20px;margin:11px 0;font-size:14px">
+          <span style="position:absolute;left:2px;top:9px;width:6px;height:6px;border-radius:50%;background:var(--accent)"></span>
+          <b>用量流水落库</b>：每次调用记 user / 模型 / token / 积分 / 耗时，既是账单依据也是审计。</li>
+        <li style="position:relative;padding-left:20px;margin:11px 0;font-size:14px">
+          <span style="position:absolute;left:2px;top:9px;width:6px;height:6px;border-radius:50%;background:var(--warn)"></span>
+          <b>余额不足要优雅降级</b>：提示充值，不要白屏或半截回答。</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- 7 -->
+<section id="s7">
+  <h2 class="s"><span class="n">7</span>路线图：分四步，每步有验收标志</h2>
+  <p class="lead">P0 先跑通闭环，别一上来做多模型。</p>
+  <div class="card">
+    <div class="road">
+      <div class="rd">
+        <div class="m">P0 · 约 1 周</div>
+        <h4>服务端代理 + 积分扣减 + 聊天框</h4>
+        <p>在 Zeabur 上起一个 Node 服务：/v1/chat，验 token → 查积分 → 调 DeepSeek-V4-Flash → 扣减 → 记流水。客户端加一个只读的问答框。</p>
+        <div class="done">验收：客户端能问一句「我现在的持仓怎么样」，拿到回答，积分正确扣 1。</div>
+      </div>
+      <div class="rd">
+        <div class="m">P1 · 约 2 周</div>
+        <h4>工具调用（Function Calling）</h4>
+        <p>暴露 get_quote / get_positions / get_account 三个工具给模型，结构化输出在客户端渲染成卡片，而不是一大段文字。</p>
+        <div class="done">验收：AI 能读到真实持仓和报价并给出结构化结论，<b>且全程不触发任何下单动作</b>。</div>
+      </div>
+      <div class="rd">
+        <div class="m">P2</div>
+        <h4>双档模型 + 套餐 + 用量看板</h4>
+        <p>「快 / 深」两档切换；接入豆包与千问做备份；积分套餐上现有 ZPay/Stripe；给运营一个用量与毛利看板。</p>
+        <div class="done">验收：上游任意一家挂掉，服务自动切换且用户无感。</div>
+      </div>
+      <div class="rd">
+        <div class="m">P3</div>
+        <h4>策略 / 回测 Agent（单独计价）</h4>
+        <p>token 消耗大，不要塞进普通积分。做成独立功能包或按次高价计费。</p>
+        <div class="done">验收：单次成本可控、结果可复现、有明确免责声明。</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 8 -->
+<section id="s8">
+  <h2 class="s"><span class="n">8</span>红线（这五条不能碰）</h2>
+  <div class="card">
+    <table>
+      <tr><th>红线</th><th>为什么</th></tr>
+      <tr><td>模型 Key 绝不进客户端</td><td>Electron 包可解（我们是 asar:false），进了就等于公开。只放服务端环境变量。</td></tr>
+      <tr><td>AI 不自动下单</td><td>交易工具 + 自动执行 = 合规与客诉雷区。v1 的 AI 只做"读和解释"，下单按钮始终人点。</td></tr>
+      <tr><td>不承诺收益</td><td>"AI 帮你赚钱"是把自己送上被告席。定位为分析辅助，免责声明放在每次回答旁。</td></tr>
+      <tr><td>不对外卖 API</td><td>那是另一门生意，合规与滥用成本极高，现在不碰。</td></tr>
+      <tr><td>敏感字段不落库明文</td><td>账户号、持仓、余额属于高敏数据；服务端日志脱敏，留存策略写清楚。</td></tr>
+    </table>
+  </div>
+</section>
+
+<footer>
+  <span>牛牛 AI · AI 接入与积分体系方案</span><span>·</span>
+  <span>价格数据查于 2026-10-16，来源：DeepSeek 官方 Pricing / 火山方舟 / 阿里云百炼</span><span>·</span>
+  <span>成本为推算值，接入后需用真实用量校准</span>
+</footer>
+
+</div>
+
+<script>
+(function(){
+  var root=document.documentElement,saved=null;
+  try{saved=localStorage.getItem('nn-theme');}catch(e){}
+  var q=new URLSearchParams(location.search).get('theme');
+  root.setAttribute('data-theme',q||saved||'light');
+  var btn=document.getElementById('themeBtn');
+  function paint(){btn.textContent=root.getAttribute('data-theme')==='dark'?'日间':'夜间';}
+  paint();
+  btn.onclick=function(){
+    var n=root.getAttribute('data-theme')==='dark'?'light':'dark';
+    root.setAttribute('data-theme',n);
+    try{localStorage.setItem('nn-theme',n);}catch(e){}
+    paint();
+  };
+  document.getElementById('printBtn').onclick=function(){window.print();};
+})();
+</script>
+</body>
+</html>

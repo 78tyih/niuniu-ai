@@ -1,0 +1,15 @@
+{
+  "name": "niuniu-ai-gateway",
+  "version": "0.1.0",
+  "private": true,
+  "description": "牛牛 AI 的服务端代理 + 积分计费层（零依赖，可直接部署到 Zeabur）",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "node test/smoke.js",
+    "mint": "node src/mint.js"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

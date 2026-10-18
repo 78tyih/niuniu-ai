@@ -1,0 +1,342 @@
+<!DOCTYPE html><html lang='zh-CN'><head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width,initial-scale=1'>
+<title>牛牛AI · 上游号池合作架构评审</title>
+<style>
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:#fff;color:#16181C;font:15px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;letter-spacing:.01em}
+.wrap{max-width:1080px;margin:0 auto;padding:56px 28px 90px}
+header{border-bottom:1px solid #E7E8EB;padding-bottom:26px;margin-bottom:44px}
+.kicker{font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:#6E747C;margin:0 0 12px}
+h1{font-size:32px;line-height:1.22;margin:0 0 14px;font-weight:650;letter-spacing:-.01em}
+.sub{color:#6E747C;font-size:14px;margin:0}
+.badges{margin-top:14px;display:flex;gap:8px;flex-wrap:wrap}
+.badge{display:inline-block;border-radius:999px;padding:3px 11px;font-size:11.5px;letter-spacing:.05em;border:1px solid}
+.b-ok{border-color:#4E9A6E;color:#4E9A6E}
+.b-warn{border-color:#D9A43B;color:#A87A18}
+.b-info{border-color:#4F8CFF;color:#3A72D6}
+h2{font-size:20px;margin:0 0 6px;font-weight:640;letter-spacing:-.005em}
+h2 .n{color:#C9CCD2;font-variant-numeric:tabular-nums;margin-right:10px}
+h3{font-size:14.5px;margin:26px 0 8px;font-weight:640}
+.lead{color:#6E747C;font-size:13.5px;margin:0 0 22px;max-width:74ch}
+section{padding:38px 0;border-top:1px solid #E7E8EB}
+section:first-of-type{border-top:none}
+.chart{width:100%;height:auto;display:block;margin:6px 0 4px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:34px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+@media(max-width:860px){.grid2,.grid3,.grid4{grid-template-columns:1fr}}
+.cap{font-size:12.5px;color:#6E747C;margin:10px 0 0;line-height:1.55}
+.cap b{color:#16181C;font-weight:600}
+.bl{font-size:12px;fill:#16181C}
+.bv{font-size:11.5px;fill:#6E747C;font-variant-numeric:tabular-nums}
+.ax{font-size:11px;fill:#6E747C}
+.sl{font-size:11px;fill:#fff;font-weight:600}
+.fl{font-size:12.5px;font-weight:600}
+.fv{font-size:15px;font-weight:650;font-variant-numeric:tabular-nums}
+.fn{font-size:11.5px;fill:#6E747C}
+.pl{font-size:12.5px;font-weight:600}
+.pn{font-size:11.5px;fill:#6E747C}
+.tl{font-size:11.5px;font-weight:600}
+.tv{font-size:11px}
+.ml{font-size:12px;font-weight:650;fill:#16181C}
+.ms{font-size:11px;fill:#6E747C}
+.tp{font-size:11.5px;font-weight:700;fill:#16181C}
+.tn{font-size:11px;fill:#16181C}
+.td{font-size:10.5px;fill:#6E747C}
+.gh{font-size:12px;font-weight:700;fill:#16181C;letter-spacing:.04em}
+.gs{font-size:10.5px;fill:#6E747C}
+.nb{font-size:11.5px;font-weight:600;fill:#16181C}
+.nbv{font-size:10.5px;fill:#6E747C}
+.kpi{border:1px solid #E7E8EB;border-radius:10px;padding:18px 20px;background:#FAFAF9}
+.kpi .v{font-size:30px;font-weight:660;letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1.1}
+.kpi .l{font-size:12px;color:#6E747C;margin-top:5px}
+.kpi .d{font-size:11.5px;color:#6E747C;margin-top:9px;padding-top:9px;border-top:1px solid #E7E8EB}
+table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}
+th{text-align:left;font-weight:600;color:#6E747C;font-size:11.5px;letter-spacing:.04em;border-bottom:1px solid #16181C;padding:7px 10px 7px 0}
+td{padding:7px 10px 7px 0;border-bottom:1px solid #E7E8EB;vertical-align:top}
+td.n{font-variant-numeric:tabular-nums;white-space:nowrap}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;background:#F4F4F5;padding:1px 5px;border-radius:3px}
+.note{border-left:2px solid #E1704F;background:#FBF7F5;padding:12px 16px;font-size:13px;margin:16px 0 0;line-height:1.6}
+.note.ok{border-color:#4E9A6E;background:#F4F9F6}
+.note.info{border-color:#4F8CFF;background:#F5F8FE}
+.find{border:1px solid #E7E8EB;border-radius:10px;padding:20px 22px}
+.find .i{font-size:11.5px;letter-spacing:.14em;color:#C9CCD2;font-weight:700}
+.find h4{font-size:15px;margin:8px 0 8px;font-weight:640;line-height:1.4}
+.find p{margin:0;font-size:13px;color:#4A4F57;line-height:1.62}
+.footer{margin-top:56px;padding-top:22px;border-top:1px solid #E7E8EB;font-size:12px;color:#6E747C}
+.chk{list-style:none;padding:0;margin:10px 0 0}
+.chk li{padding:9px 0 9px 30px;border-bottom:1px solid #E7E8EB;position:relative;font-size:13.5px}
+.chk li:before{content:"";position:absolute;left:4px;top:14px;width:12px;height:12px;border:1.5px solid #C9CCD2;border-radius:3px}
+</style></head><body><div class='wrap'>
+<header>
+<p class='kicker'>NiuniuAI · 上游号池合作模式</p>
+<h1>不做号池自建，做批发代理 —— 客户永远只连你的网关</h1>
+<p class='sub'>三通道独立评审 × 两轮 = 6 份答案 · 架构结论 6/6 一致 · 2026-10-17</p>
+<div class='badges'><span class='badge b-ok'>架构方向已收敛</span><span class='badge b-info'>上游接口可自动化 · Observed</span><span class='badge b-warn'>合规红线待律师确认</span></div>
+</header>
+<section><h2><span class='n'>00</span>一屏结论</h2>
+<p class='lead'>你要的“每个客户一个上游 token”是把渠道模式想成了自建模式。客户注册、客户充值、上游采购是三件独立的事，不该逐一同步给伙伴。</p>
+<div class='grid4'>
+<div class='kpi'><div class='v'>方案 B</div><div class='l'>批发代理 · 6/6 一致</div><div class='d'>客户只持你的 nk1.* 令牌</div></div>
+<div class='kpi'><div class='v'>0 次</div><div class='l'>每笔额外的伙伴接口调用</div><div class='d'>分账走周期净额，Inferred</div></div>
+<div class='kpi'><div class='v'>可行</div><div class='l'>上游自动化接口</div><div class='d'>Access Token · Observed</div></div>
+<div class='kpi'><div class='v'>红灯</div><div class='l'>号池形态合规判定</div><div class='d'>灰色来源须直接拒绝</div></div>
+</div>
+<h3>目标数据流</h3>
+<svg viewBox="0 0 1020 108" class="chart" role="img">
+<rect x="0.0" y="18" width="176.8" height="58" rx="4" fill="#2B3A50"/>
+<text x="88.4" y="42" text-anchor="middle" class="fl" fill="#fff">客户</text>
+<text x="88.4" y="62" text-anchor="middle" class="fv" fill="#fff">nk1.*</text>
+<text x="88.4" y="92" text-anchor="middle" class="fn">只连你的网关</text>
+<path d="M180.8 47 L206.8 47" stroke="#C9CCD2" stroke-width="1.5" marker-end="url(#ar)"/>
+<rect x="210.8" y="18" width="176.8" height="58" rx="4" fill="#3E5470"/>
+<text x="299.2" y="42" text-anchor="middle" class="fl" fill="#fff">你的网关</text>
+<text x="299.2" y="62" text-anchor="middle" class="fv" fill="#fff">积分 + 账本</text>
+<text x="299.2" y="92" text-anchor="middle" class="fn">唯一计费层</text>
+<path d="M391.6 47 L417.6 47" stroke="#C9CCD2" stroke-width="1.5" marker-end="url(#ar)"/>
+<rect x="421.6" y="18" width="176.8" height="58" rx="4" fill="#5A6E88"/>
+<text x="510.0" y="42" text-anchor="middle" class="fl" fill="#fff">上游适配层</text>
+<text x="510.0" y="62" text-anchor="middle" class="fv" fill="#fff">provider adapter</text>
+<text x="510.0" y="92" text-anchor="middle" class="fn">可切换 / 可熔断</text>
+<path d="M602.4 47 L628.4 47" stroke="#C9CCD2" stroke-width="1.5" marker-end="url(#ar)"/>
+<rect x="632.4" y="18" width="176.8" height="58" rx="4" fill="#8494AC"/>
+<text x="720.8" y="42" text-anchor="middle" class="fl" fill="#fff">伙伴批发</text>
+<text x="720.8" y="62" text-anchor="middle" class="fv" fill="#fff">聚合额度</text>
+<text x="720.8" y="92" text-anchor="middle" class="fn">看不到客户名单</text>
+<path d="M813.2 47 L839.2 47" stroke="#C9CCD2" stroke-width="1.5" marker-end="url(#ar)"/>
+<rect x="843.2" y="18" width="176.8" height="58" rx="4" fill="#B4BFD0"/>
+<text x="931.6" y="42" text-anchor="middle" class="fl" fill="#fff">模型</text>
+<text x="931.6" y="62" text-anchor="middle" class="fv" fill="#fff">官方端点</text>
+<text x="931.6" y="92" text-anchor="middle" class="fn">DeepSeek 等</text>
+<defs><marker id="ar" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="#C9CCD2"/></marker></defs>
+</svg>
+<p class='cap'>伙伴在整条链上只看到一个<b>聚合批发账户</b>和<b>聚合用量</b>。客户名单、积分余额、每次调用内容全部留在你的服务端。</p>
+</section>
+<section><h2><span class='n'>01</span>需求重构：把三件事拆开</h2>
+<p class='lead'>原设定把三件事串成一条链，导致任一环都要求伙伴配合。拆开后，伙伴只参与最后一件。</p>
+<svg viewBox="0 0 1020 296" class="chart" role="img">
+<text x="0" y="24" class="gh">你原本的设定</text>
+<text x="0" y="40" class="gs">三件事被绑成一条链，任一环都要伙伴配合</text>
+<text x="540" y="24" class="gh">重构后的结构</text>
+<text x="540" y="40" class="gs">三件事互不依赖，伙伴只参与最后一件</text>
+<line x1="510" y1="10" x2="510" y2="276" stroke="#E7E8EB" stroke-width="1"/>
+<rect x="0" y="62" width="450" height="52" rx="6" fill="#F4F4F5" stroke="#C9CCD2" stroke-width="1"/>
+<rect x="0" y="62" width="4" height="52" rx="2" fill="#C9CCD2"/>
+<text x="16" y="84" class="nb" fill="#6E747C">客户在 niuniuai.app 注册</text>
+<text x="16" y="101" class="nbv">身份由你创建</text>
+<path d="M225 117 L225 132" stroke="#C9CCD2" stroke-width="1.5" marker-end="url(#ar2)"/>
+<rect x="0" y="138" width="450" height="52" rx="6" fill="#FBF7F5" stroke="#E1704F" stroke-width="1"/>
+<rect x="0" y="138" width="4" height="52" rx="2" fill="#E1704F"/>
+<text x="16" y="160" class="nb" fill="#8A4429">要求伙伴自动为该客户开上游 token</text>
+<text x="16" y="177" class="nbv">每客户一套上游身份</text>
+<path d="M225 193 L225 208" stroke="#E1704F" stroke-width="1.5" marker-end="url(#ar2)"/>
+<rect x="0" y="214" width="450" height="52" rx="6" fill="#FBF7F5" stroke="#E1704F" stroke-width="1"/>
+<rect x="0" y="214" width="4" height="52" rx="2" fill="#E1704F"/>
+<text x="16" y="236" class="nb" fill="#8A4429">客户充值 → 实时分账打给伙伴</text>
+<text x="16" y="253" class="nbv">把采购做成逐笔资金流</text>
+<rect x="540.0" y="62" width="450" height="52" rx="6" fill="#F4F9F6" stroke="#4E9A6E" stroke-width="1"/>
+<rect x="540.0" y="62" width="4" height="52" rx="2" fill="#4E9A6E"/>
+<text x="556.0" y="84" class="nb" fill="#2F6647">客户注册 → 你签发 nk1.* 令牌</text>
+<text x="556.0" y="101" class="nbv">伙伴完全不知道</text>
+<path d="M765 117 L765 132" stroke="#4E9A6E" stroke-width="1.5" marker-end="url(#ar2)"/>
+<rect x="540.0" y="138" width="450" height="52" rx="6" fill="#F4F9F6" stroke="#4E9A6E" stroke-width="1"/>
+<rect x="540.0" y="138" width="4" height="52" rx="2" fill="#4E9A6E"/>
+<text x="556.0" y="160" class="nb" fill="#2F6647">客户充值 → 你的账本加积分</text>
+<text x="556.0" y="177" class="nbv">唯一计费层，与上游无关</text>
+<path d="M765 193 L765 208" stroke="#4E9A6E" stroke-width="1.5" marker-end="url(#ar2)"/>
+<rect x="540.0" y="214" width="450" height="52" rx="6" fill="#F5F8FE" stroke="#4F8CFF" stroke-width="1"/>
+<rect x="540.0" y="214" width="4" height="52" rx="2" fill="#4F8CFF"/>
+<text x="556.0" y="236" class="nb" fill="#3A72D6">你按周期向伙伴采购批发额度</text>
+<text x="556.0" y="253" class="nbv">按净额补货，不逐笔转钱</text>
+<defs><marker id="ar2" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="#C9CCD2"/></marker></defs>
+</svg>
+<p class='cap'>拆开之后，<b>“全自动”的依赖面从“伙伴改源码”降为“伙伴给一把可撤销的批发凭证”</b>。</p>
+</section>
+<section><h2><span class='n'>02</span>三个方案对照</h2>
+<p class='lead'>三通道两轮独立作答，全部选 B。A 的致命处不是技术，是客户拿得到伙伴地址。</p>
+<table><thead><tr><th>维度</th><th>A · 客户直连伙伴</th><th>B · 批发代理</th><th>C · 混合</th></tr></thead><tbody>
+<tr><td><b>客户拿到什么</b></td><td>伙伴签发的 token</td><td>你自己的 nk1.* 令牌</td><td>两者都拿</td></tr>
+<tr><td><b>伙伴看到什么</b></td><td>完整客户名单与流水</td><td>只有聚合用量</td><td>每客户用量与节奏</td></tr>
+<tr><td><b>换上游的代价</b></td><td>要改客户端 baseURL</td><td>服务端换 adapter</td><td>双重吊销 + 双重对账</td></tr>
+<tr><td><b>你的护城河</b></td><td>只剩客户端与 EA</td><td>定价权 / 计费权 / 客户关系</td><td>中，但复杂度最高</td></tr>
+<tr><td><b>三通道评价</b></td><td>只适合短期验证市场</td><td>首选，一期就做</td><td>一期不做，按需再评估</td></tr>
+</tbody></table>
+<p class='cap'>两个通道额外提出<b>第四方案</b>：<b>预付批发额度池</b>。你向客户零售、向伙伴批发，两个独立交易 —— 这样也避开了代收代付与“二清”的合规歧义。</p>
+</section>
+<section><h2><span class='n'>03</span>上游接口能力（实测更正）</h2>
+<p class='lead'>我第一轮 brief 里写过“New API 管理接口只有 Session 鉴权”，<b>这句是错的</b>。官方文档明确支持 Access Token，自动化不需要改源码。</p>
+<table><thead><tr><th>接口 / 请求头</th><th>作用</th><th>权限</th></tr></thead><tbody>
+<tr><td><code>POST /api/user/login</code></td><td>账号密码登录，换取 Session</td><td class='n'>Public</td></tr>
+<tr><td><code>Authorization: Bearer</code></td><td>系统访问令牌，官方文档标注 Recommended</td><td class='n'>—</td></tr>
+<tr><td><code>New-Api-User: {id}</code></td><td>部分管理接口需附带的用户 ID 头</td><td class='n'>—</td></tr>
+<tr><td><code>POST /api/user/</code></td><td>创建用户，可指定 quota</td><td class='n'>Admin</td></tr>
+<tr><td><code>PUT /api/user/</code></td><td>直接修改任意用户的额度</td><td class='n'>Admin</td></tr>
+<tr><td><code>POST /api/user/manage</code></td><td>封禁 / 解禁 / 升降权</td><td class='n'>Admin</td></tr>
+<tr><td><code>POST /api/token/</code></td><td>创建令牌，一次性返回完整 key</td><td class='n'>User</td></tr>
+<tr><td><code>POST /api/redemption/</code></td><td>批量生成充值码（单次 ≤100 个）</td><td class='n'>Admin</td></tr>
+<tr><td><code>POST /api/user/topup</code></td><td>用户侧兑换充值码 —— 不是直接加余额</td><td class='n'>User</td></tr>
+</tbody></table>
+<div class='note info'><b>但这不是让你去接裸 Admin 令牌。</b>Public / User / Admin / Root 是角色分级，不等于接口级权限控制 —— 一把 Admin 令牌能改任意用户额度、读其他客户、动系统配置。三个通道一致建议：优先要伙伴提供<b>受限经销商接口或独立租户</b>；只能给 Admin 令牌时，必须专用账号 + 出口 IP 白名单 + 单项与累计限额 + 操作审计 + 可即时撤销。</div>
+</section>
+<section><h2><span class='n'>04</span>分账：请求同步，资金异步</h2>
+<p class='lead'>不要在请求链路里实时分账。上游延迟、重复扣款、跨系统不一致会直接传导给客户。</p>
+<svg viewBox="0 0 1020 246" class="chart" role="img">
+<text x="0" y="22" class="gh">请求链路 · 同步</text>
+<text x="0" y="38" class="gs">每笔只有 1 次必须的上游 relay 调用，伙伴分账接口调用 0 次</text>
+<rect x="0" y="52" width="196" height="50" rx="4" fill="#2B3A50"/>
+<text x="98.0" y="82" text-anchor="middle" class="fl" fill="#fff">客户提问</text>
+<path d="M197 77 L202 77" stroke="#C9CCD2" stroke-width="1.5" marker-end="url(#ar3)"/>
+<rect x="204" y="52" width="196" height="50" rx="4" fill="#2B3A50"/>
+<text x="302.0" y="82" text-anchor="middle" class="fl" fill="#fff">预扣积分</text>
+<path d="M401 77 L406 77" stroke="#C9CCD2" stroke-width="1.5" marker-end="url(#ar3)"/>
+<rect x="408" y="52" width="196" height="50" rx="4" fill="#2B3A50"/>
+<text x="506.0" y="82" text-anchor="middle" class="fl" fill="#fff">上游 relay</text>
+<path d="M605 77 L610 77" stroke="#C9CCD2" stroke-width="1.5" marker-end="url(#ar3)"/>
+<rect x="612" y="52" width="196" height="50" rx="4" fill="#2B3A50"/>
+<text x="710.0" y="82" text-anchor="middle" class="fl" fill="#fff">结算多退</text>
+<path d="M809 77 L814 77" stroke="#C9CCD2" stroke-width="1.5" marker-end="url(#ar3)"/>
+<rect x="816" y="52" width="196" height="50" rx="4" fill="#2B3A50"/>
+<text x="914.0" y="82" text-anchor="middle" class="fl" fill="#fff">记成本流水</text>
+<line x1="0" y1="124" x2="1020" y2="124" stroke="#E7E8EB" stroke-width="1" stroke-dasharray="4 4"/>
+<text x="0" y="152" class="gh">资金链路 · 异步</text>
+<text x="0" y="168" class="gs">对账与付款脱离请求路径，失败可重试、可人工介入</text>
+<rect x="0" y="182" width="332" height="52" rx="4" fill="#F4F4F5" stroke="#2B3A50" stroke-width="1"/>
+<rect x="0" y="182" width="4" height="52" rx="2" fill="#2B3A50"/>
+<text x="16" y="203" class="nb">日 · 生成对账快照</text>
+<text x="16" y="220" class="nbv">客户实扣 vs 伙伴用量</text>
+<rect x="344" y="182" width="332" height="52" rx="4" fill="#F4F4F5" stroke="#3E5470" stroke-width="1"/>
+<rect x="344" y="182" width="4" height="52" rx="2" fill="#3E5470"/>
+<text x="360" y="203" class="nb">周 · 生成不可变账单</text>
+<text x="360" y="220" class="nbv">锁定账期 + 批次号</text>
+<rect x="688" y="182" width="332" height="52" rx="4" fill="#F4F4F5" stroke="#4F8CFF" stroke-width="1"/>
+<rect x="688" y="182" width="4" height="52" rx="2" fill="#4F8CFF"/>
+<text x="704" y="203" class="nb">按阈值 · 向伙伴补货</text>
+<text x="704" y="220" class="nbv">预付滚动 3–7 天用量</text>
+<defs><marker id="ar3" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="#C9CCD2"/></marker></defs>
+</svg>
+<div class='note'><b>最大的“自动化幻觉”：充值码 ≠ 资金结算。</b>New API 的充值码只是平台内记账动作，它不能证明钱已经付给伙伴。企业间付款要么伙伴给你授信（后付费），要么走对公转账按周批量 —— <b>后者按定义就不可能是全自动的</b>。三通道都把这个断点单独拎了出来。</div>
+</section>
+<section><h2><span class='n'>05</span>合规红线</h2>
+<p class='lead'>我补做了行业调研后加的维度 —— 也是六份答案里最一致的部分。<b>“号池”这个词本身就是红灯。</b></p>
+<svg viewBox="0 0 1020 318" class="chart" role="img">
+<rect x="0" y="0" width="320" height="4" rx="2" fill="#4E9A6E"/>
+<text x="0" y="26" class="gh" fill="#2F6647">可直接接受</text>
+<text x="0" y="43" class="gs">官方端点 / 可核验一级代理</text>
+<rect x="0" y="62" width="320" height="52" rx="5" fill="#F4F9F6" stroke="#4E9A6E" stroke-width="1"/>
+<rect x="0" y="62" width="3.5" height="52" rx="2" fill="#4E9A6E"/>
+<text x="16" y="84" class="nb">官方 API 采购</text>
+<text x="16" y="101" class="nbv">有合同、发票、采购凭证</text>
+<rect x="0" y="124" width="320" height="52" rx="5" fill="#F4F9F6" stroke="#4E9A6E" stroke-width="1"/>
+<rect x="0" y="124" width="3.5" height="52" rx="2" fill="#4E9A6E"/>
+<text x="16" y="146" class="nb">明确转售授权</text>
+<text x="16" y="163" class="nbv">条款允许用于境内付费服务</text>
+<rect x="0" y="186" width="320" height="52" rx="5" fill="#F4F9F6" stroke="#4E9A6E" stroke-width="1"/>
+<rect x="0" y="186" width="3.5" height="52" rx="2" fill="#4E9A6E"/>
+<text x="16" y="208" class="nb">数据流向可核验</text>
+<text x="16" y="225" class="nbv">端点、分包商、留存期清楚</text>
+<rect x="350" y="0" width="320" height="4" rx="2" fill="#D9A43B"/>
+<text x="350" y="26" class="gh" fill="#8A6416">需先核验再定</text>
+<text x="350" y="43" class="gs">拿到材料前不签约、不预付</text>
+<rect x="350" y="62" width="320" height="52" rx="5" fill="#FDF8EE" stroke="#D9A43B" stroke-width="1"/>
+<rect x="350" y="62" width="3.5" height="52" rx="2" fill="#D9A43B"/>
+<text x="366" y="84" class="nb">「一级代理」自称</text>
+<text x="366" y="101" class="nbv">要求出示厂商授权与凭证</text>
+<rect x="350" y="124" width="320" height="52" rx="5" fill="#FDF8EE" stroke="#D9A43B" stroke-width="1"/>
+<rect x="350" y="124" width="3.5" height="52" rx="2" fill="#D9A43B"/>
+<text x="366" y="146" class="nb">报价明显低于官方</text>
+<text x="366" y="163" class="nbv">异常低价本身就是风险信号</text>
+<rect x="700" y="0" width="320" height="4" rx="2" fill="#E1704F"/>
+<text x="700" y="26" class="gh" fill="#8A4429">必须直接拒绝</text>
+<text x="700" y="43" class="gs">价格再便宜也不能抵消</text>
+<rect x="700" y="62" width="320" height="52" rx="5" fill="#FBF7F5" stroke="#E1704F" stroke-width="1"/>
+<rect x="700" y="62" width="3.5" height="52" rx="2" fill="#E1704F"/>
+<text x="716" y="84" class="nb">批量注册 / 借用身份</text>
+<text x="716" y="101" class="nbv">含境外身份证件认证</text>
+<rect x="700" y="124" width="320" height="52" rx="5" fill="#FBF7F5" stroke="#E1704F" stroke-width="1"/>
+<rect x="700" y="124" width="3.5" height="52" rx="2" fill="#E1704F"/>
+<text x="716" y="146" class="nb">拆包月订阅为按量接口</text>
+<text x="716" y="163" class="nbv">订阅转 API 零售</text>
+<rect x="700" y="186" width="320" height="52" rx="5" fill="#FBF7F5" stroke="#E1704F" stroke-width="1"/>
+<rect x="700" y="186" width="3.5" height="52" rx="2" fill="#E1704F"/>
+<text x="716" y="208" class="nb">盗号、骗退、规避封禁</text>
+<text x="716" y="225" class="nbv">含故意触发封号退款</text>
+<rect x="700" y="248" width="320" height="52" rx="5" fill="#FBF7F5" stroke="#E1704F" stroke-width="1"/>
+<rect x="700" y="248" width="3.5" height="52" rx="2" fill="#E1704F"/>
+<text x="716" y="270" class="nb">拒绝披露来源与流向</text>
+<text x="716" y="287" class="nbv">以「商业秘密」挡掉核验</text>
+</svg>
+<div class='note'><b>“我不知道上游怎么拿的货”不是有效抗辩。</b>异常低价、批量账号、拒绝提供来源，都可能被认定为“明知或应知”。反过来，报道里的刑事个案也不能推出“所有分销都违法” —— 具体责任取决于来源、授权、主观明知和参与程度。<b>这一节需要中国律师给意见，不是我能替你下结论的地方。</b></div>
+</section>
+<section><h2><span class='n'>06</span>实施闸门</h2>
+<p class='lead'>两处红色是硬闸门 —— 卡在这里就不要往下写代码。</p>
+<svg viewBox="0 0 1020 168" class="chart" role="img">
+<line x1="38" y1="72" x2="982" y2="72" stroke="#E7E8EB" stroke-width="2"/>
+<circle cx="78" cy="72" r="10" fill="#E1704F"/>
+<line x1="78" y1="62" x2="78" y2="46" stroke="#E7E8EB"/>
+<text x="78" y="34" text-anchor="middle" class="tp">P0</text>
+<text x="78" y="49" text-anchor="middle" class="tn">商务前置</text>
+<text x="78" y="63" text-anchor="middle" class="td">批发价/SLA/不绕客</text>
+<text x="78" y="150" text-anchor="middle" class="gs">硬闸门</text>
+<circle cx="201" cy="72" r="7" fill="#2B3A50"/>
+<line x1="201" y1="82" x2="201" y2="98" stroke="#E7E8EB"/>
+<text x="201" y="116" text-anchor="middle" class="tp">P1</text>
+<text x="201" y="131" text-anchor="middle" class="tn">上游验收</text>
+<text x="201" y="145" text-anchor="middle" class="td">接口/限流/账单</text>
+<circle cx="325" cy="72" r="7" fill="#2B3A50"/>
+<line x1="325" y1="62" x2="325" y2="46" stroke="#E7E8EB"/>
+<text x="325" y="34" text-anchor="middle" class="tp">P2</text>
+<text x="325" y="49" text-anchor="middle" class="tn">客户账本</text>
+<text x="325" y="63" text-anchor="middle" class="td">积分/用量/退款</text>
+<circle cx="448" cy="72" r="7" fill="#2B3A50"/>
+<line x1="448" y1="82" x2="448" y2="98" stroke="#E7E8EB"/>
+<text x="448" y="116" text-anchor="middle" class="tp">P3</text>
+<text x="448" y="131" text-anchor="middle" class="tn">服务端转发</text>
+<text x="448" y="145" text-anchor="middle" class="td">密钥不出服务端</text>
+<circle cx="572" cy="72" r="10" fill="#E1704F"/>
+<line x1="572" y1="62" x2="572" y2="46" stroke="#E7E8EB"/>
+<text x="572" y="34" text-anchor="middle" class="tp">P4</text>
+<text x="572" y="49" text-anchor="middle" class="tn">支付闭环</text>
+<text x="572" y="63" text-anchor="middle" class="td">订单幂等/回调</text>
+<text x="572" y="150" text-anchor="middle" class="gs">硬闸门</text>
+<circle cx="695" cy="72" r="7" fill="#2B3A50"/>
+<line x1="695" y1="82" x2="695" y2="98" stroke="#E7E8EB"/>
+<text x="695" y="116" text-anchor="middle" class="tp">P5</text>
+<text x="695" y="131" text-anchor="middle" class="tn">周期对账</text>
+<text x="695" y="145" text-anchor="middle" class="td">批次号/调整单</text>
+<circle cx="819" cy="72" r="7" fill="#2B3A50"/>
+<line x1="819" y1="62" x2="819" y2="46" stroke="#E7E8EB"/>
+<text x="819" y="34" text-anchor="middle" class="tp">P6</text>
+<text x="819" y="49" text-anchor="middle" class="tn">故障保护</text>
+<text x="819" y="63" text-anchor="middle" class="td">熔断/备用上游</text>
+<circle cx="942" cy="72" r="7" fill="#2B3A50"/>
+<line x1="942" y1="82" x2="942" y2="98" stroke="#E7E8EB"/>
+<text x="942" y="116" text-anchor="middle" class="tp">P7</text>
+<text x="942" y="131" text-anchor="middle" class="tn">小流量灰度</text>
+<text x="942" y="145" text-anchor="middle" class="td">限客户限额</text>
+</svg>
+<ul class='chk'>
+<li><b>P0 商务前置</b>：批发价与调价通知期、SLA、不绕客条款、预付上限、未用额度退款期、数据用途与留存。谈不拢就不做伙伴专用集成。</li>
+<li><b>P4 支付闭环</b>：ZPay / Stripe 回调验签 + 订单幂等 + 到账自动加积分。重放、乱序、延迟回调都不能重复入账。</li>
+<li><b>律师意见前</b>：不应面向境内公众正式收费上线。内部合成数据原型可以先做。</li>
+<li><b>会计意见前</b>：不应启动充值余额、长期预付套餐或代收代付模式。</li>
+</ul>
+</section>
+<section><h2><span class='n'>07</span>评审记录与披露</h2>
+<p class='lead'>按你的要求，同一份 brief 送多个互不可见的通道，并记录实际作答的模型。</p>
+<table><thead><tr><th>轮次</th><th>通道（实际模型）</th><th>耗时</th><th>结论</th></tr></thead><tbody>
+<tr><td>第一轮</td><td>kimi-k3（kimi-code/k3）</td><td class='n'>275s</td><td>选 B；采信了我的错误前提</td></tr>
+<tr><td>第一轮</td><td>gpt-6-astra</td><td class='n'>105s</td><td>选 B；未采信，称“现有清单不足以证明”</td></tr>
+<tr><td>第一轮</td><td>codex-auto-review</td><td class='n'>35s</td><td>选 B；采信了错误前提</td></tr>
+<tr><td>第二轮</td><td>kimi-k3（更正版）</td><td class='n'>230s</td><td>仍选 B；补出权限收口清单</td></tr>
+<tr><td>第二轮</td><td>gpt-6-astra（更正版）</td><td class='n'>93s</td><td>仍选 B；补出合规材料清单</td></tr>
+<tr><td>第二轮</td><td>codex-auto-review（更正版）</td><td class='n'>31s</td><td>仍选 B；补出红线清单</td></tr>
+</tbody></table>
+<div class='note'><b>需要如实说明的两件事。</b>① 我第一轮 brief 写错了一个事实（声称 New API 没有管理 API Token），导致 kimi 与 codex 的答案在“自动化开户可行性”这一节建立在错误前提上；gpt 保持了谨慎但也没有指出。我发现后立即发了更正版重跑。② 更正后<b>两个通道的架构结论都没有改变</b>，仍全部选 B —— 因为 B 恰恰不需要上游管理接口。原始 brief 与全部 6 份答案已归档至 <code>deliverables/niuniuai/2026-10-17/pool-review{,-round2}/</code>。</div>
+</section>
+<div class='footer'>
+<p><b>数据来源</b>｜New API 官方文档 docs.newapi.pro（认证方式、倍率体系、Token 管理）；GitHub songquanpeng/one-api 与 QuantumNous/new-api 项目说明；Token 中转站行业报道（澎湃新闻、证券时报、央广网、鼎の工坊）。接口能力与行业形态为 Observed；分账频率与毛利结构为 Inferred；监管判定与备案义务为 Unknown，需律师意见。</p>
+<p><b>方法限制</b>｜未在我方环境部署 New API 实测管理接口，接口清单来自官方文档与代码结构分析，存在版本差异风险，落地前须以伙伴实际部署版本实测。合规一节为信息整理，不构成法律意见。</p>
+<p><b>产物清单</b>｜本报告 · pool-brief.txt · pool-brief-correction.txt · pool-review/（3 份答案 + manifest）· pool-review-round2/（3 份答案 + manifest）· ai-gateway/（已建成网关）</p>
+</div>
+</div></body></html>

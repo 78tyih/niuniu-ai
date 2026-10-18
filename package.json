@@ -1,0 +1,48 @@
+{
+  "name": "niuniu-ai",
+  "productName": "牛牛AI",
+  "version": "1.0.0",
+  "description": "牛牛 AI · MT5 交易副驾驶（Windows）",
+  "main": "src/main.js",
+  "author": "NiuNiu AI",
+  "license": "UNLICENSED",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "build:win": "electron-builder --win --x64",
+    "dist": "npm run build:win"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "app.niuniuai.desktop",
+    "productName": "牛牛AI",
+    "copyright": "Copyright © 2026 NiuNiu AI",
+    "directories": { "output": "dist" },
+    "artifactName": "NiuNiuAI-Setup-${version}.${ext}",
+    "files": [
+      "src/**/*",
+      "ea/**/*",
+      "package.json"
+    ],
+    "asar": false,
+    "win": {
+      "target": [{ "target": "nsis", "arch": ["x64"] }],
+      "icon": "build/icon.ico",
+      "publisherName": "NiuNiu AI",
+      "verifyUpdateCodeSignature": false
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": false,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "牛牛AI",
+      "artifactName": "NiuNiuAI-Setup-${version}.${ext}"
+    }
+  }
+}

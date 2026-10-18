@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>牛牛 AI · 安装与使用操作步骤</title>
+<style>
+:root{
+  --bg:#F7F8FA; --card:#FFF; --soft:#F2F4F7; --line:#E4E7EC;
+  --ink:#14161A; --muted:#6B7280; --accent:#4F8CFF; --ok:#3F9C7C; --warn:#D8624A;
+  --shadow:0 1px 2px rgba(20,22,26,.04),0 6px 20px rgba(20,22,26,.05);
+}
+[data-theme="dark"]{
+  --bg:#14161A; --card:#1B1E24; --soft:#22262E; --line:#2C313A;
+  --ink:#E9EBEE; --muted:#98A0AC; --accent:#6FA0FF; --ok:#5CBF9A; --warn:#EE7F68;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);line-height:1.7;
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  -webkit-font-smoothing:antialiased}
+header{position:sticky;top:0;z-index:50;background:color-mix(in srgb,var(--bg) 88%,transparent);
+  backdrop-filter:saturate(180%) blur(14px);border-bottom:1px solid var(--line)}
+.hbar{max-width:900px;margin:0 auto;padding:12px 28px;display:flex;align-items:center;gap:12px}
+.brand{font-weight:700;font-size:14.5px}
+.brand span{color:var(--muted);font-weight:500;font-size:12.5px;margin-left:8px}
+.spacer{flex:1}
+.tg{display:flex;border:1px solid var(--line);border-radius:9px;overflow:hidden;background:var(--card)}
+.tg button{border:0;background:transparent;color:var(--muted);font:inherit;font-size:12px;padding:6px 11px;cursor:pointer}
+.tg button.on{background:var(--accent);color:#fff}
+.wrap{max-width:900px;margin:0 auto;padding:0 28px 100px}
+h1{font-size:26px;margin:40px 0 6px;letter-spacing:-.3px}
+.sub{color:var(--muted);font-size:13.5px;margin:0 0 30px}
+section{margin:44px 0 0}
+h2{font-size:17px;margin:0 0 12px;display:flex;align-items:center;gap:9px}
+h2 .n{display:inline-flex;width:23px;height:23px;border-radius:7px;background:var(--accent);
+  color:#fff;font-size:12px;align-items:center;justify-content:center;font-weight:700;flex:0 0 auto}
+h3{font-size:14px;margin:22px 0 8px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px 22px;box-shadow:var(--shadow)}
+.card.warn{border-color:color-mix(in srgb,var(--warn) 40%,var(--line));
+  background:color-mix(in srgb,var(--warn) 5%,var(--card))}
+.card.ok{border-color:color-mix(in srgb,var(--ok) 35%,var(--line))}
+p{margin:9px 0;font-size:13.5px}
+ol,ul{margin:9px 0;padding-left:22px;font-size:13.5px}
+li{margin:6px 0}
+table{width:100%;border-collapse:collapse;font-size:13px;margin:10px 0}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--muted);font-weight:600;font-size:11.5px;letter-spacing:.3px}
+td:first-child{white-space:nowrap}
+code,.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;
+  background:var(--soft);padding:1.5px 6px;border-radius:5px}
+kbd{font-family:ui-monospace,Menlo,monospace;font-size:11.5px;background:var(--card);
+  border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;padding:1px 6px}
+.pill{display:inline-block;font-size:11px;padding:2px 9px;border-radius:20px;font-weight:600}
+.p-ok{background:color-mix(in srgb,var(--ok) 15%,transparent);color:var(--ok)}
+.p-no{background:color-mix(in srgb,var(--warn) 14%,transparent);color:var(--warn)}
+.p-hold{background:var(--soft);color:var(--muted)}
+.callout{display:flex;gap:11px;align-items:flex-start;margin:14px 0;padding:13px 15px;border-radius:11px;
+  background:var(--soft);border-left:3px solid var(--accent);font-size:13px}
+.callout.bad{border-left-color:var(--warn);background:color-mix(in srgb,var(--warn) 7%,var(--soft))}
+.callout.good{border-left-color:var(--ok);background:color-mix(in srgb,var(--ok) 7%,var(--soft))}
+.callout .ic{font-size:15px;line-height:1.5}
+.steps{counter-reset:s;margin:14px 0 0;padding:0;list-style:none}
+.steps>li{counter-increment:s;position:relative;padding-left:34px;margin:10px 0;font-size:13.5px}
+.steps>li::before{content:counter(s);position:absolute;left:0;top:1px;width:23px;height:23px;
+  border-radius:50%;background:var(--accent);color:#fff;font-size:11.5px;font-weight:700;
+  display:flex;align-items:center;justify-content:center}
+.tree{font-family:ui-monospace,Menlo,monospace;font-size:11.5px;line-height:1.75;
+  background:var(--soft);border:1px solid var(--line);border-radius:10px;padding:13px 15px;overflow-x:auto;white-space:pre}
+.must{color:var(--warn);font-weight:700}
+footer{margin-top:60px;padding-top:20px;border-top:1px solid var(--line);color:var(--muted);font-size:12px}
+@media print{
+  header{display:none} body{background:#fff} .card{box-shadow:none}
+  section{break-inside:avoid} h2{break-after:avoid}
+}
+
+figure{margin:18px 0 22px}
+figure img{width:100%;display:block;border:1px solid var(--line);border-radius:12px;
+  box-shadow:var(--shadow);background:var(--card)}
+figcaption{font-size:12px;color:var(--muted);margin-top:8px;padding-left:2px}
+figure svg{width:100%;height:auto;display:block;border:1px solid var(--line);
+  border-radius:12px;background:var(--card);box-shadow:var(--shadow)}
+.fig2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:760px){.fig2{grid-template-columns:1fr}}
+.keycard{background:var(--card);border:1px solid var(--accent);border-radius:14px;
+  padding:18px 20px;margin:20px 0;box-shadow:var(--shadow)}
+.keycard h3{margin:0 0 10px;font-size:13.5px}
+.keybox{font-family:ui-monospace,Menlo,monospace;font-size:12px;line-height:1.75;
+  word-break:break-all;background:var(--soft);border:1px dashed var(--line);
+  border-radius:10px;padding:12px 14px;user-select:all}
+.kv2{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:12px;font-size:12.5px}
+.kv2 div{background:var(--soft);border-radius:9px;padding:9px 12px}
+.kv2 b{display:block;font-size:10.5px;color:var(--muted);font-weight:600;margin-bottom:2px}
+@media(max-width:760px){.kv2{grid-template-columns:1fr}}
+@media print{header,.tg{display:none}body{background:#fff}}
+</style>
+</head>
+<body>
+<header><div class="hbar">
+  <div class="brand">牛牛 AI <span>安装与使用操作步骤 · v1.0.0</span></div>
+  <div class="spacer"></div>
+  <div class="tg"><button id="bDay" class="on">☀ 日间</button><button id="bNight">☾ 夜间</button></div>
+  <div class="tg"><button id="bPrint">打印</button></div>
+</div></header>
+
+<div class="wrap">
+<h1>牛牛 AI · 安装与使用操作步骤</h1>
+<p class="sub">适用于 Windows 64 位 · 测试阶段请<strong>只用模拟账户</strong> · 全程约 10 分钟</p>
+
+<section>
+
+<div class="keycard">
+  <h3>你的授权密钥</h3>
+  <div class="keybox">NN1-eyJ2IjoxLCJpIjoiTk4tMjAyNi0wMDAxIiwibiI6IuWwiui0teWuouaItyIsImUiOiIyMDI3LTEwLTE2IiwicyI6MX0.NNjew2-LGHoWYEGlUQ6ITAD1UjL_LeHF96jTJ3cnp2BwTvXpeOBeXJUMuyOL3w7-b34CdOlLZhHjTGduBSYmBw</div>
+  <div class="kv2">
+    <div><b>授权号</b>NN-2026-0001</div>
+    <div><b>到期日</b>2027-10-16</div>
+  </div>
+  <p style="font-size:12px;color:var(--muted);margin:10px 0 0">复制整串密钥（含开头的 <code>NN1-</code>）粘贴到软件顶部授权框，点「激活」即可。离线验签，不需要联网。</p>
+</div>
+<h2><span class="n">0</span>先搞清楚这东西是什么</h2>
+<div class="card">
+<p>牛牛 AI 是一个<strong>装在你本机的交易辅助软件</strong>。它自己不下单，而是通过一个<strong>桥接 EA</strong> 接到你的 MetaTrader 5 上：你在牛牛 AI 里点下单，它把命令写成一个<strong>带签名的文件</strong>交给 MT5 里的 EA，EA 校验通过后才替你下单。</p>
+<table>
+<tr><th>v1 能做的</th><th>v1 还没做的</th></tr>
+<tr><td>自动找到本机 MT5<br>一键市价买卖（手数/止损/止盈）<br>一键平仓<br>实时看余额·净值·保证金·报价·持仓<br>全局急停、导出日志</td>
+<td><span class="pill p-hold">未开放</span> AI 聊天 / AI 分析<br><span class="pill p-hold">未接线</span> 自动更新<br><span class="pill p-hold">不做</span> macOS 版本</td></tr>
+</table>
+<div class="callout bad"><span class="ic">⚠️</span><div>
+<strong>两个刻意的默认限制，最容易被误当成「坏了」：</strong>
+<table style="margin-bottom:0">
+<tr><td><strong>只允许模拟账户</strong></td><td>实盘下单被拒，回执写「仅允许模拟盘」</td><td>EA 参数 <code>InpDemoOnly</code> 改 <code>false</code></td></tr>
+<tr><td><strong>默认不允许下单</strong></td><td>能连上、能看行情，但一下单就被拒，回执写「EA 自动交易开关关闭」</td><td>EA 参数 <code>InpAutoTrade</code> 改 <code>true</code><br><strong class="must">装完必做，见第 4 节</strong></td></tr>
+</table>
+</div></div>
+</div>
+</section>
+
+<section>
+
+<figure>
+<svg viewBox="0 0 1200 400" role="img" aria-label="牛牛 AI 与 MT5 的桥接架构">
+  <defs>
+    <marker id="ar" markerWidth="10" markerHeight="10" refX="8" refY="3.5" orient="auto">
+      <path d="M0,0 L8,3.5 L0,7 z" fill="#6B7280"/>
+    </marker>
+  </defs>
+  <rect width="1200" height="400" fill="#FFFFFF"/>
+  <text x="40" y="42" font-size="15" font-weight="700" fill="#14161A"
+        font-family="PingFang SC,Hiragino Sans GB,Microsoft YaHei,sans-serif">命令怎么从软件走到券商</text>
+
+  <!-- box1 -->
+  <rect x="40" y="90" width="210" height="120" rx="14" fill="#F2F4F7" stroke="#E4E7EC"/>
+  <text x="145" y="135" font-size="16" font-weight="700" fill="#14161A" text-anchor="middle"
+        font-family="PingFang SC,sans-serif">牛牛 AI 桌面端</text>
+  <text x="145" y="162" font-size="12" fill="#6B7280" text-anchor="middle"
+        font-family="PingFang SC,sans-serif">你在这里点下单</text>
+  <text x="145" y="186" font-size="11.5" fill="#4F8CFF" text-anchor="middle"
+        font-family="PingFang SC,sans-serif">HMAC-SHA256 签名</text>
+
+  <!-- arrow -->
+  <line x1="250" y1="150" x2="352" y2="150" stroke="#6B7280" stroke-width="1.6" marker-end="url(#ar)"/>
+  <text x="301" y="138" font-size="11" fill="#6B7280" text-anchor="middle"
+        font-family="PingFang SC,sans-serif">写文件</text>
+
+  <!-- box2 -->
+  <rect x="352" y="82" width="230" height="136" rx="14" fill="#F2F4F7" stroke="#E4E7EC"/>
+  <text x="467" y="112" font-size="14" font-weight="700" fill="#14161A" text-anchor="middle"
+        font-family="PingFang SC,sans-serif">MT5 沙箱 · Files</text>
+  <text x="467" y="138" font-size="12" fill="#6B7280" text-anchor="middle"
+        font-family="PingFang SC,sans-serif">niuniu/inbox/ 待执行</text>
+  <text x="467" y="158" font-size="12" fill="#6B7280" text-anchor="middle"
+        font-family="PingFang SC,sans-serif">niuniu/outbox/ 回执</text>
+  <text x="467" y="178" font-size="12" fill="#6B7280" text-anchor="middle"
+        font-family="PingFang SC,sans-serif">niuniu/archive/ 去重</text>
+  <text x="467" y="200" font-size="11" fill="#D8624A" text-anchor="middle"
+        font-family="PingFang SC,sans-serif">先写 .tmp 再改名（原子）</text>
+
+  <line x1="582" y1="150" x2="684" y2="150" stroke="#6B7280" stroke-width="1.6" marker-end="url(#ar)"/>
+  <text x="633" y="138" font-size="11" fill="#6B7280" text-anchor="middle"
+        font-family="PingFang SC,sans-serif">250ms 轮询</text>
+
+  <!-- box3 -->
+  <rect x="684" y="82" width="230" height="136" rx="14" fill="#EAF2FF" stroke="#4F8CFF"/>
+  <text x="799" y="112" font-size="14" font-weight="700" fill="#14161A" text-anchor="middle"
+        font-family="PingFang SC,sans-serif">桥接 EA（自研）</text>
+  <text x="799" y="140" font-size="12" fill="#6B7280" text-anchor="middle"
+        font-family="PingFang SC,sans-serif">① 验签 ② 查重 ③ 校验</text>
+  <text x="799" y="160" font-size="12" fill="#6B7280" text-anchor="middle"
+        font-family="PingFang SC,sans-serif">④ 手数/止损规格</text>
+  <text x="799" y="180" font-size="12" fill="#6B7280" text-anchor="middle"
+        font-family="PingFang SC,sans-serif">⑤ 只接受模拟盘</text>
+  <text x="799" y="200" font-size="11" fill="#D8624A" text-anchor="middle"
+        font-family="PingFang SC,sans-serif">验签失败 = 直接拒绝</text>
+
+  <line x1="914" y1="150" x2="1030" y2="150" stroke="#6B7280" stroke-width="1.6" marker-end="url(#ar)"/>
+  <text x="972" y="138" font-size="11" fill="#6B7280" text-anchor="middle"
+        font-family="PingFang SC,sans-serif">OrderSend</text>
+
+  <!-- box4 -->
+  <rect x="1030" y="104" width="130" height="92" rx="14" fill="#F2F4F7" stroke="#E4E7EC"/>
+  <text x="1095" y="145" font-size="14" font-weight="700" fill="#14161A" text-anchor="middle"
+        font-family="PingFang SC,sans-serif">券商</text>
+  <text x="1095" y="168" font-size="11.5" fill="#6B7280" text-anchor="middle"
+        font-family="PingFang SC,sans-serif">成交 / 拒单</text>
+
+  <!-- back line -->
+  <path d="M1095,214 L1095,252 L145,252 L145,222" fill="none" stroke="#3F9C7C"
+        stroke-width="1.6" stroke-dasharray="5 4" marker-end="url(#ar)"/>
+  <text x="620" y="272" font-size="11.5" fill="#3F9C7C" text-anchor="middle"
+        font-family="PingFang SC,sans-serif">回执原路返回：已受理 → 已成交 / 已拒绝 / 待核对</text>
+
+  <line x1="40" y1="310" x2="1160" y2="310" stroke="#E4E7EC"/>
+  <text x="40" y="344" font-size="12.5" font-weight="700" fill="#14161A"
+        font-family="PingFang SC,sans-serif">三条硬边界</text>
+  <text x="40" y="368" font-size="12" fill="#6B7280" font-family="PingFang SC,sans-serif">
+    1) 软件不直接连券商，只写文件 —— MT5 沙箱就是隔离带</text>
+  <text x="620" y="368" font-size="12" fill="#6B7280" font-family="PingFang SC,sans-serif">
+    2) 没密钥 = 拒绝一切改敞口的命令</text>
+  <text x="40" y="388" font-size="12" fill="#6B7280" font-family="PingFang SC,sans-serif">
+    3) 结果不明只给「待核对」，绝不自动重发</text>
+</svg>
+<figcaption>桥接架构：命令经签名文件单向进入 MT5 沙箱，EA 验签后才下单，回执原路返回。</figcaption>
+</figure>
+
+<figure>
+  <img src="shots/03-完整界面.png" alt="主界面全貌：授权条 + 三步流程 + 终端 / 账户 / 持仓 / 下单 / 回执五大卡片">
+  <figcaption>主界面全貌：授权条 + 三步流程 + 终端 / 账户 / 持仓 / 下单 / 回执五大卡片</figcaption>
+</figure>
+
+<h2><span class="n">1</span>准备工作</h2>
+<div class="card">
+<h3>1.1 装 MetaTrader 5</h3>
+<p>到券商官网下载 MT5 安装包，装好并<strong>登录一个模拟账户</strong>。</p>
+<div class="callout"><span class="ic">💡</span><div>没有模拟账户？在 MT5 里点「文件 → 开设账户 → 选一个服务器 → 下一步」，填点基本资料就能开免费的。<strong>这一步必须联网。</strong></div></div>
+<h3>1.2 确认 MT5 能正常交易</h3>
+<p>登录后确认工具栏上有「<strong>自动交易 / Algo Trading</strong>」按钮。先别管它是开是关。</p>
+</div>
+</section>
+
+<section>
+
+<figure>
+  <img src="shots/01-未授权.png" alt="首次启动：授权条为红色，显示「未授权 · 请先激活」">
+  <figcaption>首次启动：授权条为红色，显示「未授权 · 请先激活」</figcaption>
+</figure>
+
+<h2><span class="n">2</span>安装牛牛 AI</h2>
+<div class="card">
+<ol class="steps">
+<li>双击 <code>NiuNiuAI-Setup-1.0.0.exe</code>。</li>
+<li>Windows 可能弹「<strong>已保护你的电脑 / SmartScreen</strong>」——测试版没买代码签名证书，属正常。点「<strong>更多信息</strong>」→「<strong>仍要运行</strong>」。</li>
+<li>一路下一步。装到当前用户目录，<strong>不需要管理员权限</strong>。</li>
+<li>双击桌面的「牛牛AI」启动。</li>
+</ol>
+<p>启动后应看到：顶部标题和「运行中 · 点击停用」，下面是 <strong>① 选择终端 / ② 安装桥接 EA / ③ 绑定与下单</strong> 三个步骤条。</p>
+</div>
+</section>
+
+<section>
+
+<figure>
+  <img src="shots/06-终端卡片.png" alt="① 选择终端：点中列表项高亮后，再点「安装桥接 EA」">
+  <figcaption>① 选择终端：点中列表项高亮后，再点「安装桥接 EA」</figcaption>
+</figure>
+
+<h2><span class="n">3</span>安装桥接 EA</h2>
+<div class="card">
+<ol class="steps">
+<li>打开 MT5，<strong>保持它运行</strong>。</li>
+<li>回到牛牛 AI：「MT5 终端」卡片会自动扫描并列出终端（通常只有一条）。</li>
+<li><strong>点它选中</strong>（高亮，右侧显示进程 ID 和路径）。</li>
+<li>点「<strong>安装桥接 EA</strong>」。</li>
+<li>看到日志出现 <code>EA 已安装：…\MQL5\Experts\NiuNiuBridge.ex5</code> 即成功。</li>
+</ol>
+<div class="callout"><span class="ic">🔑</span><div>这一步做两件事：把 EA 拷进 MT5；把一把<strong>本机随机生成的密钥</strong>写进 MT5 沙箱。密钥决定你的电脑有资格给 EA 下命令——所以<strong>顺序不能反：先点安装，再去挂 EA。</strong></div></div>
+</div>
+</section>
+
+<section>
+
+<figure>
+  <img src="shots/04-授权栏-未激活.png" alt="未激活时的授权条：粘贴密钥后点「激活」">
+  <figcaption>未激活时的授权条：粘贴密钥后点「激活」</figcaption>
+</figure>
+
+<h2><span class="n">4</span>把 EA 挂到图表上 <span class="pill p-no" style="margin-left:6px">最关键</span></h2>
+<div class="card">
+<p>牛牛 AI 只是把 EA 文件放进去了，<strong>它不会替你挂</strong>。必须手动挂一次：</p>
+<ol class="steps">
+<li>在 MT5 按 <kbd>Ctrl</kbd>+<kbd>N</kbd> 打开「导航器」。</li>
+<li>展开「<strong>EA 交易</strong>」，找到 <strong>NiuNiuBridge</strong>。</li>
+<li><strong>拖到任意一个图表上</strong>（比如 EURUSD 的图），松手会弹出「EA 属性」窗口。</li>
+<li>「<strong>常用</strong>」标签页 → 勾上「<strong>允许算法交易</strong>」。</li>
+<li>切到「<strong>输入参数</strong>」标签页，改这两项：
+  <ul>
+    <li><code>InpAutoTrade</code> → <strong class="must">改成 true</strong>　← 不改这个，下单一定失败</li>
+    <li><code>InpDemoOnly</code> → 保持 <code>true</code>（测试阶段）</li>
+  </ul>
+</li>
+<li>点「确定」。</li>
+<li>确认三件事：
+  <ul>
+    <li>工具栏「<strong>自动交易</strong>」按钮是<strong>绿色</strong>（没绿就点一下）；</li>
+    <li>图表<strong>右上角是笑脸</strong> 😊（✕ 或 😴 说明没挂好）；</li>
+    <li>MT5 底部「工具箱 → EA 交易」标签能看到 <code>[NN] ═══ 牛牛 AI 桥接 EA 已启动 ═══</code>。</li>
+  </ul>
+</li>
+</ol>
+<div class="callout bad"><span class="ic">⚠️</span><div>如果 EA 是在点「安装桥接 EA」<strong>之前</strong>就挂上的：请把它移除后重新拖一次，或在图表上右键 →「EA 交易」→「属性」→ 确定，让它重新初始化。<strong>原因：密钥只在 EA 启动那一刻读取。</strong></div></div>
+</div>
+</section>
+
+<section>
+
+<figure>
+<svg viewBox="0 0 1200 300" role="img" aria-label="MT5 挂 EA 的四个检查点">
+  <rect width="1200" height="300" fill="#FFFFFF"/>
+  <text x="40" y="40" font-size="15" font-weight="700" fill="#14161A"
+        font-family="PingFang SC,sans-serif">第 4 节：把 EA 挂到图表上 —— 挂完必须确认这四件事</text>
+
+  <g font-family="PingFang SC,sans-serif">
+    <rect x="40" y="70" width="264" height="90" rx="12" fill="#F2F4F7" stroke="#E4E7EC"/>
+    <text x="60" y="100" font-size="13" font-weight="700" fill="#14161A">① Ctrl+N 打开导航器</text>
+    <text x="60" y="124" font-size="11.5" fill="#6B7280">展开「EA 交易」</text>
+    <text x="60" y="144" font-size="11.5" fill="#6B7280">找到 NiuNiuBridge</text>
+
+    <rect x="324" y="70" width="264" height="90" rx="12" fill="#F2F4F7" stroke="#E4E7EC"/>
+    <text x="344" y="100" font-size="13" font-weight="700" fill="#14161A">② 拖到任意图表</text>
+    <text x="344" y="124" font-size="11.5" fill="#6B7280">松手弹出「EA 属性」</text>
+    <text x="344" y="144" font-size="11.5" fill="#6B7280">标签页：「常用」</text>
+
+    <rect x="608" y="70" width="264" height="90" rx="12" fill="#FBEEEB" stroke="#D8624A"/>
+    <text x="628" y="100" font-size="13" font-weight="700" fill="#14161A">③ 勾「允许算法交易」</text>
+    <text x="628" y="124" font-size="11.5" fill="#D8624A">不勾 = 一下单就被拒</text>
+    <text x="628" y="144" font-size="11.5" fill="#6B7280">切到「输入参数」</text>
+
+    <rect x="892" y="70" width="268" height="90" rx="12" fill="#FBEEEB" stroke="#D8624A"/>
+    <text x="912" y="100" font-size="13" font-weight="700" fill="#14161A">④ InpAutoTrade = true</text>
+    <text x="912" y="124" font-size="11.5" fill="#D8624A">默认 false，必须改</text>
+    <text x="912" y="144" font-size="11.5" fill="#6B7280">InpDemoOnly 保持 true</text>
+  </g>
+
+  <line x1="40" y1="182" x2="1160" y2="182" stroke="#E4E7EC"/>
+  <text x="40" y="214" font-size="13" font-weight="700" fill="#14161A"
+        font-family="PingFang SC,sans-serif">挂完看三处</text>
+
+  <g font-family="PingFang SC,sans-serif">
+    <rect x="40" y="228" width="360" height="52" rx="10" fill="#E7F5EF"/>
+    <text x="60" y="250" font-size="12.5" font-weight="700" fill="#14161A">工具栏「自动交易」是绿色</text>
+    <text x="60" y="269" font-size="11" fill="#3F9C7C">没绿就点一下</text>
+
+    <rect x="420" y="228" width="360" height="52" rx="10" fill="#E7F5EF"/>
+    <text x="440" y="250" font-size="12.5" font-weight="700" fill="#14161A">图表右上角是笑脸 😊</text>
+    <text x="440" y="269" font-size="11" fill="#3F9C7C">✕ / 😴 说明没挂好</text>
+
+    <rect x="800" y="228" width="360" height="52" rx="10" fill="#E7F5EF"/>
+    <text x="820" y="250" font-size="12.5" font-weight="700" fill="#14161A">工具箱 → EA 交易 有启动日志</text>
+    <text x="820" y="269" font-size="11" fill="#3F9C7C">[NN] ═══ 桥接 EA 已启动 ═══</text>
+  </g>
+</svg>
+<figcaption>MT5 侧的四步与三处确认 —— 这一步漏一项，后面全部动作都会失败。</figcaption>
+</figure>
+
+<h2><span class="n">5</span>回到牛牛 AI 确认状态</h2>
+<div class="card">
+<p>看右边「账户与行情」卡片：</p>
+<table>
+<tr><th>你看到的</th><th>含义</th><th>该怎么办</th></tr>
+<tr><td>余额/净值/保证金 有数字</td><td><span class="pill p-ok">已连上</span></td><td>继续</td></tr>
+<tr><td>品种、买价、卖价 有数字</td><td><span class="pill p-ok">行情通了</span></td><td>继续</td></tr>
+<tr><td>小字「签名校验已启用」（绿）</td><td><span class="pill p-ok">安全链路通了</span></td><td>继续</td></tr>
+<tr><td>红字「未启用签名 · 交易命令将被拒绝」</td><td><span class="pill p-no">缺密钥</span></td><td>回第 3 节重点一次安装，再回第 4 节重启 EA</td></tr>
+<tr><td>一直「未连接 / EA 未运行」</td><td><span class="pill p-no">EA 没在跑</span></td><td>回第 4 节检查笑脸和自动交易按钮</td></tr>
+</table>
+<p>左侧「持仓 Positions」会列出 MT5 里当前所有持仓。</p>
+</div>
+</section>
+
+<section>
+
+<figure>
+  <img src="shots/07-账户与行情.png" alt="确认状态：余额 / 净值 / 报价有数字，且显示「签名校验已启用」">
+  <figcaption>确认状态：余额 / 净值 / 报价有数字，且显示「签名校验已启用」</figcaption>
+</figure>
+
+<h2><span class="n">6</span>下单</h2>
+<div class="card">
+<p>在右边「人工下单 · 交易票据」卡片里填：</p>
+<table>
+<tr><th>字段</th><th>说明</th><th>建议测试值</th></tr>
+<tr><td>方向 Side</td><td>买入 BUY / 卖出 SELL</td><td>买入 BUY</td></tr>
+<tr><td>手数 Lots</td><td>下单手数</td><td><strong>0.01</strong>（最小手，测试用）</td></tr>
+<tr><td>止损（点）</td><td><code>sl_points</code>，0 = 不设</td><td>0 或 250</td></tr>
+<tr><td>止盈（点）</td><td><code>tp_points</code>，0 = 不设</td><td>0 或 500</td></tr>
+<tr><td>允许滑点（点）</td><td>允许的价格偏离</td><td>30</td></tr>
+</table>
+<p>填完先看下面的「<strong>下单前确认</strong>」小票：账户、服务器、品种、方向手数、止损止盈都对不对。不对就别点。确认无误后点「<strong>确认下单（模拟盘）</strong>」。</p>
+<div class="callout"><span class="ic">📏</span><div><strong>「点」是什么单位？</strong> point = 该品种的最小报价单位，<strong>不是 pip</strong>。比如黄金 1 point ≈ 0.01 美元。手数和止损距离 EA 还会按券商规格再校验一遍。</div></div>
+<p>然后看底部「事件与回执」：</p>
+<div class="tree">命令 … 已发出
+回执 … → [已受理] 已受理，提交中
+回执 … → [已成交] 已成交      ← 成功</div>
+<p>失败时回执会写明确原因，例如「手数越界」「止损距离小于 STOPS_LEVEL」「EA 自动交易开关关闭」。<strong>直接读文字就行，不用猜。</strong></p>
+</div>
+</section>
+
+<section>
+
+<figure>
+  <img src="shots/09-下单卡片.png" alt="下单卡片：填方向与手数，先看「下单前确认」小票，再点确认">
+  <figcaption>下单卡片：填方向与手数，先看「下单前确认」小票，再点确认</figcaption>
+</figure>
+
+<h2><span class="n">7</span>看懂回执状态</h2>
+<div class="card">
+<table>
+<tr><th>状态</th><th>什么意思</th><th>你要做什么</th></tr>
+<tr><td>已发出</td><td>命令发出去了，EA 还没回话</td><td>等</td></tr>
+<tr><td>已受理</td><td>EA 校验通过，正在提交券商</td><td>等</td></tr>
+<tr><td>已成交</td><td>券商确认成交</td><td>无</td></tr>
+<tr><td>已拒绝</td><td>明确失败</td><td>读后面的原因</td></tr>
+<tr><td>已过期</td><td>命令超过有效期才开始处理</td><td>可重发，不会重复成交</td></tr>
+<tr><td><strong>待核对</strong></td><td><strong>结果不明</strong>：请求可能已发出，但不知道成没成</td><td><strong>去 MT5 看真实持仓，不要重复下单</strong></td></tr>
+</table>
+<div class="callout bad"><span class="ic">🛡️</span><div><strong>「待核对」是刻意设计的，不是 bug。</strong>系统永远不替你自动重发一条结果不明的交易命令——那才是真的会重复成交。宁可让你看到「待核对」，也不给你一个假的「已成交」。</div></div>
+</div>
+</section>
+
+<section>
+
+<figure>
+<svg viewBox="0 0 1200 250" role="img" aria-label="回执状态流转">
+  <rect width="1200" height="250" fill="#FFFFFF"/>
+  <defs>
+    <marker id="ar2" markerWidth="10" markerHeight="10" refX="8" refY="3.5" orient="auto">
+      <path d="M0,0 L8,3.5 L0,7 z" fill="#6B7280"/>
+    </marker>
+  </defs>
+  <text x="40" y="40" font-size="15" font-weight="700" fill="#14161A"
+        font-family="PingFang SC,sans-serif">一条命令的六种结局</text>
+
+  <rect x="40" y="80" width="140" height="62" rx="12" fill="#EAF2FF" stroke="#4F8CFF"/>
+  <text x="110" y="108" font-size="14" font-weight="700" fill="#14161A" text-anchor="middle"
+        font-family="PingFang SC,sans-serif">已发出</text>
+  <text x="110" y="128" font-size="11" fill="#6B7280" text-anchor="middle"
+        font-family="PingFang SC,sans-serif">等你 EA 回话</text>
+
+  <line x1="180" y1="111" x2="228" y2="111" stroke="#6B7280" stroke-width="1.5" marker-end="url(#ar2)"/>
+
+  <rect x="228" y="80" width="140" height="62" rx="12" fill="#EAF2FF" stroke="#4F8CFF"/>
+  <text x="298" y="108" font-size="14" font-weight="700" fill="#14161A" text-anchor="middle"
+        font-family="PingFang SC,sans-serif">已受理</text>
+  <text x="298" y="128" font-size="11" fill="#6B7280" text-anchor="middle"
+        font-family="PingFang SC,sans-serif">校验通过，提交中</text>
+
+  <line x1="368" y1="111" x2="416" y2="111" stroke="#6B7280" stroke-width="1.5" marker-end="url(#ar2)"/>
+
+  <rect x="416" y="80" width="140" height="62" rx="12" fill="#E7F5EF" stroke="#3F9C7C"/>
+  <text x="486" y="108" font-size="14" font-weight="700" fill="#14161A" text-anchor="middle"
+        font-family="PingFang SC,sans-serif">已成交</text>
+  <text x="486" y="128" font-size="11" fill="#3F9C7C" text-anchor="middle"
+        font-family="PingFang SC,sans-serif">券商确认</text>
+
+  <!-- rejected -->
+  <path d="M298,142 L298,178 L150,178 L150,152" fill="none" stroke="#D8624A" stroke-width="1.5" marker-end="url(#ar2)"/>
+  <rect x="76" y="184" width="148" height="50" rx="12" fill="#FBEEEB" stroke="#D8624A"/>
+  <text x="150" y="206" font-size="13.5" font-weight="700" fill="#14161A" text-anchor="middle"
+        font-family="PingFang SC,sans-serif">已拒绝</text>
+  <text x="150" y="224" font-size="10.5" fill="#D8624A" text-anchor="middle"
+        font-family="PingFang SC,sans-serif">回执写明原因</text>
+
+  <!-- expired -->
+  <path d="M298,142 L298,196 L416,196 L416,152" fill="none" stroke="#B98B22" stroke-width="1.5" marker-end="url(#ar2)"/>
+  <rect x="342" y="196" width="148" height="38" rx="12" fill="#FBF4E5" stroke="#B98B22"/>
+  <text x="416" y="220" font-size="13.5" font-weight="700" fill="#14161A" text-anchor="middle"
+        font-family="PingFang SC,sans-serif">已过期</text>
+
+  <!-- uncertain -->
+  <rect x="630" y="80" width="168" height="62" rx="12" fill="#FBF4E5" stroke="#B98B22"/>
+  <text x="714" y="108" font-size="14" font-weight="700" fill="#14161A" text-anchor="middle"
+        font-family="PingFang SC,sans-serif">待核对</text>
+  <text x="714" y="128" font-size="11" fill="#B98B22" text-anchor="middle"
+        font-family="PingFang SC,sans-serif">结果不明，人工查 MT5</text>
+  <line x1="556" y1="111" x2="630" y2="111" stroke="#B98B22" stroke-width="1.5"
+        stroke-dasharray="5 4" marker-end="url(#ar2)"/>
+
+  <rect x="838" y="72" width="322" height="78" rx="12" fill="#F2F4F7" stroke="#E4E7EC"/>
+  <text x="856" y="98" font-size="12.5" font-weight="700" fill="#D8624A"
+        font-family="PingFang SC,sans-serif">「待核对」是设计，不是故障</text>
+  <text x="856" y="120" font-size="11.5" fill="#6B7280" font-family="PingFang SC,sans-serif">
+    系统永不自动重发一条结果不明的交易命令 ——</text>
+  <text x="856" y="138" font-size="11.5" fill="#6B7280" font-family="PingFang SC,sans-serif">
+    那才是真的会重复成交。宁可给你「待核对」，</text>
+  <text x="856" y="156" font-size="11.5" fill="#6B7280" font-family="PingFang SC,sans-serif">
+    也不给你一个假的「已成交」。</text>
+  <line x1="798" y1="111" x2="838" y2="111" stroke="#E4E7EC" stroke-width="1.5"/>
+
+  <text x="40" y="192" font-size="12" fill="#6B7280" font-family="PingFang SC,sans-serif">
+    只有「已成交」才算成。</text>
+  <text x="40" y="214" font-size="12" fill="#6B7280" font-family="PingFang SC,sans-serif">
+    「已拒绝 / 已过期」可以安全重发。</text>
+  <text x="40" y="236" font-size="12" font-weight="600" fill="#D8624A" font-family="PingFang SC,sans-serif">
+    「待核对」必须先看 MT5 真实持仓。</text>
+</svg>
+<figcaption>回执状态流转：成功只有一条路，失败与不确定各有明确出口。</figcaption>
+</figure>
+
+<figure>
+  <img src="shots/10-回执日志.png" alt="事件与回执：命令已发出 → 已受理 → 已成交">
+  <figcaption>事件与回执：命令已发出 → 已受理 → 已成交</figcaption>
+</figure>
+
+<h2><span class="n">8</span>平仓</h2>
+<div class="card">
+<p>在左边「持仓 Positions」表格里找到要平的那一行，点最右边的「<strong>平仓</strong>」。</p>
+<ul>
+<li>会弹确认框，确认即可。</li>
+<li>平仓同样走一遍下面的回执流程。</li>
+<li>成功后持仓从表格里消失，MT5 里也消失。</li>
+</ul>
+</div>
+</section>
+
+<section>
+
+<figure>
+  <img src="shots/08-持仓卡片.png" alt="持仓列表：右侧「平仓」按钮，会弹确认框">
+  <figcaption>持仓列表：右侧「平仓」按钮，会弹确认框</figcaption>
+</figure>
+
+<h2><span class="n">9</span>停用与退出</h2>
+<div class="card">
+<table>
+<tr><th>想做什么</th><th>怎么做</th></tr>
+<tr><td>紧急停止</td><td>点顶部「运行中 · 点击停用」→ 变成「⛔ 已停用」。<strong>已发出的命令仍会走完</strong>，这是对的</td></tr>
+<tr><td>恢复</td><td>再点一次</td></tr>
+<tr><td>彻底停止交易</td><td>MT5 里点「自动交易」变红，或把 EA 从图表移除</td></tr>
+<tr><td>导出日志给客服</td><td>用「事件与回执」区的导出功能存成 txt</td></tr>
+<tr><td>卸载软件</td><td>设置 → 应用 → 牛牛AI → 卸载</td></tr>
+<tr><td>完全清理</td><td>卸载后还要在 MT5 里移除 NiuNiuBridge，并删掉 <code>MQL5\Files\niuniu\</code> 文件夹</td></tr>
+</table>
+</div>
+</section>
+
+<section>
+<h2><span class="n">10</span>出问题了怎么办</h2>
+<div class="card">
+<table>
+<tr><th>现象</th><th>原因</th><th>解决</th></tr>
+<tr><td>显示「EA 未运行」</td><td>EA 没挂到图表，或自动交易没开</td><td>回第 4 节，检查笑脸和绿色按钮</td></tr>
+<tr><td>被拒：「EA 自动交易开关关闭」</td><td><code>InpAutoTrade</code> 还是 false</td><td>第 4 节第 5 步改成 true</td></tr>
+<tr><td>被拒：「仅允许模拟盘」</td><td>登录的是实盘账户</td><td>换模拟账户</td></tr>
+<tr><td>红字「未启用签名」</td><td>EA 没拿到密钥</td><td>第 3 节重点安装 → 第 4 节重启 EA</td></tr>
+<tr><td>一直停在「已发出」</td><td>EA 没在跑，或选错终端</td><td>多终端各自独立，确认选的是挂了 EA 的那个</td></tr>
+<tr><td>被拒：「账户不匹配」</td><td>命令账号 ≠ 当前登录账号</td><td>点「重新绑定（换账户）」</td></tr>
+<tr><td>换账户后旧命令失效</td><td>正常：代次 epoch 变了</td><td>无需处理，重新下单</td></tr>
+<tr><td>被拒：「止损距离小于 STOPS_LEVEL」</td><td>止损设太近</td><td>把止损点数调大</td></tr>
+<tr><td>右上角是 ✕ 不是笑脸</td><td>没允许算法交易</td><td>属性里勾「允许算法交易」</td></tr>
+<tr><td>软件打不开 / 白屏</td><td>被杀软拦了</td><td>加白名单后重开</td></tr>
+</table>
+<h3>文件都装在哪（手动兜底用）</h3>
+<div class="tree">EA 本体     %APPDATA%\MetaQuotes\Terminal\&lt;实例ID&gt;\MQL5\Experts\NiuNiuBridge.ex5
+
+桥工作目录  %APPDATA%\MetaQuotes\Terminal\&lt;实例ID&gt;\MQL5\Files\niuniu\
+            ├─ inbox\       待执行命令
+            ├─ outbox\      回执
+            ├─ archive\     已执行命令（防重复用）
+            ├─ quarantine\  被拒的命令（留着查原因）
+            └─ secret.json  密钥（删了就回第 3 节重装）</div>
+</div>
+</section>
+
+<section>
+<h2><span class="n">11</span>风险提示</h2>
+<div class="card warn">
+<ol>
+<li><strong>本软件是执行工具，不是投资建议。</strong>它把你点的按钮原样送给券商，不判断该不该做这笔交易。</li>
+<li><strong>自动交易存在技术风险</strong>：断线、延迟、滑点、券商拒单、MT5 崩溃，都可能让结果和预期不一致。<strong>回执不是「已成交」的时候，一律以 MT5 终端里的真实持仓为准。</strong></li>
+<li><strong>看到「待核对」必须人工核对</strong>，不要重复提交。</li>
+<li><strong>测试阶段请只用模拟账户</strong>，不要用真实资金。</li>
+<li>开发者不对任何交易盈亏、间接损失承担赔偿责任。</li>
+</ol>
+</div>
+</section>
+
+<section>
+<h2><span class="n">12</span>给测试人员的反馈清单</h2>
+<div class="card ok">
+<p>测完请按下面几条反馈实际结果，<strong>越具体越有用</strong>：</p>
+<ul>
+<li>☐ 系统版本（Win10 / Win11，多少位）</li>
+<li>☐ 券商名称 + 账户类型（模拟 / 实盘）</li>
+<li>☐ 第 3 节「安装桥接 EA」是否成功？日志原文</li>
+<li>☐ 第 4 节挂 EA 后，图表右上角是笑脸吗？</li>
+<li>☐ 第 5 节「签名校验已启用」是绿色吗？</li>
+<li>☐ <strong>下单结果</strong>：回执显示「已成交」了吗？把整行回执文字复制回来</li>
+<li>☐ <strong>平仓结果</strong>：同上</li>
+<li>☐ 有没有出现「待核对」？出现过就说明这个要重点查</li>
+<li>☐ 截图：① 主界面全貌 ② 下单后的回执区 ③ MT5 的「EA 交易」日志标签</li>
+<li>☐ 你觉得哪里别扭 / 看不懂 / 多余</li>
+</ul>
+<div class="callout bad" style="margin-bottom:0"><span class="ic">📋</span><div>有报错就把<strong>原文</strong>贴回来，不要转述。「大概说是失败」这种信息帮不上忙。</div></div>
+</div>
+</section>
+
+<footer>牛牛 AI v1.0.0 · 操作步骤 · 与软件同版本发布</footer>
+</div>
+
+<script>
+(function(){
+  var root=document.documentElement, theme='light';
+  var bDay=document.getElementById('bDay'), bNight=document.getElementById('bNight');
+  function apply(){
+    root.setAttribute('data-theme',theme);
+    bDay.classList.toggle('on',theme==='light');
+    bNight.classList.toggle('on',theme==='dark');
+  }
+  var qs=new URLSearchParams(location.search), q=qs.get('theme');
+  if(q==='dark'||q==='light') theme=q;
+  bDay.onclick=function(){theme='light';apply();};
+  bNight.onclick=function(){theme='dark';apply();};
+  document.getElementById('bPrint').onclick=function(){window.print();};
+  apply();
+})();
+</script>
+</body>
+</html>
