@@ -163,9 +163,60 @@ for ch in chapters[1:]:
     toc.append((slugify(title), title))
 
 # 渲染每章
+# 章节配图：真实界面截图（docs/shots-v2/），base64 内嵌，避免外链。
+import base64
+
+SHOTS_DIR = os.path.join(ROOT, 'docs', 'shots-v2')
+
+# 视频教程：dist/video/牛牛AI-上手教程.mp4 → base64 内嵌（单文件交付）
+VIDEO_FILE = os.path.join(ROOT, 'dist', 'video', '牛牛AI-上手教程.mp4')
+VIDEO_SECTION = ''
+if os.path.exists(VIDEO_FILE):
+    v64 = base64.b64encode(open(VIDEO_FILE, 'rb').read()).decode('ascii')
+    VIDEO_SECTION = '''
+    <section class="video-sec">
+      <h2 id="video"><span class="no">▶</span>视频教程 · 22 秒看完整流程</h2>
+      <p class="vd-s">概览 → 终端与 EA → 交易 → 策略广场 → AI 一键下单 → 回执，一镜到底。</p>
+      <video controls preload="metadata" playsinline src="data:video/mp4;base64,__VIDEO_B64__"></video>
+    </section>'''.replace('__VIDEO_B64__', v64)
+SHOTS = {
+    1: [('01-overview.png', '概览页：账户与行情、持仓一目了然')],
+    2: [('02-terminal.png', '终端与 EA 页：扫描 MT5、一键安装桥接 EA、绑定密钥'),
+        ('01-overview.png', '装完自检：签名已启用、行情已通')],
+    3: [('01-overview.png', '概览'), ('02-terminal.png', '终端与 EA'),
+        ('03-trade.png', '交易'), ('04-strategy.png', '策略广场'),
+        ('05-ai.png', 'AI 副驾驶'), ('06-settings.png', '设置')],
+    4: [('04-strategy.png', '策略广场：候选资产库 + 上架四道门槛')],
+    6: [('03-trade.png', '交易页：人工下单票据'),
+        ('07-suggestion.png', 'AI 建议卡：方向 / 止损 / 止盈 / 手数（系统算）'),
+        ('08-confirm.png', '二次确认弹窗：完整参数核对后下单')],
+    7: [('02-terminal.png', '终端与 EA 页：重新绑定（换账户）')],
+}
+
+
+def shot_figure(fname, caption):
+    p = os.path.join(SHOTS_DIR, fname)
+    if not os.path.exists(p):
+        return ''
+    b64 = base64.b64encode(open(p, 'rb').read()).decode('ascii')
+    return (f'<figure class="shot"><img src="data:image/png;base64,{b64}" alt="{esc(caption)}" loading="lazy">'
+            f'<figcaption>{esc(caption)}</figcaption></figure>')
+
+
 body = []
-for ch in chapters[1:]:
-    body.append(render_md(ch))
+for idx, ch in enumerate(chapters[1:], start=1):
+    rendered = render_md(ch)
+    figs = [shot_figure(f, c) for f, c in SHOTS.get(idx, [])]
+    figs = [x for x in figs if x]
+    if figs:
+        block = ('<div class="shots-grid">' + ''.join(figs) + '</div>') if len(figs) > 2 else ''.join(figs)
+        # 插到该章 <h2> 标题之后
+        rendered = re.sub(r'(<h2[^>]*>.*?</h2>)', lambda m: m.group(1) + block, rendered, count=1)
+    # 章节标题编号抽出来做徽章：「1. 这是什么」→ [1] 这是什么
+    rendered = re.sub(r'<h2([^>]*)>(\d+)[\.．、]?\s*',
+                      lambda m: '<h2%s><span class="no">%s</span>' % (m.group(1), m.group(2)),
+                      rendered, count=1)
+    body.append('<section>' + rendered + '</section>')
 
 # EN 精简版（章节标题 + 一句话要点）
 EN = {
@@ -276,6 +327,17 @@ hr{border:none;border-top:1px solid var(--line-strong);margin:20px 0}
 .code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;line-height:1.7;
   background:var(--soft);border:1px solid var(--line);border-radius:10px;padding:14px 16px;overflow-x:auto;margin:12px 0;color:var(--muted)}
 
+.video-sec video{width:100%;border-radius:12px;display:block;background:#000;box-shadow:var(--shadow)}
+.vd-s{font-size:13px;color:var(--muted);margin-bottom:14px}
+
+/* 图文配图 */
+.shot{margin:18px 0;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--soft)}
+.shot img{width:100%;height:auto;display:block}
+.shot figcaption{font-size:12px;color:var(--muted);padding:10px 14px;border-top:1px solid var(--line-strong);background:var(--panel)}
+.shots-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
+.shots-grid .shot{margin:0}
+
+
 /* 四步流程 */
 .flow{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:16px 0}
 .flow .stp{background:var(--soft);border:1px solid var(--line);border-radius:12px;padding:14px 15px;position:relative}
@@ -329,6 +391,7 @@ footer{padding:30px 40px 60px;text-align:center;color:var(--faint);font-size:12p
       <div class="sub">v1.0 · Windows x64 · <strong style="color:var(--danger)">Demo accounts only during testing</strong>. A condensed English reference; the full guide is in Chinese.</div>
       <div class="meta"><span>v1.0</span><span>Windows x64</span><span>Demo-first</span></div>
     </div>
+__VIDEO_SECTION__
 ''' + '\n'.join(body) + '''
   </main>
 </div>
@@ -356,5 +419,6 @@ secs.forEach(function(s){if(s)observer.observe(s);});
 </html>
 '''
 
+html = html.replace('__VIDEO_SECTION__', VIDEO_SECTION)
 io.open(OUT, 'w', encoding='utf-8').write(html)
 print('已生成', os.path.relpath(OUT, ROOT), f'({len(html)/1024:.1f} KB)')
