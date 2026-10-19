@@ -11,6 +11,7 @@ contextBridge.exposeInMainWorld('nn', {
   licenseActivate: (key) => ipcRenderer.invoke('bridge:licenseActivate', { key }),
   discover:      () => ipcRenderer.invoke('bridge:discover'),
   installEA:     (terminalPath) => ipcRenderer.invoke('bridge:installEA', { terminalPath }),
+  getStrategyCatalog: () => ipcRenderer.invoke('bridge:getStrategyCatalog'),
   rebind:        (terminalPath) => ipcRenderer.invoke('bridge:rebind', { terminalPath }),
   // 全局停用闸门在主进程，这里只是发意图；返回值以主进程为准
   setHalt:       (halted) => ipcRenderer.invoke('bridge:setHalt', { halted }),

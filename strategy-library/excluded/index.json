@@ -1,0 +1,63 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-10-19",
+  "note": "被排除/暂缓资产的内部登记：保留编号、原因和审查记录，不公开展示、不删除历史来源、不允许改名后重新提交（蓝图 1.3）。",
+  "items": [
+    {
+      "id": "TPL-GRID-RANGE-H1",
+      "name_zh": "区间震荡网格（正向）",
+      "style": "grid",
+      "disposition": "excluded",
+      "reason": "直接命中「不做网格」：等距布单 + 单格无硬止损，靠格距止盈 + 区间失效总熔断兜底；即便设置熔断也不入库。"
+    },
+    {
+      "id": "TPL-GRID-TREND-FOLLOW",
+      "name_zh": "顺趋势网格（反向/趋势网格）",
+      "style": "grid",
+      "disposition": "excluded",
+      "reason": "直接命中「不做网格」：格层布单 + 无单格止损；「顺势」只是方向过滤，不改变网格机制本质。"
+    },
+    {
+      "id": "TPL-DCA-FIXED-H4",
+      "name_zh": "定投摊平 DCA（固定手数）",
+      "style": "dca_martingale",
+      "disposition": "excluded",
+      "reason": "命中「逆势加仓」：浮亏一格按相同手数加一笔摊平，无单笔止损，整组回本才离场。虽不加倍，机制本质仍是逆势加仓，不得以 DCA 名称包装入库。"
+    },
+    {
+      "id": "TPL-MART-2X-H4",
+      "name_zh": "马丁格尔倍增摊平（受限版）",
+      "style": "dca_martingale",
+      "disposition": "excluded",
+      "reason": "马丁格尔直接禁入：浮亏加仓手数 ×2。层数/手数/熔断三重上限不改变机制本质。"
+    },
+    {
+      "id": "TPL-SCALP-LDNY-M5",
+      "name_zh": "伦敦-纽约重叠剥头皮（M5）",
+      "style": "scalping",
+      "disposition": "deferred",
+      "reason": "不违反不做清单（固定 80 点止损、持仓上限 1），但 5-15 点小波段高度依赖点差、滑点、延迟与执行稳定性；当前执行链（tick 级触发、滑点预算）未经证明可承载。恢复条件：滑点/延迟预算通过验证 + 执行稳定性证据。"
+    },
+    {
+      "id": "TPL-SCALP-ASIA-M5",
+      "name_zh": "亚洲盘窄幅剥头皮（M5）",
+      "style": "scalping",
+      "disposition": "deferred",
+      "reason": "不违反不做清单（固定止损 + 时段强制平仓），但对点差/滑点/延迟同样敏感，当前执行能力撑不住。注意：TPL-COMBO-RISK-PARITY 引用它作为子策略腿，该组合需等本资产恢复或改定义。"
+    },
+    {
+      "id": "TPL-ARB-CORR-EUGU-H1",
+      "name_zh": "EURUSD/GBPUSD 相关性价差回归（H1）",
+      "style": "arbitrage",
+      "disposition": "deferred",
+      "reason": "不违反不做清单，但需双腿同步执行、部分成交处理与单腿裸敞口失败补偿；当前执行链只有单腿市价开仓/平仓，能力不足以证明可承载。"
+    },
+    {
+      "id": "TPL-ARB-GOLDSILVER-D1",
+      "name_zh": "金银比率回归（D1）",
+      "style": "arbitrage",
+      "disposition": "deferred",
+      "reason": "不违反不做清单，但同为双腿价差策略，单腿被拒时的处置链路当前不具备；且 XAGUSD 是否在现有品种支持范围内未核验。"
+    }
+  ]
+}

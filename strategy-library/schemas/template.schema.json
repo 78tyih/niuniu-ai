@@ -1,0 +1,144 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://niuniu.ai/strategy-library/template.schema.json",
+  "title": "牛牛AI 策略模板 manifest（蓝图 1.10 最小契约）",
+  "description": "策略广场生态库中一个模板版本的清单文件。发布校验器另需拒绝：未审核通过就 listed；research 阶段存在非空绩效；无对应证据却升级 validation_stage；未核验执行能力却启用实盘；禁做审查未通过却允许订阅；已发布模板缺少 direction、兼容范围或维护责任人。",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "template_id",
+    "version",
+    "name_zh",
+    "provider_id",
+    "classification",
+    "compatibility",
+    "publication_status",
+    "validation_stage",
+    "execution_status",
+    "required_capabilities",
+    "prohibited_mechanisms_review",
+    "performance",
+    "evidence_refs",
+    "subscription"
+  ],
+  "properties": {
+    "schema_version": { "type": "string", "const": "1.0" },
+    "template_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9-]*$",
+      "description": "全局唯一模板 ID，与目录名一致"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "语义化版本；规则、默认参数或执行逻辑实质变化时必须升版本并重新验证"
+    },
+    "name_zh": { "type": "string", "minLength": 1 },
+    "name_en": { "type": "string" },
+    "one_liner_zh": { "type": "string", "description": "一句话机制说明（中文，卡片首屏用）" },
+    "provider_id": {
+      "type": ["string", "null"],
+      "description": "策略方 ID；null 表示平台官方模板"
+    },
+    "maintainer": {
+      "type": ["string", "null"],
+      "description": "维护责任人；publication_status=listed 时不得为 null"
+    },
+    "classification": {
+      "type": "object",
+      "required": ["decision_mode", "style", "risk_tier", "direction"],
+      "properties": {
+        "decision_mode": { "enum": ["rule_based", "human_confirmed"] },
+        "style": { "enum": ["trend", "mean_reversion", "breakout", "swing", "other"] },
+        "risk_tier": {
+          "enum": ["unassessed", "constrained", "elevated", "prohibited"],
+          "description": "由平台审核生成；unassessed 只能作研究模板，prohibited 不进入公开生态库"
+        },
+        "direction": {
+          "enum": ["long_only", "short_only", "both_selective", null],
+          "description": "both_selective = 可判断两个方向，不代表同时持有多空；draft 可为 null，listed 不可为 null"
+        }
+      },
+      "additionalProperties": false
+    },
+    "compatibility": {
+      "type": "object",
+      "required": ["account_modes", "symbols", "timeframes", "ea_version"],
+      "properties": {
+        "account_modes": {
+          "type": "array",
+          "items": { "enum": ["hedging", "netting"] },
+          "description": "Netting 账户下同品种仅允许一个策略实例（蓝图 1.8），限制写在 compatibility_notes"
+        },
+        "symbols": { "type": "array", "items": { "type": "string" } },
+        "timeframes": { "type": "array", "items": { "type": "string" } },
+        "ea_version": { "type": ["string", "null"], "description": "所需 EA 版本；未核验为 null" },
+        "notes": { "type": "array", "items": { "type": "string" }, "description": "兼容性限制说明（中文）" }
+      },
+      "additionalProperties": false
+    },
+    "publication_status": { "enum": ["draft", "listed", "suspended", "retired"] },
+    "validation_stage": { "enum": ["research", "backtest", "demo", "live"] },
+    "execution_status": { "enum": ["disabled", "demo_only", "controlled_live", "enabled"] },
+    "required_capabilities": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "执行该模板所需的平台能力；能力未核验前 execution_status 只能为 disabled"
+    },
+    "prohibited_mechanisms_review": {
+      "enum": ["pending", "passed", "failed"],
+      "description": "禁做机制审查（grid/马丁/逆势加仓/无止损/保本承诺）；failed 不进入公开库，passed 前不得 listed"
+    },
+    "performance": {
+      "type": "object",
+      "required": ["backtest", "demo", "live"],
+      "properties": {
+        "backtest": { "type": ["object", "null"] },
+        "demo": { "type": ["object", "null"] },
+        "live": { "type": ["object", "null"] }
+      },
+      "additionalProperties": false,
+      "description": "各证据类型独立；无证据必须为 null，前端显示「暂无验证数据」，禁止显示 0%。validation_stage=research 时三项必须全为 null"
+    },
+    "evidence_refs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["type", "source", "window", "params_ref", "review_status"],
+        "properties": {
+          "type": { "enum": ["backtest", "demo", "live"] },
+          "source": { "type": "string", "description": "证据来源（文件路径或可核验出处）" },
+          "window": { "type": "string", "description": "统计区间" },
+          "params_ref": { "type": "string", "description": "指向本版本参数的引用；证据必须绑定当前版本" },
+          "review_status": { "enum": ["pending", "approved", "rejected"] }
+        },
+        "additionalProperties": false
+      }
+    },
+    "subscription": {
+      "type": "object",
+      "required": ["enabled", "offer_id"],
+      "properties": {
+        "enabled": { "type": "boolean", "description": "禁做审查未通过前必须为 false；订阅不等于启用交易" },
+        "offer_id": { "type": ["string", "null"] }
+      },
+      "additionalProperties": false
+    },
+    "parameters": {
+      "type": "object",
+      "description": "本版本真实参数快照（与引擎输入一一对应）；证据通过 params_ref 绑定此快照"
+    },
+    "fixed_protections": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "固定不可关闭的保护项（如强制止损、持仓上限、时间止损）"
+    },
+    "pending_verification": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "待核验事项：缺失的能力或数据，说明缺什么，不硬编"
+    },
+    "source_ref": { "type": "string", "description": "本 manifest 的来源文件" }
+  },
+  "additionalProperties": false
+}

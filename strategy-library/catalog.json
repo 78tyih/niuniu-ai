@@ -1,0 +1,268 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-10-19",
+  "generated_by": "K3 施工（基于 GPT 蓝图 1.3 处置规则，按机制而非名称逐项审查）",
+  "source_files": [
+    "research/2026-10-18/templates-v1.clean.json (A3_templates.templates, 23 条)",
+    "research/2026-10-19/answer-design-blueprint.md (1.2 分类 / 1.3 处置 / 1.10 契约)"
+  ],
+  "review_rules": {
+    "excluded": "命中 grid / 马丁 / 逆势加仓 / 无止损 任一即排除；不改名、不隐藏，记入 excluded/index.json",
+    "deferred": "scalping / arbitrage：不违反不做清单，但当前执行能力（点差、滑点、延迟、多腿执行）撑不住，暂缓",
+    "candidate": "trend / mean_reversion / breakout / swing / other 且不含禁做机制；候选 ≠ 已通过，风险档一律 unassessed"
+  },
+  "summary": {
+    "total_assets": 23,
+    "candidates": 15,
+    "excluded": 4,
+    "deferred": 4,
+    "note": "候选是「待审」不是「已通过」。所有候选 validation_stage=research、execution_status=disabled、绩效全 null。"
+  },
+  "first_batch_overlap_note": "首批 3 个模板 NN-T01/T02/T03（strategies/NN-T0*.json，由 NiuNiuStrategy.mq5 执行）不在这 23 个设计资产之内，两者 ID 体系不同（NN-T0x vs TPL-*），不重复计数。机制上相近但非同一资产：NN-T01 趋势回撤 ↔ TPL-TREND-PULLBACK-H4（同为趋势回调，但 NN-T01 是 H1 快线回踩，TPL 是 H4 + D1 过滤 + RSI 复位）；NN-T02 区间突破 ↔ TPL-BRK-* 系列（同为突破族，机制不同）；NN-T03 有界均值回归 ↔ TPL-MR-BBAND-H1（同为布林回归，但 NN-T03 有强制 48 根时间止损且已在 EA 实现，TPL 仅设计稿）。",
+  "assets": [
+    {
+      "id": "TPL-TREND-EMAX-H4",
+      "name_zh": "双均线趋势（H4 经典版）",
+      "source_style": "trend",
+      "disposition": "candidate",
+      "disposition_reason": "EMA20/50 交叉进出 + ATR 动态止损，单笔持仓上限 1，execution_map 完全落在现有 EA 能力内，无禁做机制。",
+      "classification": { "decision_mode": "rule_based", "style": "trend", "risk_tier": "unassessed", "direction": "both_selective" },
+      "pending_verification": [],
+      "validation_stage": "research",
+      "execution_status": "disabled",
+      "performance": { "backtest": null, "demo": null, "live": null }
+    },
+    {
+      "id": "TPL-TREND-EMAX-FILTER-H1",
+      "name_zh": "均线穿越 + 大周期趋势过滤（H1）",
+      "source_style": "trend",
+      "disposition": "candidate",
+      "disposition_reason": "H1 交叉触发 + D1 EMA200 许可 + ADX 震荡过滤，机制合规，无加仓。",
+      "classification": { "decision_mode": "rule_based", "style": "trend", "risk_tier": "unassessed", "direction": "both_selective" },
+      "pending_verification": [],
+      "validation_stage": "research",
+      "execution_status": "disabled",
+      "performance": { "backtest": null, "demo": null, "live": null }
+    },
+    {
+      "id": "TPL-TREND-DONCHIAN-D1",
+      "name_zh": "唐奇安通道趋势（日线·海龟骨架）",
+      "source_style": "trend",
+      "disposition": "candidate",
+      "disposition_reason": "突破 55 日极值入场、20 日反向极值离场、ATR 定仓，经典趋势机制，无禁做项。",
+      "classification": { "decision_mode": "rule_based", "style": "trend", "risk_tier": "unassessed", "direction": "both_selective" },
+      "pending_verification": [],
+      "validation_stage": "research",
+      "execution_status": "disabled",
+      "performance": { "backtest": null, "demo": null, "live": null }
+    },
+    {
+      "id": "TPL-TREND-PULLBACK-H4",
+      "name_zh": "趋势回调入场（H4 顺大逆小）",
+      "source_style": "trend",
+      "disposition": "candidate",
+      "disposition_reason": "D1 定方向、H4 回调到 EMA50 后 RSI 复位进场，跌破锚点离场，机制合规。与 NN-T01 机制相近但非同一资产（见 overlap_note）。",
+      "classification": { "decision_mode": "rule_based", "style": "trend", "risk_tier": "unassessed", "direction": "both_selective" },
+      "pending_verification": [],
+      "validation_stage": "research",
+      "execution_status": "disabled",
+      "performance": { "backtest": null, "demo": null, "live": null }
+    },
+    {
+      "id": "TPL-MR-BBAND-H1",
+      "name_zh": "布林带均值回归（H1）",
+      "source_style": "mean_reversion",
+      "disposition": "candidate",
+      "disposition_reason": "有界回归：固定 1.5×ATR 硬止损 + 中轨止盈 + 持仓上限 1 + 低 ADX 过滤，无逆势加仓、无无限等待。",
+      "classification": { "decision_mode": "rule_based", "style": "mean_reversion", "risk_tier": "unassessed", "direction": "both_selective" },
+      "pending_verification": ["news_calendar_dependency：依赖新闻日历数据源，当前 blocked_until_data_source"],
+      "validation_stage": "research",
+      "execution_status": "disabled",
+      "performance": { "backtest": null, "demo": null, "live": null }
+    },
+    {
+      "id": "TPL-MR-RSI2-M15",
+      "name_zh": "RSI(2) 极值回归（M15）",
+      "source_style": "mean_reversion",
+      "disposition": "candidate",
+      "disposition_reason": "有界回归：1.2×ATR 硬止损 + 持仓超 max_bars_hold 强制离场（时间止损），持仓上限 1，无加仓。",
+      "classification": { "decision_mode": "rule_based", "style": "mean_reversion", "risk_tier": "unassessed", "direction": "both_selective" },
+      "pending_verification": [],
+      "validation_stage": "research",
+      "execution_status": "disabled",
+      "performance": { "backtest": null, "demo": null, "live": null }
+    },
+    {
+      "id": "TPL-MR-ASIA-RANGE",
+      "name_zh": "亚洲盘区间回归（时段限定）",
+      "source_style": "mean_reversion",
+      "disposition": "candidate",
+      "disposition_reason": "有界回归：时段强制平仓（伦敦开盘前全走）+ ATR 硬止损 + 持仓上限 1，机制合规。",
+      "classification": { "decision_mode": "rule_based", "style": "mean_reversion", "risk_tier": "unassessed", "direction": "both_selective" },
+      "pending_verification": [],
+      "validation_stage": "research",
+      "execution_status": "disabled",
+      "performance": { "backtest": null, "demo": null, "live": null }
+    },
+    {
+      "id": "TPL-BRK-LONDON-ORB",
+      "name_zh": "伦敦开盘区间突破（ORB）",
+      "source_style": "breakout",
+      "disposition": "candidate",
+      "disposition_reason": "破亚洲区间边进场、区间对侧/ATR 止损、纽约开盘前了结不过夜，机制合规。",
+      "classification": { "decision_mode": "rule_based", "style": "breakout", "risk_tier": "unassessed", "direction": "both_selective" },
+      "pending_verification": ["假突破与滑点敏感性需在回测中验证（蓝图 1.3 检查重点）"],
+      "validation_stage": "research",
+      "execution_status": "disabled",
+      "performance": { "backtest": null, "demo": null, "live": null }
+    },
+    {
+      "id": "TPL-BRK-DONCHIAN-PEND-D1",
+      "name_zh": "唐奇安挂单突破（日线·STOP 单版）",
+      "source_style": "breakout",
+      "disposition": "candidate",
+      "disposition_reason": "机制本身合规（突破 + ATR 止损 + 反向极值离场），不命中禁做清单；但执行依赖 STOP 挂单。",
+      "classification": { "decision_mode": "rule_based", "style": "breakout", "risk_tier": "unassessed", "direction": "both_selective" },
+      "pending_verification": ["ea_v2_dependency（blocked）：现有 EA 只支持市价开仓/按单号平仓/刷新状态，不支持 STOP 挂单。挂单能力落地前本模板即使通过审核也不可执行"],
+      "validation_stage": "research",
+      "execution_status": "disabled",
+      "performance": { "backtest": null, "demo": null, "live": null }
+    },
+    {
+      "id": "TPL-BRK-FADE-FAKE-M15",
+      "name_zh": "假突破反手（M15）",
+      "source_style": "breakout",
+      "disposition": "candidate",
+      "disposition_reason": "假突破判定后反手回区间，有动态止损（极值+缓冲）、持仓上限 1，不命中禁做清单；源文件自评 aggressive，审核时需加强提示。",
+      "classification": { "decision_mode": "rule_based", "style": "breakout", "risk_tier": "unassessed", "direction": "both_selective" },
+      "pending_verification": ["源文件 risk 自评 aggressive：滑点与假信号频率敏感，risk_tier 由平台审核决定，当前保持 unassessed"],
+      "validation_stage": "research",
+      "execution_status": "disabled",
+      "performance": { "backtest": null, "demo": null, "live": null }
+    },
+    {
+      "id": "TPL-SESS-NY-MOMENTUM-M15",
+      "name_zh": "纽约开盘动量（M15）",
+      "source_style": "swing",
+      "disposition": "candidate",
+      "disposition_reason": "首小时区间定方向、日内了结不过夜，无隔夜/周末持仓风险（蓝图 1.3 对 swing 的检查重点），机制合规。",
+      "classification": { "decision_mode": "rule_based", "style": "swing", "risk_tier": "unassessed", "direction": "both_selective" },
+      "pending_verification": ["news_calendar_dependency：需新闻日历避开数据发布前后，当前 blocked_until_data_source"],
+      "validation_stage": "research",
+      "execution_status": "disabled",
+      "performance": { "backtest": null, "demo": null, "live": null }
+    },
+    {
+      "id": "TPL-XS-MOMROT-D1",
+      "name_zh": "多品种动量轮动（D1 截面）",
+      "source_style": "trend",
+      "disposition": "candidate",
+      "disposition_reason": "截面动量排名持前 2 + 灾难止损，无加仓无网格，机制合规。",
+      "classification": { "decision_mode": "rule_based", "style": "trend", "risk_tier": "unassessed", "direction": "long_only" },
+      "pending_verification": ["截面排名引擎缺失（待核验）：现有执行链只有单品种市价开仓，没有跨品种打分/排序/周频调仓能力，需新增程序模块"],
+      "validation_stage": "research",
+      "execution_status": "disabled",
+      "performance": { "backtest": null, "demo": null, "live": null }
+    },
+    {
+      "id": "TPL-XS-VOLADJ-MOMROT-D1",
+      "name_zh": "波动率调整动量轮动（D1 截面·保守版）",
+      "source_style": "trend",
+      "disposition": "candidate",
+      "disposition_reason": "动量÷波动率打分 + 波动率倒数配仓，机制合规且自带敞口收缩。",
+      "classification": { "decision_mode": "rule_based", "style": "trend", "risk_tier": "unassessed", "direction": "long_only" },
+      "pending_verification": ["截面排名引擎缺失（待核验）：同 TPL-XS-MOMROT-D1"],
+      "validation_stage": "research",
+      "execution_status": "disabled",
+      "performance": { "backtest": null, "demo": null, "live": null }
+    },
+    {
+      "id": "TPL-COMBO-CORE-SAT",
+      "name_zh": "核心-卫星组合（趋势核心 + 回归卫星）",
+      "source_style": "other",
+      "disposition": "candidate",
+      "disposition_reason": "逐项审核通过：机制 = 引用两个候选子策略（TPL-TREND-EMAX-H4 + TPL-MR-BBAND-H1）+ 组合风险预算，不含禁做机制，未用「其他」隐藏任何机制。",
+      "classification": { "decision_mode": "rule_based", "style": "other", "risk_tier": "unassessed", "direction": "both_selective" },
+      "pending_verification": ["SUBSTRATEGY 组合引擎缺失（待核验）：现有执行链没有子策略引用/资金分配/组合熔断能力", "两腿信号相关性须回测测量并披露（源文件自带要求）"],
+      "validation_stage": "research",
+      "execution_status": "disabled",
+      "performance": { "backtest": null, "demo": null, "live": null }
+    },
+    {
+      "id": "TPL-COMBO-RISK-PARITY",
+      "name_zh": "风险平价多策略组合",
+      "source_style": "other",
+      "disposition": "candidate",
+      "disposition_reason": "逐项审核通过：机制 = 按波动率倒数分配三个子策略预算 + 月度再平衡，不含禁做机制。",
+      "classification": { "decision_mode": "rule_based", "style": "other", "risk_tier": "unassessed", "direction": "both_selective" },
+      "pending_verification": ["SUBSTRATEGY 组合引擎缺失（待核验）：同 TPL-COMBO-CORE-SAT", "其中一腿引用暂缓资产 TPL-SCALP-ASIA-M5：剥头皮腿落地前本组合只能以两腿或替代腿运行，需重新定义"],
+      "validation_stage": "research",
+      "execution_status": "disabled",
+      "performance": { "backtest": null, "demo": null, "live": null }
+    },
+    {
+      "id": "TPL-GRID-RANGE-H1",
+      "name_zh": "区间震荡网格（正向）",
+      "source_style": "grid",
+      "disposition": "excluded",
+      "disposition_reason": "直接命中「不做网格」：等距布单 + 单格无硬止损（靠格距止盈 + 区间失效总熔断），即便有熔断也不例外（蓝图 1.3）。",
+      "excluded_index": "strategy-library/excluded/index.json"
+    },
+    {
+      "id": "TPL-GRID-TREND-FOLLOW",
+      "name_zh": "顺趋势网格（反向/趋势网格）",
+      "source_style": "grid",
+      "disposition": "excluded",
+      "disposition_reason": "直接命中「不做网格」：格层布单 + 无单格止损。「顺势」只是方向过滤，不改变网格机制本质。",
+      "excluded_index": "strategy-library/excluded/index.json"
+    },
+    {
+      "id": "TPL-DCA-FIXED-H4",
+      "name_zh": "定投摊平 DCA（固定手数）",
+      "source_style": "dca_martingale",
+      "disposition": "excluded",
+      "disposition_reason": "命中「逆势加仓」：浮亏一格加一笔摊平 + 无单笔止损 + 整组回本才离场。虽不加倍，但机制本质是逆势加仓，不得以 DCA 名称包装入库（蓝图 1.3）。",
+      "excluded_index": "strategy-library/excluded/index.json"
+    },
+    {
+      "id": "TPL-MART-2X-H4",
+      "name_zh": "马丁格尔倍增摊平（受限版）",
+      "source_style": "dca_martingale",
+      "disposition": "excluded",
+      "disposition_reason": "马丁格尔直接禁入：浮亏加仓手数 ×2。「受限版」「三重硬上限」不改变机制本质。",
+      "excluded_index": "strategy-library/excluded/index.json"
+    },
+    {
+      "id": "TPL-SCALP-LDNY-M5",
+      "name_zh": "伦敦-纽约重叠剥头皮（M5）",
+      "source_style": "scalping",
+      "disposition": "deferred",
+      "disposition_reason": "不违反不做清单（有固定 80 点止损、持仓上限 1），但吃 5-15 点小波段高度依赖点差、滑点、延迟与执行稳定性，当前执行能力无法证明可承载（蓝图 1.3）。",
+      "excluded_index": "strategy-library/excluded/index.json"
+    },
+    {
+      "id": "TPL-SCALP-ASIA-M5",
+      "name_zh": "亚洲盘窄幅剥头皮（M5）",
+      "source_style": "scalping",
+      "disposition": "deferred",
+      "disposition_reason": "不违反不做清单（有固定止损 + 时段强制平仓），但微型剥头皮对点差/滑点/延迟敏感，当前执行能力撑不住。注：TPL-COMBO-RISK-PARITY 引用了它作为子策略腿。",
+      "excluded_index": "strategy-library/excluded/index.json"
+    },
+    {
+      "id": "TPL-ARB-CORR-EUGU-H1",
+      "name_zh": "EURUSD/GBPUSD 相关性价差回归（H1）",
+      "source_style": "arbitrage",
+      "disposition": "deferred",
+      "disposition_reason": "不违反不做清单，但涉及双腿同步执行、部分成交与单腿裸敞口处置，当前执行能力（单腿市价开仓）不足以证明可承载（蓝图 1.3）。",
+      "excluded_index": "strategy-library/excluded/index.json"
+    },
+    {
+      "id": "TPL-ARB-GOLDSILVER-D1",
+      "name_zh": "金银比率回归（D1）",
+      "source_style": "arbitrage",
+      "disposition": "deferred",
+      "disposition_reason": "不违反不做清单，但同为双腿价差策略，单腿成交另一腿被拒的失败补偿链路当前不具备。",
+      "excluded_index": "strategy-library/excluded/index.json"
+    }
+  ]
+}

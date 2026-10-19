@@ -1,0 +1,92 @@
+{
+  "schema_version": "1.0",
+  "template_id": "NN-T02-range-breakout",
+  "version": "1.0.0",
+  "name_zh": "区间突破",
+  "name_en": "Range Breakout",
+  "one_liner_zh": "价格收出 N 根 K 线的通道之外才动手；通道太窄视为震荡，不做。",
+  "provider_id": null,
+  "maintainer": null,
+  "classification": {
+    "decision_mode": "rule_based",
+    "style": "breakout",
+    "risk_tier": "unassessed",
+    "direction": "both_selective"
+  },
+  "compatibility": {
+    "account_modes": ["hedging", "netting"],
+    "symbols": ["XAUUSD", "USOIL", "NAS100"],
+    "timeframes": ["H1", "H4"],
+    "ea_version": null,
+    "notes": [
+      "执行引擎：NiuNiuStrategy.mq5（strategy_enum=NN_RANGE_BREAKOUT）。",
+      "Netting 账户下同品种只有一个净头寸，同品种仅允许一个策略实例。",
+      "避开长期横盘品种：通道打不开时会被窄幅过滤全部挡掉。"
+    ]
+  },
+  "publication_status": "draft",
+  "validation_stage": "research",
+  "execution_status": "disabled",
+  "required_capabilities": [
+    "account_risk_check",
+    "deterministic_position_sizing",
+    "initial_stop_loss_verified"
+  ],
+  "prohibited_mechanisms_review": "passed",
+  "performance": {
+    "backtest": null,
+    "demo": null,
+    "live": null
+  },
+  "evidence_refs": [],
+  "subscription": {
+    "enabled": false,
+    "offer_id": null
+  },
+  "parameters": {
+    "InpStrategy": 1,
+    "InpDirection": 0,
+    "InpMagic": 810002,
+    "InpTag": "NNS",
+    "InpFastPeriod": 20,
+    "InpSlowPeriod": 60,
+    "InpChannelPeriod": 20,
+    "InpStdK": 2.0,
+    "InpAtrPeriod": 14,
+    "InpAtrSlMult": 1.5,
+    "InpAtrTpMult": 3.0,
+    "InpFixedSlPoints": 0,
+    "InpFixedTpPoints": 0,
+    "InpPullbackTolAtr": 0.5,
+    "InpMinChannelAtr": 0.8,
+    "InpRiskPct": 0.5,
+    "InpFixedLots": 0.0,
+    "InpMaxPositions": 1,
+    "InpMaxDailyLossPct": 2.0,
+    "InpMaxSpreadPoints": 30,
+    "InpMaxDeviationPoints": 20,
+    "InpMaxHoldBars": 0,
+    "InpUseTrailing": true,
+    "InpTrailPoints": 0,
+    "InpSessionFromHour": 0,
+    "InpSessionToHour": 0,
+    "InpVerbose": true,
+    "InpCloseOnStop": false
+  },
+  "fixed_protections": [
+    "止损强制（stop_is_mandatory=true，ATR 动态止损 InpAtrSlMult=1.5）",
+    "窄幅过滤 InpMinChannelAtr=0.8：通道宽 < ATR×0.8 不开仓（固定保护项，不可关闭）",
+    "单笔风险上限 InpRiskPct=0.5%（余额百分比，由程序算手数）",
+    "日内亏损熔断 InpMaxDailyLossPct=2.0%",
+    "并发持仓上限 InpMaxPositions=1",
+    "点差上限 InpMaxSpreadPoints=30",
+    "滑点上限 InpMaxDeviationPoints=20"
+  ],
+  "pending_verification": [
+    "尚未回测：lifecycle.state=backtest_pending，绩效字段禁止填任何数字",
+    "已知结构性弱点：震荡市会被假突破连续打止损，需在回测中量化",
+    "初始止损提交与券商校验链路未核验（蓝图 0.1）",
+    "所需 EA 版本未核验（ea_version=null）"
+  ],
+  "source_ref": "strategies/NN-T02-range-breakout.json"
+}

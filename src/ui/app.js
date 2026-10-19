@@ -9,6 +9,10 @@ const state = {
   halted: false,
   lastCmd: null,
   logLines: [],
+  catalog: null,          // 策略资产库 catalog.json
+  stratFilter: 'all',     // 当前策略筛选
+  pendingSuggestion: null, // AI 下单建议（二次确认前暂存）
+  pendingLots: null,       // 系统算出的手数（二次确认前暂存）
 };
 
 function log(msg, tag, isHtml) {
@@ -486,14 +490,224 @@ $('topupModal').addEventListener('click', (e) => {
   if (e.target === $('topupModal')) $('topupModal').classList.remove('on');
 });
 
+// ---------- 手数确定性计算（AI 不碰数字，这里全由程序算） ----------
+// 公式：手数 = (余额 × 风险%) ÷ (止损点数 × 每点价值)
+// 每点价值 = tick_value ÷ tick_size × point（账户货币 / 每手）
+function calcLots(balance, riskPct, slPoints, si) {
+  if (!balance || !riskPct || !slPoints || !si) return null;
+  const point = Number(si.point);
+  const tickSize = Number(si.tick_size);
+  const tickValue = Number(si.tick_value);
+  if (!point || !tickSize || !tickValue) return null;
+  const pointValue = (tickValue / tickSize) * point;   // 每点每手价值
+  if (!pointValue || pointValue <= 0) return null;
+  let lots = (Number(balance) * Number(riskPct) / 100) / (Number(slPoints) * pointValue);
+  const step = Number(si.volume_step) || 0.01;
+  const min = Number(si.volume_min) || 0.01;
+  const max = Number(si.volume_max) || 1000;
+  lots = Math.max(min, Math.min(max, Math.round(lots / step) * step));
+  return Number(lots.toFixed(2));
+}
+
+// ---------- 策略广场 ----------
+async function loadStrategyCatalog() {
+  try {
+    const r = await window.nn.getStrategyCatalog();
+    if (!r?.ok || !r?.catalog) {
+      $('stratGrid').innerHTML = '<div class="empty">策略资产库尚未生成（' + (r?.reason || r?.error || '未知') + '）</div>';
+      $('stratStats').innerHTML = '';
+      return;
+    }
+    state.catalog = r.catalog;
+  } catch (e) {
+    $('stratGrid').innerHTML = '<div class="empty">读取策略资产库失败：' + escapeHtml(e.message) + '</div>';
+    return;
+  }
+  renderStrategy();
+}
+
+function renderStrategy() {
+  const c = state.catalog;
+  if (!c) return;
+  const assets = c.assets || [];
+  const counts = { candidate: 0, excluded: 0, deferred: 0 };
+  assets.forEach((a) => { if (counts[a.disposition] !== undefined) counts[a.disposition]++; });
+
+  // 顶部统计
+  $('stratStats').innerHTML = `
+    <div class="ss"><div class="n">${counts.candidate}</div><div class="l">候选（待审）</div></div>
+    <div class="ss"><div class="n">${counts.deferred}</div><div class="l">暂缓</div></div>
+    <div class="ss"><div class="n">${counts.excluded}</div><div class="l">排除</div></div>
+    <div class="ss"><div class="n">3</div><div class="l">已实现模板</div></div>`;
+
+  const list = assets.filter((a) => state.stratFilter === 'all' || a.disposition === state.stratFilter);
+  $('stratGrid').innerHTML = list.length ? list.map(cardHtml).join('') : '<div class="empty">无匹配资产</div>';
+}
+
+function cardHtml(a) {
+  const tag = a.disposition === 'candidate' ? ['cand', '候选'] :
+    a.disposition === 'excluded' ? ['excl', '排除'] : ['defr', '暂缓'];
+  const meta = [
+    a.classification?.style || '',
+    a.classification?.decision_mode === 'rule_based' ? '规则型' : (a.classification?.decision_mode || ''),
+    a.classification?.risk_tier === 'unassessed' ? '风险未评' : (a.classification?.risk_tier || ''),
+    a.classification?.direction || '',
+  ].filter(Boolean);
+  const foot = a.disposition === 'candidate'
+    ? '待回测 · 未上架 · 绩效全空'
+    : (a.disposition_reason || '');
+  return `
+    <div class="strat-card">
+      <div class="sc-h"><b>${escapeHtml(a.name_zh || a.id)}</b><span class="sc-tag ${tag[0]}">${tag[1]}</span></div>
+      <div class="sc-desc">${escapeHtml(a.disposition_reason || '')}</div>
+      <div class="sc-meta">${meta.map((m) => `<span>${escapeHtml(m)}</span>`).join('')}</div>
+      <div class="sc-foot">${escapeHtml(foot)}</div>
+    </div>`;
+}
+
+$('stratFilter').addEventListener('click', (e) => {
+  const btn = e.target.closest('button');
+  if (!btn) return;
+  state.stratFilter = btn.dataset.f;
+  document.querySelectorAll('#stratFilter button').forEach((b) => b.classList.toggle('on', b === btn));
+  renderStrategy();
+});
+
+// ---------- AI 一键下单（建议卡 → 二次确认 → 桥接 EA） ----------
+function currentSymbolInfo() {
+  return state.snapshot?.status?.symbol_info || null;
+}
+
+function renderSuggestion(sug) {
+  const box = $('suggestBox');
+  if (!sug) { box.innerHTML = ''; return; }
+  const st = state.snapshot?.status;
+  const balance = st?.account?.balance;
+  const si = currentSymbolInfo();
+  const lots = calcLots(balance, sug.risk_pct, sug.sl_points, si);
+  const hasSl = Number(sug.sl_points) > 0;
+  const confMap = { high: ['high', '高'], mid: ['mid', '中'], low: ['low', '低'] };
+  const conf = confMap[sug.confidence] || ['mid', sug.confidence || '中'];
+  const riskAmt = lots != null ? fmt(lots * (Number(sug.sl_points) * ((Number(si?.tick_value) / Number(si?.tick_size)) * Number(si?.point)))) : null;
+
+  box.innerHTML = `
+    <div class="suggest-card">
+      <div class="sg-head">
+        <span class="sg-sym">${escapeHtml(sug.symbol)}</span>
+        <span class="sg-side ${sug.side}">${sug.side === 'BUY' ? '买入 BUY' : '卖出 SELL'}</span>
+        <span class="sg-conf ${conf[0]}">把握 ${conf[1]}</span>
+      </div>
+      <div class="sg-grid">
+        <div><div class="k">入场</div><div class="v">${escapeHtml(sug.entry_ref || '市价')}</div></div>
+        <div><div class="k">止损</div><div class="v">${hasSl ? Number(sug.sl_points) + ' 点' : '—'}</div></div>
+        <div><div class="k">止盈</div><div class="v">${Number(sug.tp_points) > 0 ? Number(sug.tp_points) + ' 点' : '—'}</div></div>
+        <div><div class="k">手数</div><div class="v">${lots != null ? lots : '—'}</div></div>
+      </div>
+      <div class="sg-reason">${escapeHtml(sug.reason || '')}</div>
+      ${sug.data_note ? `<div class="sg-note">⚠ ${escapeHtml(sug.data_note)}</div>` : ''}
+      <div class="sg-warn">${lots != null
+        ? `手数由系统按「风险 ${sug.risk_pct}% × 余额 ÷ 止损距离」计算，本笔最多亏约 ${riskAmt} 账户货币。`
+        : '无法计算手数：品种规格未就绪（EA 需重编译以回传 symbol_info）。手数栏留空，请手动核对。'}</div>
+      <div class="sg-actions">
+        <button class="dismiss" id="sugDismissBtn">忽略</button>
+        <button class="order" id="sugOrderBtn" ${(!hasSl || lots == null) ? 'disabled' : ''}>
+          ${hasSl ? '一键下单' : '无止损 · 不出按钮'}</button>
+      </div>
+    </div>`;
+
+  $('sugDismissBtn').onclick = () => { box.innerHTML = ''; state.pendingSuggestion = null; };
+  $('sugOrderBtn').onclick = () => {
+    if (!hasSl || lots == null) return;
+    openConfirm(sug, lots);
+  };
+}
+
+// 演示入口：AI 网关未接模型时，用一条示范建议走通全链路，字段与真实 AI 输出同构
+$('aiDemoBtn').onclick = () => {
+  const st = state.snapshot?.status;
+  if (!st) { log('请先在「终端与 EA」连接终端，再生成示例建议', '⚠'); return; }
+  renderSuggestion({
+    type: 'order_suggestion',
+    symbol: st.symbol || 'EURUSD',
+    side: 'BUY',
+    entry_ref: '市价',
+    sl_points: 400,
+    tp_points: 800,
+    risk_pct: 0.5,
+    reason: '示例建议：仅用于演示「建议卡 → 一键下单 → 二次确认 → 回执」链路，非真实 AI 信号。',
+    confidence: 'low',
+    data_note: '演示数据，AI 模型尚未接入。',
+  });
+};
+
+function openConfirm(sug, lots) {
+  const st = state.snapshot?.status;
+  state.pendingSuggestion = sug;
+  state.pendingLots = lots;
+  $('cfmTitle').textContent = `${sug.symbol} · ${sug.side === 'BUY' ? '买入' : '卖出'}`;
+  $('cfmSymbol').textContent = sug.symbol;
+  $('cfmSide').textContent = sug.side === 'BUY' ? '买入 BUY' : '卖出 SELL';
+  $('cfmLots').textContent = lots != null ? `${lots} 手` : '—';
+  $('cfmSl').textContent = Number(sug.sl_points) > 0 ? `${Number(sug.sl_points)} 点` : '—';
+  $('cfmTp').textContent = Number(sug.tp_points) > 0 ? `${Number(sug.tp_points)} 点` : '—';
+  $('cfmRisk').textContent = `${sug.risk_pct}%`;
+  const warns = [];
+  if (st?.account?.mode === 'netting') warns.push('净额账户：市价单会直接加减仓/反手。');
+  if (!st?.trading_allowed) warns.push('终端当前禁止交易。');
+  $('cfmWarn').textContent = warns.join(' ');
+  $('confirmModal').classList.add('on');
+}
+
+$('cfmCancel').onclick = () => $('confirmModal').classList.remove('on');
+$('confirmModal').addEventListener('click', (e) => {
+  if (e.target === $('confirmModal')) $('confirmModal').classList.remove('on');
+});
+
+$('cfmGo').onclick = async () => {
+  const sug = state.pendingSuggestion;
+  const lots = state.pendingLots;
+  $('confirmModal').classList.remove('on');
+  if (!sug) return;
+  if (state.halted) return log('已停用，拒绝下单', '⚠');
+  if (!licOk) return log('未授权：请先激活授权密钥', '⚠');
+  const st = state.snapshot?.status;
+  if (!st) return log('未连接终端，无法下单', '⚠');
+  if (lots == null) return log('手数无法计算，请检查品种规格', '⚠');
+
+  const r = await window.nn.sendCommand({
+    terminalPath: state.selected,
+    type: 'ORDER_MARKET',
+    account: st.account?.login,
+    accountServer: state.snapshot?.heart?.server,
+    epoch: state.snapshot?.heart?.epoch,   // 不 fallback 1：让桥进程填当前代次
+    payload: {
+      symbol: sug.symbol,
+      side: sug.side,
+      volume_lots: lots,
+      sl_points: Number(sug.sl_points),
+      tp_points: Number(sug.tp_points || 0),
+      max_deviation_points: 20,
+      comment: 'ai-suggestion',
+    },
+  });
+
+  if (!r?.ok) return log(`下单失败：${r?.error}`, '⚠');
+  state.lastCmd = r.id;
+  log(`AI 建议下单已发送 ${r.id} · ${sug.symbol} ${sug.side} ${lots} 手`, '→');
+  watchCommand(r.id);
+  $('suggestBox').innerHTML = '';
+  state.pendingSuggestion = null;
+};
+
 // ---------- 启动 ----------
 (async function init() {
   const v = await window.nn.version();
   log(`牛牛 AI v${v} 已启动 · 协议 v1 · 模拟盘优先`);
-  log('提示：本版本仅交付交易链。AI 分析功能未开放。');
+  log('策略广场已上线（候选待回测）；AI 一键下单为链路演示模式，模型网关待接入。');
   go(prefs.page);                               // 回到上次离开的页面
   await refreshLicense();
   await refreshAI();
+  loadStrategyCatalog();                        // 策略资产库（不阻塞启动）
   // 停用状态以主进程为准：上次按下「停用」后重启，界面必须还是停用，不能悄悄恢复
   try {
     const h = await window.nn.haltStatus();

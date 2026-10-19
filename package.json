@@ -26,6 +26,7 @@
     "files": [
       "src/**/*",
       "ea/**/*",
+      "strategy-library/**/*",
       "package.json"
     ],
     "asar": false,

@@ -189,6 +189,65 @@ button.ghost{background:var(--soft);border:1px solid var(--line);border-radius:9
 .coming b{font-size:14px;color:var(--ink);display:block;margin-bottom:6px}
 .coming span{font-size:12px;line-height:1.7;display:block;max-width:420px;margin:0 auto}
 
+/* ===== 策略广场 ===== */
+.strat-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+.strat-stats .ss{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:13px 15px}
+.strat-stats .ss .n{font-size:20px;font-weight:650;font-variant-numeric:tabular-nums}
+.strat-stats .ss .l{font-size:11px;color:var(--muted);margin-top:2px}
+.strat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
+.strat-card{border:1px solid var(--line);border-radius:12px;padding:14px 15px;background:var(--soft);
+  display:flex;flex-direction:column;gap:8px}
+.strat-card .sc-h{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.strat-card .sc-h b{font-size:13px;font-weight:620;line-height:1.35}
+.strat-card .sc-tag{font-size:10px;padding:2px 7px;border-radius:5px;white-space:nowrap;font-weight:600}
+.sc-tag.cand{background:var(--tint);color:var(--accent)}
+.sc-tag.excl{background:color-mix(in srgb,var(--danger) 14%,transparent);color:var(--danger)}
+.sc-tag.defr{background:color-mix(in srgb,var(--amber) 18%,transparent);color:var(--amber)}
+.strat-card .sc-desc{font-size:11.5px;color:var(--muted);line-height:1.55}
+.strat-card .sc-meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:auto}
+.strat-card .sc-meta span{font-size:10px;color:var(--faint);background:var(--line-strong);
+  border-radius:5px;padding:2px 7px}
+.strat-card .sc-foot{font-size:10.5px;color:var(--faint);border-top:1px dashed var(--line);padding-top:8px}
+.filter-chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.filter-chips button{border:1px solid var(--line);background:var(--panel);border-radius:999px;
+  padding:6px 14px;font-size:12px;font-weight:560;color:var(--muted);cursor:pointer;font-family:inherit}
+.filter-chips button.on{background:var(--tint);border-color:var(--accent);color:var(--accent)}
+
+/* ===== AI 建议卡片 / 一键下单 ===== */
+.suggest-card{border:1px solid var(--line);border-radius:14px;padding:16px 18px;background:var(--panel);
+  box-shadow:var(--shadow);margin-top:12px}
+.suggest-card .sg-head{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.suggest-card .sg-sym{font-size:16px;font-weight:650;letter-spacing:-.01em}
+.suggest-card .sg-side{font-size:11px;font-weight:700;padding:3px 9px;border-radius:6px}
+.sg-side.BUY{background:color-mix(in srgb,var(--up) 14%,transparent);color:var(--up)}
+.sg-side.SELL{background:color-mix(in srgb,var(--down) 14%,transparent);color:var(--down)}
+.suggest-card .sg-conf{margin-left:auto;font-size:10.5px;padding:2px 8px;border-radius:5px;font-weight:600}
+.sg-conf.high{background:color-mix(in srgb,var(--ok) 16%,transparent);color:var(--ok)}
+.sg-conf.mid{background:color-mix(in srgb,var(--amber) 18%,transparent);color:var(--amber)}
+.sg-conf.low{background:color-mix(in srgb,var(--danger) 14%,transparent);color:var(--danger)}
+.suggest-card .sg-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:10px}
+.suggest-card .sg-grid div{background:var(--soft);border-radius:9px;padding:9px 11px}
+.suggest-card .sg-grid .k{font-size:10.5px;color:var(--muted)}
+.suggest-card .sg-grid .v{font-size:13.5px;font-weight:620;margin-top:2px;font-variant-numeric:tabular-nums}
+.suggest-card .sg-reason{font-size:12px;color:var(--ink);line-height:1.55;margin-bottom:8px}
+.suggest-card .sg-note{font-size:11px;color:var(--amber);margin-bottom:10px}
+.suggest-card .sg-warn{font-size:11px;color:var(--muted);background:var(--soft);
+  border:1px solid var(--line);border-radius:9px;padding:8px 11px;margin-bottom:12px}
+.sg-actions{display:flex;gap:10px}
+.sg-actions button{flex:1;margin-top:0}
+.sg-actions button.order{background:var(--brand-deep);color:#fff;border:none;border-radius:10px;
+  padding:11px;font-size:13.5px;font-weight:640;cursor:pointer;font-family:inherit}
+.sg-actions button.order:disabled{background:var(--line);color:var(--faint);cursor:not-allowed}
+.sg-actions button.dismiss{background:var(--soft);border:1px solid var(--line);border-radius:10px;
+  padding:11px;font-size:13.5px;cursor:pointer;font-family:inherit;color:var(--ink)}
+.ai-intro{display:flex;gap:14px;align-items:flex-start;padding:14px 16px;border:1px dashed var(--line);
+  border-radius:12px;background:var(--soft);margin-bottom:4px}
+.ai-intro .ai-ico{width:38px;height:38px;border-radius:10px;background:var(--tint);color:var(--accent);
+  display:flex;align-items:center;justify-content:center;flex:0 0 38px}
+.ai-intro .ai-t{font-size:13px;font-weight:620;margin-bottom:3px}
+.ai-intro .ai-d{font-size:11.5px;color:var(--muted);line-height:1.6}
+
+
 /* ===== 充值弹窗 ===== */
 .modal-mask{position:fixed;inset:0;background:rgba(18,20,24,.46);display:none;align-items:center;
   justify-content:center;z-index:60;padding:24px}
@@ -228,7 +287,7 @@ button.ghost{background:var(--soft);border:1px solid var(--line);border-radius:9
       <button class="nav-item" data-page="p-trade">
         <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5-6 4 3 5-8 4 5"/><path d="M3 21h18"/></svg>交易</button>
       <button class="nav-item" data-page="p-strategy">
-        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 20v-9M12 20V5M17 20v-4"/><path d="M3 20h18"/></svg>策略广场<span class="come">规划中</span></button>
+        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 20v-9M12 20V5M17 20v-4"/><path d="M3 20h18"/></svg>策略广场<span class="come">新</span></button>
       <button class="nav-item" data-page="p-ai">
         <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 4.6L18.5 9l-4.6 1.4L12 15l-1.9-4.6L5.5 9l4.6-1.4z"/><path d="M19 15l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/></svg>AI 副驾驶</button>
       <button class="nav-item" data-page="p-settings">
@@ -367,27 +426,44 @@ button.ghost{background:var(--soft);border:1px solid var(--line);border-radius:9
 
       <!-- ========== 策略广场（规划中，不放无效按钮） ========== -->
       <section class="page" id="p-strategy">
-        <div class="page-s">策略方挂牌 · 业绩可查 · 一键跟单</div>
+        <div class="page-s">策略资产库 · 候选待回测 · 上架需过四道门槛</div>
+        <div class="strat-stats" id="stratStats"></div>
         <div class="card">
-          <div class="coming">
-            <div class="ci"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 20v-9M12 20V5M17 20v-4"/><path d="M3 20h18"/></svg></div>
-            <b>策略广场规划中</b>
-            <span>设计已定稿（年化 / 资金曲线 / 夏普 / 回撤 / 交易笔数的卡片化榜单 + 跟单链路）。
-            需要先跑通策略方实盘业绩接入，再对客户开放——在业绩可验证之前，不开放入口。</span>
+          <h3><span class="dot live"></span>候选资产库（待审）</h3>
+          <div class="filter-chips" id="stratFilter">
+            <button class="on" data-f="all">全部</button>
+            <button data-f="candidate">候选 15</button>
+            <button data-f="deferred">暂缓 4</button>
+            <button data-f="excluded">排除 4</button>
+          </div>
+          <div class="strat-grid" id="stratGrid"></div>
+          <div class="note">候选 = 待审，不是已通过。所有资产 <b>validation_stage=research、execution_status=disabled、绩效全空</b>——没跑过回测的策略不上（模拟）盘。首批 3 个模板（NN-T01/T02/T03）已由 NiuNiuStrategy.mq5 实现，走「终端与 EA」手动挂图，见教程第 5 章。</div>
+        </div>
+        <div class="card">
+          <h3>上架四道门槛</h3>
+          <div class="strat-grid">
+            <div class="strat-card"><div class="sc-h"><b>① 机制合规</b></div><div class="sc-desc">无网格 / 马丁 / 逆势加仓 / 无止损 / 保本承诺。命中即淘汰，不允许改名重交。</div></div>
+            <div class="strat-card"><div class="sc-h"><b>② 参数可复现</b></div><div class="sc-desc">品种、周期、入场、退出、风控参数全部落成 manifest，可被同一 EA 复跑。</div></div>
+            <div class="strat-card"><div class="sc-h"><b>③ 回测可查</b></div><div class="sc-desc">真实 tick 回测，指标 + 资金曲线 + 参数指纹一起公示，禁填漂亮数字。</div></div>
+            <div class="strat-card"><div class="sc-h"><b>④ 模拟验证</b></div><div class="sc-desc">回测通过后先在模拟盘跑一段，再谈上架与跟单。</div></div>
           </div>
         </div>
       </section>
 
       <!-- ========== AI 副驾驶 ========== -->
       <section class="page" id="p-ai">
-        <div class="page-s">连接 AI 网关后按用量扣积分，未连接时整条不显示</div>
+        <div class="page-s">AI 给建议 → 一键下单 → 二次确认 → 桥接 EA 执行（人工确认链）</div>
         <div class="card">
-          <h3>AI 积分与充值</h3>
-          <div class="note" style="margin-top:0">
-            AI 状态与充值入口显示在上方状态条（连接成功才出现「充值」，未连接则显示令牌输入框）。
-            未配置 AI 服务地址时，整条状态栏不显示——不放点了没反应的按钮。
+          <div class="ai-intro">
+            <div class="ai-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 4.6L18.5 9l-4.6 1.4L12 15l-1.9-4.6L5.5 9l4.6-1.4z"/><path d="M19 15l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/></svg></div>
+            <div>
+              <div class="ai-t">AI 下单建议 · 人工确认链</div>
+              <div class="ai-d">AI 只给<b>方向、点位、止损止盈、风险%</b>，手数由系统按「风险% × 余额 ÷ 止损距离」确定性计算，AI 不碰数字。<b>止损必带</b>，无止损不出按钮。点「一键下单」后仍需二次确认，才会通过桥接 EA 下单。</div>
+            </div>
           </div>
-          <div class="ai-off">AI 分析 / 风控审核 / 持仓巡查 —— v1 未开放。交易链独立交付，避免出现无效按钮。</div>
+          <div class="note" style="margin-top:14px">AI 模型网关尚未接入，当前为<b>链路演示模式</b>：下方「生成示例建议」用一条示范建议走通「建议卡 → 一键下单 → 二次确认 → 回执」全流程，字段与真实 AI 输出同构。</div>
+          <button class="ghost" id="aiDemoBtn" style="margin-top:14px">生成示例建议（演示）</button>
+          <div id="suggestBox"></div>
         </div>
       </section>
 
@@ -448,6 +524,31 @@ button.ghost{background:var(--soft);border:1px solid var(--line);border-radius:9
   </div>
 </div>
 
+<!-- ============ 下单二次确认弹窗（AI 一键下单 / 人工链最后一步） ============ -->
+<div class="modal-mask" id="confirmModal">
+  <div class="modal">
+    <h2>确认下单</h2>
+    <div class="m-sub">请核对完整参数，确认后将通过桥接 EA 发送到券商。</div>
+    <div class="m-row">
+      <div class="ticket" style="margin-top:0">
+        <div class="t-h" id="cfmTitle">—</div>
+        <div class="t-r"><span>品种</span><b id="cfmSymbol">—</b></div>
+        <div class="t-r"><span>方向</span><b id="cfmSide">—</b></div>
+        <div class="t-r"><span>手数</span><b id="cfmLots">—</b></div>
+        <div class="t-r"><span>止损</span><b id="cfmSl">—</b></div>
+        <div class="t-r"><span>止盈</span><b id="cfmTp">—</b></div>
+        <div class="t-r"><span>单笔风险</span><b id="cfmRisk">—</b></div>
+        <div class="warn" id="cfmWarn"></div>
+      </div>
+    </div>
+    <div class="m-note" id="cfmNote">市价单，带止损。手数由系统按「风险% × 余额 ÷ 止损距离」计算。</div>
+    <div class="m-actions">
+      <button class="ghost" id="cfmCancel">取消</button>
+      <button class="primary" id="cfmGo">确认下单</button>
+    </div>
+  </div>
+</div>
+
 <script>
 /* ===== 预览桩：只替换 window.nn 这个桥，业务代码一行没改 ===== */
 (function () {
@@ -473,6 +574,9 @@ button.ghost{background:var(--soft);border:1px solid var(--line);border-radius:9
       status: {
         signed: true, trading_allowed: true, symbol: 'EURUSD',
         quote: { bid: 1.08521, ask: 1.08535 },
+        // symbol_info：让「AI 一键下单」的手数确定性计算在预览里也能跑通
+        symbol_info: { point: 0.00001, digits: 5, tick_size: 0.00001, tick_value: 1.0,
+                       volume_min: 0.01, volume_step: 0.01, volume_max: 100, stops_level: 0 },
         account: { login: 12345678, balance: 10000, equity: 10123.45, free_margin: 9800, mode: 'netting' },
         positions: [
           { ticket: 987654, symbol: 'EURUSD', type: 'BUY',  volume: 0.02, price_open: 1.084,  sl: 1.08,  profit: 23.45 },
@@ -483,6 +587,7 @@ button.ghost{background:var(--soft);border:1px solid var(--line);border-radius:9
     }
   };
   var sentOnce = false;
+  var halted = false;
 
   window.nn = {
     licenseStatus:   async () => ({ ok: true, license: { ok: true, name: '预览用户', id: 'NN1-DEMO', daysLeft: 30, expires: '2026-11-16' } }),
@@ -493,6 +598,277 @@ button.ghost{background:var(--soft);border:1px solid var(--line);border-radius:9
     snapshot:        async () => SNAPSHOT,
     sendCommand:     async () => { sentOnce = false; return { ok: true, id: 'cmd-0001' }; },
     commandStatus:   async () => { if (sentOnce) return { ok: true, stage: 'EXECUTED' }; sentOnce = true; return { ok: true, stage: 'SENT' }; },
+    getStrategyCatalog: async () => ({ ok: true, catalog: {
+  "schema_version": "1.0",
+  "generated_at": "2026-10-19",
+  "generated_by": "K3 施工（基于 GPT 蓝图 1.3 处置规则，按机制而非名称逐项审查）",
+  "source_files": [
+    "research/2026-10-18/templates-v1.clean.json (A3_templates.templates, 23 条)",
+    "research/2026-10-19/answer-design-blueprint.md (1.2 分类 / 1.3 处置 / 1.10 契约)"
+  ],
+  "review_rules": {
+    "excluded": "命中 grid / 马丁 / 逆势加仓 / 无止损 任一即排除；不改名、不隐藏，记入 excluded/index.json",
+    "deferred": "scalping / arbitrage：不违反不做清单，但当前执行能力（点差、滑点、延迟、多腿执行）撑不住，暂缓",
+    "candidate": "trend / mean_reversion / breakout / swing / other 且不含禁做机制；候选 ≠ 已通过，风险档一律 unassessed"
+  },
+  "summary": {
+    "total_assets": 23,
+    "candidates": 15,
+    "excluded": 4,
+    "deferred": 4,
+    "note": "候选是「待审」不是「已通过」。所有候选 validation_stage=research、execution_status=disabled、绩效全 null。"
+  },
+  "first_batch_overlap_note": "首批 3 个模板 NN-T01/T02/T03（strategies/NN-T0*.json，由 NiuNiuStrategy.mq5 执行）不在这 23 个设计资产之内，两者 ID 体系不同（NN-T0x vs TPL-*），不重复计数。机制上相近但非同一资产：NN-T01 趋势回撤 ↔ TPL-TREND-PULLBACK-H4（同为趋势回调，但 NN-T01 是 H1 快线回踩，TPL 是 H4 + D1 过滤 + RSI 复位）；NN-T02 区间突破 ↔ TPL-BRK-* 系列（同为突破族，机制不同）；NN-T03 有界均值回归 ↔ TPL-MR-BBAND-H1（同为布林回归，但 NN-T03 有强制 48 根时间止损且已在 EA 实现，TPL 仅设计稿）。",
+  "assets": [
+    {
+      "id": "TPL-TREND-EMAX-H4",
+      "name_zh": "双均线趋势（H4 经典版）",
+      "source_style": "trend",
+      "disposition": "candidate",
+      "disposition_reason": "EMA20/50 交叉进出 + ATR 动态止损，单笔持仓上限 1，execution_map 完全落在现有 EA 能力内，无禁做机制。",
+      "classification": { "decision_mode": "rule_based", "style": "trend", "risk_tier": "unassessed", "direction": "both_selective" },
+      "pending_verification": [],
+      "validation_stage": "research",
+      "execution_status": "disabled",
+      "performance": { "backtest": null, "demo": null, "live": null }
+    },
+    {
+      "id": "TPL-TREND-EMAX-FILTER-H1",
+      "name_zh": "均线穿越 + 大周期趋势过滤（H1）",
+      "source_style": "trend",
+      "disposition": "candidate",
+      "disposition_reason": "H1 交叉触发 + D1 EMA200 许可 + ADX 震荡过滤，机制合规，无加仓。",
+      "classification": { "decision_mode": "rule_based", "style": "trend", "risk_tier": "unassessed", "direction": "both_selective" },
+      "pending_verification": [],
+      "validation_stage": "research",
+      "execution_status": "disabled",
+      "performance": { "backtest": null, "demo": null, "live": null }
+    },
+    {
+      "id": "TPL-TREND-DONCHIAN-D1",
+      "name_zh": "唐奇安通道趋势（日线·海龟骨架）",
+      "source_style": "trend",
+      "disposition": "candidate",
+      "disposition_reason": "突破 55 日极值入场、20 日反向极值离场、ATR 定仓，经典趋势机制，无禁做项。",
+      "classification": { "decision_mode": "rule_based", "style": "trend", "risk_tier": "unassessed", "direction": "both_selective" },
+      "pending_verification": [],
+      "validation_stage": "research",
+      "execution_status": "disabled",
+      "performance": { "backtest": null, "demo": null, "live": null }
+    },
+    {
+      "id": "TPL-TREND-PULLBACK-H4",
+      "name_zh": "趋势回调入场（H4 顺大逆小）",
+      "source_style": "trend",
+      "disposition": "candidate",
+      "disposition_reason": "D1 定方向、H4 回调到 EMA50 后 RSI 复位进场，跌破锚点离场，机制合规。与 NN-T01 机制相近但非同一资产（见 overlap_note）。",
+      "classification": { "decision_mode": "rule_based", "style": "trend", "risk_tier": "unassessed", "direction": "both_selective" },
+      "pending_verification": [],
+      "validation_stage": "research",
+      "execution_status": "disabled",
+      "performance": { "backtest": null, "demo": null, "live": null }
+    },
+    {
+      "id": "TPL-MR-BBAND-H1",
+      "name_zh": "布林带均值回归（H1）",
+      "source_style": "mean_reversion",
+      "disposition": "candidate",
+      "disposition_reason": "有界回归：固定 1.5×ATR 硬止损 + 中轨止盈 + 持仓上限 1 + 低 ADX 过滤，无逆势加仓、无无限等待。",
+      "classification": { "decision_mode": "rule_based", "style": "mean_reversion", "risk_tier": "unassessed", "direction": "both_selective" },
+      "pending_verification": ["news_calendar_dependency：依赖新闻日历数据源，当前 blocked_until_data_source"],
+      "validation_stage": "research",
+      "execution_status": "disabled",
+      "performance": { "backtest": null, "demo": null, "live": null }
+    },
+    {
+      "id": "TPL-MR-RSI2-M15",
+      "name_zh": "RSI(2) 极值回归（M15）",
+      "source_style": "mean_reversion",
+      "disposition": "candidate",
+      "disposition_reason": "有界回归：1.2×ATR 硬止损 + 持仓超 max_bars_hold 强制离场（时间止损），持仓上限 1，无加仓。",
+      "classification": { "decision_mode": "rule_based", "style": "mean_reversion", "risk_tier": "unassessed", "direction": "both_selective" },
+      "pending_verification": [],
+      "validation_stage": "research",
+      "execution_status": "disabled",
+      "performance": { "backtest": null, "demo": null, "live": null }
+    },
+    {
+      "id": "TPL-MR-ASIA-RANGE",
+      "name_zh": "亚洲盘区间回归（时段限定）",
+      "source_style": "mean_reversion",
+      "disposition": "candidate",
+      "disposition_reason": "有界回归：时段强制平仓（伦敦开盘前全走）+ ATR 硬止损 + 持仓上限 1，机制合规。",
+      "classification": { "decision_mode": "rule_based", "style": "mean_reversion", "risk_tier": "unassessed", "direction": "both_selective" },
+      "pending_verification": [],
+      "validation_stage": "research",
+      "execution_status": "disabled",
+      "performance": { "backtest": null, "demo": null, "live": null }
+    },
+    {
+      "id": "TPL-BRK-LONDON-ORB",
+      "name_zh": "伦敦开盘区间突破（ORB）",
+      "source_style": "breakout",
+      "disposition": "candidate",
+      "disposition_reason": "破亚洲区间边进场、区间对侧/ATR 止损、纽约开盘前了结不过夜，机制合规。",
+      "classification": { "decision_mode": "rule_based", "style": "breakout", "risk_tier": "unassessed", "direction": "both_selective" },
+      "pending_verification": ["假突破与滑点敏感性需在回测中验证（蓝图 1.3 检查重点）"],
+      "validation_stage": "research",
+      "execution_status": "disabled",
+      "performance": { "backtest": null, "demo": null, "live": null }
+    },
+    {
+      "id": "TPL-BRK-DONCHIAN-PEND-D1",
+      "name_zh": "唐奇安挂单突破（日线·STOP 单版）",
+      "source_style": "breakout",
+      "disposition": "candidate",
+      "disposition_reason": "机制本身合规（突破 + ATR 止损 + 反向极值离场），不命中禁做清单；但执行依赖 STOP 挂单。",
+      "classification": { "decision_mode": "rule_based", "style": "breakout", "risk_tier": "unassessed", "direction": "both_selective" },
+      "pending_verification": ["ea_v2_dependency（blocked）：现有 EA 只支持市价开仓/按单号平仓/刷新状态，不支持 STOP 挂单。挂单能力落地前本模板即使通过审核也不可执行"],
+      "validation_stage": "research",
+      "execution_status": "disabled",
+      "performance": { "backtest": null, "demo": null, "live": null }
+    },
+    {
+      "id": "TPL-BRK-FADE-FAKE-M15",
+      "name_zh": "假突破反手（M15）",
+      "source_style": "breakout",
+      "disposition": "candidate",
+      "disposition_reason": "假突破判定后反手回区间，有动态止损（极值+缓冲）、持仓上限 1，不命中禁做清单；源文件自评 aggressive，审核时需加强提示。",
+      "classification": { "decision_mode": "rule_based", "style": "breakout", "risk_tier": "unassessed", "direction": "both_selective" },
+      "pending_verification": ["源文件 risk 自评 aggressive：滑点与假信号频率敏感，risk_tier 由平台审核决定，当前保持 unassessed"],
+      "validation_stage": "research",
+      "execution_status": "disabled",
+      "performance": { "backtest": null, "demo": null, "live": null }
+    },
+    {
+      "id": "TPL-SESS-NY-MOMENTUM-M15",
+      "name_zh": "纽约开盘动量（M15）",
+      "source_style": "swing",
+      "disposition": "candidate",
+      "disposition_reason": "首小时区间定方向、日内了结不过夜，无隔夜/周末持仓风险（蓝图 1.3 对 swing 的检查重点），机制合规。",
+      "classification": { "decision_mode": "rule_based", "style": "swing", "risk_tier": "unassessed", "direction": "both_selective" },
+      "pending_verification": ["news_calendar_dependency：需新闻日历避开数据发布前后，当前 blocked_until_data_source"],
+      "validation_stage": "research",
+      "execution_status": "disabled",
+      "performance": { "backtest": null, "demo": null, "live": null }
+    },
+    {
+      "id": "TPL-XS-MOMROT-D1",
+      "name_zh": "多品种动量轮动（D1 截面）",
+      "source_style": "trend",
+      "disposition": "candidate",
+      "disposition_reason": "截面动量排名持前 2 + 灾难止损，无加仓无网格，机制合规。",
+      "classification": { "decision_mode": "rule_based", "style": "trend", "risk_tier": "unassessed", "direction": "long_only" },
+      "pending_verification": ["截面排名引擎缺失（待核验）：现有执行链只有单品种市价开仓，没有跨品种打分/排序/周频调仓能力，需新增程序模块"],
+      "validation_stage": "research",
+      "execution_status": "disabled",
+      "performance": { "backtest": null, "demo": null, "live": null }
+    },
+    {
+      "id": "TPL-XS-VOLADJ-MOMROT-D1",
+      "name_zh": "波动率调整动量轮动（D1 截面·保守版）",
+      "source_style": "trend",
+      "disposition": "candidate",
+      "disposition_reason": "动量÷波动率打分 + 波动率倒数配仓，机制合规且自带敞口收缩。",
+      "classification": { "decision_mode": "rule_based", "style": "trend", "risk_tier": "unassessed", "direction": "long_only" },
+      "pending_verification": ["截面排名引擎缺失（待核验）：同 TPL-XS-MOMROT-D1"],
+      "validation_stage": "research",
+      "execution_status": "disabled",
+      "performance": { "backtest": null, "demo": null, "live": null }
+    },
+    {
+      "id": "TPL-COMBO-CORE-SAT",
+      "name_zh": "核心-卫星组合（趋势核心 + 回归卫星）",
+      "source_style": "other",
+      "disposition": "candidate",
+      "disposition_reason": "逐项审核通过：机制 = 引用两个候选子策略（TPL-TREND-EMAX-H4 + TPL-MR-BBAND-H1）+ 组合风险预算，不含禁做机制，未用「其他」隐藏任何机制。",
+      "classification": { "decision_mode": "rule_based", "style": "other", "risk_tier": "unassessed", "direction": "both_selective" },
+      "pending_verification": ["SUBSTRATEGY 组合引擎缺失（待核验）：现有执行链没有子策略引用/资金分配/组合熔断能力", "两腿信号相关性须回测测量并披露（源文件自带要求）"],
+      "validation_stage": "research",
+      "execution_status": "disabled",
+      "performance": { "backtest": null, "demo": null, "live": null }
+    },
+    {
+      "id": "TPL-COMBO-RISK-PARITY",
+      "name_zh": "风险平价多策略组合",
+      "source_style": "other",
+      "disposition": "candidate",
+      "disposition_reason": "逐项审核通过：机制 = 按波动率倒数分配三个子策略预算 + 月度再平衡，不含禁做机制。",
+      "classification": { "decision_mode": "rule_based", "style": "other", "risk_tier": "unassessed", "direction": "both_selective" },
+      "pending_verification": ["SUBSTRATEGY 组合引擎缺失（待核验）：同 TPL-COMBO-CORE-SAT", "其中一腿引用暂缓资产 TPL-SCALP-ASIA-M5：剥头皮腿落地前本组合只能以两腿或替代腿运行，需重新定义"],
+      "validation_stage": "research",
+      "execution_status": "disabled",
+      "performance": { "backtest": null, "demo": null, "live": null }
+    },
+    {
+      "id": "TPL-GRID-RANGE-H1",
+      "name_zh": "区间震荡网格（正向）",
+      "source_style": "grid",
+      "disposition": "excluded",
+      "disposition_reason": "直接命中「不做网格」：等距布单 + 单格无硬止损（靠格距止盈 + 区间失效总熔断），即便有熔断也不例外（蓝图 1.3）。",
+      "excluded_index": "strategy-library/excluded/index.json"
+    },
+    {
+      "id": "TPL-GRID-TREND-FOLLOW",
+      "name_zh": "顺趋势网格（反向/趋势网格）",
+      "source_style": "grid",
+      "disposition": "excluded",
+      "disposition_reason": "直接命中「不做网格」：格层布单 + 无单格止损。「顺势」只是方向过滤，不改变网格机制本质。",
+      "excluded_index": "strategy-library/excluded/index.json"
+    },
+    {
+      "id": "TPL-DCA-FIXED-H4",
+      "name_zh": "定投摊平 DCA（固定手数）",
+      "source_style": "dca_martingale",
+      "disposition": "excluded",
+      "disposition_reason": "命中「逆势加仓」：浮亏一格加一笔摊平 + 无单笔止损 + 整组回本才离场。虽不加倍，但机制本质是逆势加仓，不得以 DCA 名称包装入库（蓝图 1.3）。",
+      "excluded_index": "strategy-library/excluded/index.json"
+    },
+    {
+      "id": "TPL-MART-2X-H4",
+      "name_zh": "马丁格尔倍增摊平（受限版）",
+      "source_style": "dca_martingale",
+      "disposition": "excluded",
+      "disposition_reason": "马丁格尔直接禁入：浮亏加仓手数 ×2。「受限版」「三重硬上限」不改变机制本质。",
+      "excluded_index": "strategy-library/excluded/index.json"
+    },
+    {
+      "id": "TPL-SCALP-LDNY-M5",
+      "name_zh": "伦敦-纽约重叠剥头皮（M5）",
+      "source_style": "scalping",
+      "disposition": "deferred",
+      "disposition_reason": "不违反不做清单（有固定 80 点止损、持仓上限 1），但吃 5-15 点小波段高度依赖点差、滑点、延迟与执行稳定性，当前执行能力无法证明可承载（蓝图 1.3）。",
+      "excluded_index": "strategy-library/excluded/index.json"
+    },
+    {
+      "id": "TPL-SCALP-ASIA-M5",
+      "name_zh": "亚洲盘窄幅剥头皮（M5）",
+      "source_style": "scalping",
+      "disposition": "deferred",
+      "disposition_reason": "不违反不做清单（有固定止损 + 时段强制平仓），但微型剥头皮对点差/滑点/延迟敏感，当前执行能力撑不住。注：TPL-COMBO-RISK-PARITY 引用了它作为子策略腿。",
+      "excluded_index": "strategy-library/excluded/index.json"
+    },
+    {
+      "id": "TPL-ARB-CORR-EUGU-H1",
+      "name_zh": "EURUSD/GBPUSD 相关性价差回归（H1）",
+      "source_style": "arbitrage",
+      "disposition": "deferred",
+      "disposition_reason": "不违反不做清单，但涉及双腿同步执行、部分成交与单腿裸敞口处置，当前执行能力（单腿市价开仓）不足以证明可承载（蓝图 1.3）。",
+      "excluded_index": "strategy-library/excluded/index.json"
+    },
+    {
+      "id": "TPL-ARB-GOLDSILVER-D1",
+      "name_zh": "金银比率回归（D1）",
+      "source_style": "arbitrage",
+      "disposition": "deferred",
+      "disposition_reason": "不违反不做清单，但同为双腿价差策略，单腿成交另一腿被拒的失败补偿链路当前不具备。",
+      "excluded_index": "strategy-library/excluded/index.json"
+    }
+  ]
+}
+ }),
+    setHalt:         async (h) => { halted = (h === true); return { ok: true, halted: halted }; },
+    haltStatus:      async () => ({ ok: true, halted: halted }),
     aiStatus:        async () => ({ enabled: true, connected: true, credits: 120, creditCny: 0.1, rechargeUrl: 'https://ai.niuniuai.app/recharge' }),
     aiConnect:       async () => ({ connected: true, credits: 120 }),
     aiDisconnect:    async () => ({ enabled: true, connected: false }),
@@ -517,6 +893,10 @@ const state = {
   halted: false,
   lastCmd: null,
   logLines: [],
+  catalog: null,          // 策略资产库 catalog.json
+  stratFilter: 'all',     // 当前策略筛选
+  pendingSuggestion: null, // AI 下单建议（二次确认前暂存）
+  pendingLots: null,       // 系统算出的手数（二次确认前暂存）
 };
 
 function log(msg, tag, isHtml) {
@@ -883,15 +1263,25 @@ $('rebindBtn').onclick = async () => {
   }
 };
 
-// ---------- 一键停用 ----------
-$('haltBtn').onclick = () => {
-  state.halted = !state.halted;
+// ---------- 一键停用（真闸门在主进程，这里只发意图并以返回值回显） ----------
+// 历史 bug：这里只改 state.halted，主进程完全不知道，形成「界面说停了、命令照发」的假象。
+$('haltBtn').onclick = async () => {
+  const want = !state.halted;
+  const r = await window.nn.setHalt(want);
+  if (!r?.ok) return log(`停用开关失效：${r?.error || '未知错误'}`, '✗');
+  state.halted = r.halted === true;          // 以主进程为准，不信任本地猜测
+  paintHalt();
+  log(state.halted
+    ? '全局停用已生效（主进程闸门）：不再接受新的交易指令，已发出的命令仍会完成'
+    : '已恢复运行（主进程闸门已解除）');
+  render();
+};
+
+function paintHalt() {
   $('haltBtn').className = state.halted ? '' : 'off';
   $('haltBtn').textContent = state.halted ? '⛔ 已停用 · 点击恢复' : '运行中 · 点击停用';
   $('orderCard').classList.toggle('off', state.halted);
-  log(state.halted ? '全局停用：不再接受新的交易指令（已发出的命令仍会完成）' : '已恢复');
-  render();
-};
+}
 
 // ---------- 桥主动事件 ----------
 window.nn.onEvent((msg) => {
@@ -984,14 +1374,231 @@ $('topupModal').addEventListener('click', (e) => {
   if (e.target === $('topupModal')) $('topupModal').classList.remove('on');
 });
 
+// ---------- 手数确定性计算（AI 不碰数字，这里全由程序算） ----------
+// 公式：手数 = (余额 × 风险%) ÷ (止损点数 × 每点价值)
+// 每点价值 = tick_value ÷ tick_size × point（账户货币 / 每手）
+function calcLots(balance, riskPct, slPoints, si) {
+  if (!balance || !riskPct || !slPoints || !si) return null;
+  const point = Number(si.point);
+  const tickSize = Number(si.tick_size);
+  const tickValue = Number(si.tick_value);
+  if (!point || !tickSize || !tickValue) return null;
+  const pointValue = (tickValue / tickSize) * point;   // 每点每手价值
+  if (!pointValue || pointValue <= 0) return null;
+  let lots = (Number(balance) * Number(riskPct) / 100) / (Number(slPoints) * pointValue);
+  const step = Number(si.volume_step) || 0.01;
+  const min = Number(si.volume_min) || 0.01;
+  const max = Number(si.volume_max) || 1000;
+  lots = Math.max(min, Math.min(max, Math.round(lots / step) * step));
+  return Number(lots.toFixed(2));
+}
+
+// ---------- 策略广场 ----------
+async function loadStrategyCatalog() {
+  try {
+    const r = await window.nn.getStrategyCatalog();
+    if (!r?.ok || !r?.catalog) {
+      $('stratGrid').innerHTML = '<div class="empty">策略资产库尚未生成（' + (r?.reason || r?.error || '未知') + '）</div>';
+      $('stratStats').innerHTML = '';
+      return;
+    }
+    state.catalog = r.catalog;
+  } catch (e) {
+    $('stratGrid').innerHTML = '<div class="empty">读取策略资产库失败：' + escapeHtml(e.message) + '</div>';
+    return;
+  }
+  renderStrategy();
+}
+
+function renderStrategy() {
+  const c = state.catalog;
+  if (!c) return;
+  const assets = c.assets || [];
+  const counts = { candidate: 0, excluded: 0, deferred: 0 };
+  assets.forEach((a) => { if (counts[a.disposition] !== undefined) counts[a.disposition]++; });
+
+  // 顶部统计
+  $('stratStats').innerHTML = `
+    <div class="ss"><div class="n">${counts.candidate}</div><div class="l">候选（待审）</div></div>
+    <div class="ss"><div class="n">${counts.deferred}</div><div class="l">暂缓</div></div>
+    <div class="ss"><div class="n">${counts.excluded}</div><div class="l">排除</div></div>
+    <div class="ss"><div class="n">3</div><div class="l">已实现模板</div></div>`;
+
+  const list = assets.filter((a) => state.stratFilter === 'all' || a.disposition === state.stratFilter);
+  $('stratGrid').innerHTML = list.length ? list.map(cardHtml).join('') : '<div class="empty">无匹配资产</div>';
+}
+
+function cardHtml(a) {
+  const tag = a.disposition === 'candidate' ? ['cand', '候选'] :
+    a.disposition === 'excluded' ? ['excl', '排除'] : ['defr', '暂缓'];
+  const meta = [
+    a.classification?.style || '',
+    a.classification?.decision_mode === 'rule_based' ? '规则型' : (a.classification?.decision_mode || ''),
+    a.classification?.risk_tier === 'unassessed' ? '风险未评' : (a.classification?.risk_tier || ''),
+    a.classification?.direction || '',
+  ].filter(Boolean);
+  const foot = a.disposition === 'candidate'
+    ? '待回测 · 未上架 · 绩效全空'
+    : (a.disposition_reason || '');
+  return `
+    <div class="strat-card">
+      <div class="sc-h"><b>${escapeHtml(a.name_zh || a.id)}</b><span class="sc-tag ${tag[0]}">${tag[1]}</span></div>
+      <div class="sc-desc">${escapeHtml(a.disposition_reason || '')}</div>
+      <div class="sc-meta">${meta.map((m) => `<span>${escapeHtml(m)}</span>`).join('')}</div>
+      <div class="sc-foot">${escapeHtml(foot)}</div>
+    </div>`;
+}
+
+$('stratFilter').addEventListener('click', (e) => {
+  const btn = e.target.closest('button');
+  if (!btn) return;
+  state.stratFilter = btn.dataset.f;
+  document.querySelectorAll('#stratFilter button').forEach((b) => b.classList.toggle('on', b === btn));
+  renderStrategy();
+});
+
+// ---------- AI 一键下单（建议卡 → 二次确认 → 桥接 EA） ----------
+function currentSymbolInfo() {
+  return state.snapshot?.status?.symbol_info || null;
+}
+
+function renderSuggestion(sug) {
+  const box = $('suggestBox');
+  if (!sug) { box.innerHTML = ''; return; }
+  const st = state.snapshot?.status;
+  const balance = st?.account?.balance;
+  const si = currentSymbolInfo();
+  const lots = calcLots(balance, sug.risk_pct, sug.sl_points, si);
+  const hasSl = Number(sug.sl_points) > 0;
+  const confMap = { high: ['high', '高'], mid: ['mid', '中'], low: ['low', '低'] };
+  const conf = confMap[sug.confidence] || ['mid', sug.confidence || '中'];
+  const riskAmt = lots != null ? fmt(lots * (Number(sug.sl_points) * ((Number(si?.tick_value) / Number(si?.tick_size)) * Number(si?.point)))) : null;
+
+  box.innerHTML = `
+    <div class="suggest-card">
+      <div class="sg-head">
+        <span class="sg-sym">${escapeHtml(sug.symbol)}</span>
+        <span class="sg-side ${sug.side}">${sug.side === 'BUY' ? '买入 BUY' : '卖出 SELL'}</span>
+        <span class="sg-conf ${conf[0]}">把握 ${conf[1]}</span>
+      </div>
+      <div class="sg-grid">
+        <div><div class="k">入场</div><div class="v">${escapeHtml(sug.entry_ref || '市价')}</div></div>
+        <div><div class="k">止损</div><div class="v">${hasSl ? Number(sug.sl_points) + ' 点' : '—'}</div></div>
+        <div><div class="k">止盈</div><div class="v">${Number(sug.tp_points) > 0 ? Number(sug.tp_points) + ' 点' : '—'}</div></div>
+        <div><div class="k">手数</div><div class="v">${lots != null ? lots : '—'}</div></div>
+      </div>
+      <div class="sg-reason">${escapeHtml(sug.reason || '')}</div>
+      ${sug.data_note ? `<div class="sg-note">⚠ ${escapeHtml(sug.data_note)}</div>` : ''}
+      <div class="sg-warn">${lots != null
+        ? `手数由系统按「风险 ${sug.risk_pct}% × 余额 ÷ 止损距离」计算，本笔最多亏约 ${riskAmt} 账户货币。`
+        : '无法计算手数：品种规格未就绪（EA 需重编译以回传 symbol_info）。手数栏留空，请手动核对。'}</div>
+      <div class="sg-actions">
+        <button class="dismiss" id="sugDismissBtn">忽略</button>
+        <button class="order" id="sugOrderBtn" ${(!hasSl || lots == null) ? 'disabled' : ''}>
+          ${hasSl ? '一键下单' : '无止损 · 不出按钮'}</button>
+      </div>
+    </div>`;
+
+  $('sugDismissBtn').onclick = () => { box.innerHTML = ''; state.pendingSuggestion = null; };
+  $('sugOrderBtn').onclick = () => {
+    if (!hasSl || lots == null) return;
+    openConfirm(sug, lots);
+  };
+}
+
+// 演示入口：AI 网关未接模型时，用一条示范建议走通全链路，字段与真实 AI 输出同构
+$('aiDemoBtn').onclick = () => {
+  const st = state.snapshot?.status;
+  if (!st) { log('请先在「终端与 EA」连接终端，再生成示例建议', '⚠'); return; }
+  renderSuggestion({
+    type: 'order_suggestion',
+    symbol: st.symbol || 'EURUSD',
+    side: 'BUY',
+    entry_ref: '市价',
+    sl_points: 400,
+    tp_points: 800,
+    risk_pct: 0.5,
+    reason: '示例建议：仅用于演示「建议卡 → 一键下单 → 二次确认 → 回执」链路，非真实 AI 信号。',
+    confidence: 'low',
+    data_note: '演示数据，AI 模型尚未接入。',
+  });
+};
+
+function openConfirm(sug, lots) {
+  const st = state.snapshot?.status;
+  state.pendingSuggestion = sug;
+  state.pendingLots = lots;
+  $('cfmTitle').textContent = `${sug.symbol} · ${sug.side === 'BUY' ? '买入' : '卖出'}`;
+  $('cfmSymbol').textContent = sug.symbol;
+  $('cfmSide').textContent = sug.side === 'BUY' ? '买入 BUY' : '卖出 SELL';
+  $('cfmLots').textContent = lots != null ? `${lots} 手` : '—';
+  $('cfmSl').textContent = Number(sug.sl_points) > 0 ? `${Number(sug.sl_points)} 点` : '—';
+  $('cfmTp').textContent = Number(sug.tp_points) > 0 ? `${Number(sug.tp_points)} 点` : '—';
+  $('cfmRisk').textContent = `${sug.risk_pct}%`;
+  const warns = [];
+  if (st?.account?.mode === 'netting') warns.push('净额账户：市价单会直接加减仓/反手。');
+  if (!st?.trading_allowed) warns.push('终端当前禁止交易。');
+  $('cfmWarn').textContent = warns.join(' ');
+  $('confirmModal').classList.add('on');
+}
+
+$('cfmCancel').onclick = () => $('confirmModal').classList.remove('on');
+$('confirmModal').addEventListener('click', (e) => {
+  if (e.target === $('confirmModal')) $('confirmModal').classList.remove('on');
+});
+
+$('cfmGo').onclick = async () => {
+  const sug = state.pendingSuggestion;
+  const lots = state.pendingLots;
+  $('confirmModal').classList.remove('on');
+  if (!sug) return;
+  if (state.halted) return log('已停用，拒绝下单', '⚠');
+  if (!licOk) return log('未授权：请先激活授权密钥', '⚠');
+  const st = state.snapshot?.status;
+  if (!st) return log('未连接终端，无法下单', '⚠');
+  if (lots == null) return log('手数无法计算，请检查品种规格', '⚠');
+
+  const r = await window.nn.sendCommand({
+    terminalPath: state.selected,
+    type: 'ORDER_MARKET',
+    account: st.account?.login,
+    accountServer: state.snapshot?.heart?.server,
+    epoch: state.snapshot?.heart?.epoch,   // 不 fallback 1：让桥进程填当前代次
+    payload: {
+      symbol: sug.symbol,
+      side: sug.side,
+      volume_lots: lots,
+      sl_points: Number(sug.sl_points),
+      tp_points: Number(sug.tp_points || 0),
+      max_deviation_points: 20,
+      comment: 'ai-suggestion',
+    },
+  });
+
+  if (!r?.ok) return log(`下单失败：${r?.error}`, '⚠');
+  state.lastCmd = r.id;
+  log(`AI 建议下单已发送 ${r.id} · ${sug.symbol} ${sug.side} ${lots} 手`, '→');
+  watchCommand(r.id);
+  $('suggestBox').innerHTML = '';
+  state.pendingSuggestion = null;
+};
+
 // ---------- 启动 ----------
 (async function init() {
   const v = await window.nn.version();
   log(`牛牛 AI v${v} 已启动 · 协议 v1 · 模拟盘优先`);
-  log('提示：本版本仅交付交易链。AI 分析功能未开放。');
+  log('策略广场已上线（候选待回测）；AI 一键下单为链路演示模式，模型网关待接入。');
   go(prefs.page);                               // 回到上次离开的页面
   await refreshLicense();
   await refreshAI();
+  loadStrategyCatalog();                        // 策略资产库（不阻塞启动）
+  // 停用状态以主进程为准：上次按下「停用」后重启，界面必须还是停用，不能悄悄恢复
+  try {
+    const h = await window.nn.haltStatus();
+    state.halted = h?.halted === true;
+    paintHalt();
+    if (state.halted) log('⚠ 上次已全局停用，本次启动沿用停用状态（主进程闸门生效中）', '⚠');
+  } catch { /* 拿不到就按运行中处理 */ }
   await discover();
   setInterval(refresh, 1500);
   setInterval(refreshAI, 60000);      // 积分余额一分钟同步一次，够用也不吵

@@ -14,6 +14,8 @@ const path = require('path');
 const ROOT = path.join(__dirname, '..');
 const html = fs.readFileSync(path.join(ROOT, 'src', 'ui', 'index.html'), 'utf8');
 const appjs = fs.readFileSync(path.join(ROOT, 'src', 'ui', 'app.js'), 'utf8');
+// 策略资产库：内嵌进预览桩，让策略广场页在浏览器里也有真实数据。
+const catalogJson = fs.readFileSync(path.join(ROOT, 'strategy-library', 'catalog.json'), 'utf8');
 
 const STUB = `
 /* ===== 预览桩：只替换 window.nn 这个桥，业务代码一行没改 ===== */
@@ -40,6 +42,9 @@ const STUB = `
       status: {
         signed: true, trading_allowed: true, symbol: 'EURUSD',
         quote: { bid: 1.08521, ask: 1.08535 },
+        // symbol_info：让「AI 一键下单」的手数确定性计算在预览里也能跑通
+        symbol_info: { point: 0.00001, digits: 5, tick_size: 0.00001, tick_value: 1.0,
+                       volume_min: 0.01, volume_step: 0.01, volume_max: 100, stops_level: 0 },
         account: { login: 12345678, balance: 10000, equity: 10123.45, free_margin: 9800, mode: 'netting' },
         positions: [
           { ticket: 987654, symbol: 'EURUSD', type: 'BUY',  volume: 0.02, price_open: 1.084,  sl: 1.08,  profit: 23.45 },
@@ -50,6 +55,7 @@ const STUB = `
     }
   };
   var sentOnce = false;
+  var halted = false;
 
   window.nn = {
     licenseStatus:   async () => ({ ok: true, license: { ok: true, name: '预览用户', id: 'NN1-DEMO', daysLeft: 30, expires: '2026-11-16' } }),
@@ -60,6 +66,9 @@ const STUB = `
     snapshot:        async () => SNAPSHOT,
     sendCommand:     async () => { sentOnce = false; return { ok: true, id: 'cmd-0001' }; },
     commandStatus:   async () => { if (sentOnce) return { ok: true, stage: 'EXECUTED' }; sentOnce = true; return { ok: true, stage: 'SENT' }; },
+    getStrategyCatalog: async () => ({ ok: true, catalog: ${catalogJson} }),
+    setHalt:         async (h) => { halted = (h === true); return { ok: true, halted: halted }; },
+    haltStatus:      async () => ({ ok: true, halted: halted }),
     aiStatus:        async () => ({ enabled: true, connected: true, credits: 120, creditCny: 0.1, rechargeUrl: 'https://ai.niuniuai.app/recharge' }),
     aiConnect:       async () => ({ connected: true, credits: 120 }),
     aiDisconnect:    async () => ({ enabled: true, connected: false }),

@@ -412,6 +412,16 @@ void WriteStatus()
             + ",\"quote\":{\"bid\":" + DoubleToString(tk.bid, (int)SymbolInfoInteger(sym, SYMBOL_DIGITS))
             + ",\"ask\":" + DoubleToString(tk.ask, (int)SymbolInfoInteger(sym, SYMBOL_DIGITS))
             + ",\"time\":" + IntegerToString((long)tk.time_msc) + "}"
+            // 品种规格：前端据此算「每点价值」与手数（AI 一键下单的确定性算术数据源）。
+            // 纯增量字段，不影响旧版渲染层；旧 .ex5 无此块时前端按「无法算手数」降级。
+            + ",\"symbol_info\":{\"point\":" + DoubleToString(SymbolInfoDouble(sym, SYMBOL_POINT), 8)
+            + ",\"digits\":" + IntegerToString((int)SymbolInfoInteger(sym, SYMBOL_DIGITS))
+            + ",\"tick_size\":" + DoubleToString(SymbolInfoDouble(sym, SYMBOL_TRADE_TICK_SIZE), 8)
+            + ",\"tick_value\":" + DoubleToString(SymbolInfoDouble(sym, SYMBOL_TRADE_TICK_VALUE), 8)
+            + ",\"volume_min\":" + DoubleToString(SymbolInfoDouble(sym, SYMBOL_VOLUME_MIN), 8)
+            + ",\"volume_step\":" + DoubleToString(SymbolInfoDouble(sym, SYMBOL_VOLUME_STEP), 8)
+            + ",\"volume_max\":" + DoubleToString(SymbolInfoDouble(sym, SYMBOL_VOLUME_MAX), 8)
+            + ",\"stops_level\":" + IntegerToString((int)SymbolInfoInteger(sym, SYMBOL_TRADE_STOPS_LEVEL)) + "}"
             + ",\"trading_allowed\":" + (TerminalInfoInteger(TERMINAL_TRADE_ALLOWED) ? "true" : "false")
             + ",\"signed\":" + (g_secret_ok ? "true" : "false")
             + ",\"epoch\":" + IntegerToString(g_session_epoch)

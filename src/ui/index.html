@@ -187,6 +187,65 @@ button.ghost{background:var(--soft);border:1px solid var(--line);border-radius:9
 .coming b{font-size:14px;color:var(--ink);display:block;margin-bottom:6px}
 .coming span{font-size:12px;line-height:1.7;display:block;max-width:420px;margin:0 auto}
 
+/* ===== 策略广场 ===== */
+.strat-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+.strat-stats .ss{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:13px 15px}
+.strat-stats .ss .n{font-size:20px;font-weight:650;font-variant-numeric:tabular-nums}
+.strat-stats .ss .l{font-size:11px;color:var(--muted);margin-top:2px}
+.strat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
+.strat-card{border:1px solid var(--line);border-radius:12px;padding:14px 15px;background:var(--soft);
+  display:flex;flex-direction:column;gap:8px}
+.strat-card .sc-h{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.strat-card .sc-h b{font-size:13px;font-weight:620;line-height:1.35}
+.strat-card .sc-tag{font-size:10px;padding:2px 7px;border-radius:5px;white-space:nowrap;font-weight:600}
+.sc-tag.cand{background:var(--tint);color:var(--accent)}
+.sc-tag.excl{background:color-mix(in srgb,var(--danger) 14%,transparent);color:var(--danger)}
+.sc-tag.defr{background:color-mix(in srgb,var(--amber) 18%,transparent);color:var(--amber)}
+.strat-card .sc-desc{font-size:11.5px;color:var(--muted);line-height:1.55}
+.strat-card .sc-meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:auto}
+.strat-card .sc-meta span{font-size:10px;color:var(--faint);background:var(--line-strong);
+  border-radius:5px;padding:2px 7px}
+.strat-card .sc-foot{font-size:10.5px;color:var(--faint);border-top:1px dashed var(--line);padding-top:8px}
+.filter-chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.filter-chips button{border:1px solid var(--line);background:var(--panel);border-radius:999px;
+  padding:6px 14px;font-size:12px;font-weight:560;color:var(--muted);cursor:pointer;font-family:inherit}
+.filter-chips button.on{background:var(--tint);border-color:var(--accent);color:var(--accent)}
+
+/* ===== AI 建议卡片 / 一键下单 ===== */
+.suggest-card{border:1px solid var(--line);border-radius:14px;padding:16px 18px;background:var(--panel);
+  box-shadow:var(--shadow);margin-top:12px}
+.suggest-card .sg-head{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.suggest-card .sg-sym{font-size:16px;font-weight:650;letter-spacing:-.01em}
+.suggest-card .sg-side{font-size:11px;font-weight:700;padding:3px 9px;border-radius:6px}
+.sg-side.BUY{background:color-mix(in srgb,var(--up) 14%,transparent);color:var(--up)}
+.sg-side.SELL{background:color-mix(in srgb,var(--down) 14%,transparent);color:var(--down)}
+.suggest-card .sg-conf{margin-left:auto;font-size:10.5px;padding:2px 8px;border-radius:5px;font-weight:600}
+.sg-conf.high{background:color-mix(in srgb,var(--ok) 16%,transparent);color:var(--ok)}
+.sg-conf.mid{background:color-mix(in srgb,var(--amber) 18%,transparent);color:var(--amber)}
+.sg-conf.low{background:color-mix(in srgb,var(--danger) 14%,transparent);color:var(--danger)}
+.suggest-card .sg-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:10px}
+.suggest-card .sg-grid div{background:var(--soft);border-radius:9px;padding:9px 11px}
+.suggest-card .sg-grid .k{font-size:10.5px;color:var(--muted)}
+.suggest-card .sg-grid .v{font-size:13.5px;font-weight:620;margin-top:2px;font-variant-numeric:tabular-nums}
+.suggest-card .sg-reason{font-size:12px;color:var(--ink);line-height:1.55;margin-bottom:8px}
+.suggest-card .sg-note{font-size:11px;color:var(--amber);margin-bottom:10px}
+.suggest-card .sg-warn{font-size:11px;color:var(--muted);background:var(--soft);
+  border:1px solid var(--line);border-radius:9px;padding:8px 11px;margin-bottom:12px}
+.sg-actions{display:flex;gap:10px}
+.sg-actions button{flex:1;margin-top:0}
+.sg-actions button.order{background:var(--brand-deep);color:#fff;border:none;border-radius:10px;
+  padding:11px;font-size:13.5px;font-weight:640;cursor:pointer;font-family:inherit}
+.sg-actions button.order:disabled{background:var(--line);color:var(--faint);cursor:not-allowed}
+.sg-actions button.dismiss{background:var(--soft);border:1px solid var(--line);border-radius:10px;
+  padding:11px;font-size:13.5px;cursor:pointer;font-family:inherit;color:var(--ink)}
+.ai-intro{display:flex;gap:14px;align-items:flex-start;padding:14px 16px;border:1px dashed var(--line);
+  border-radius:12px;background:var(--soft);margin-bottom:4px}
+.ai-intro .ai-ico{width:38px;height:38px;border-radius:10px;background:var(--tint);color:var(--accent);
+  display:flex;align-items:center;justify-content:center;flex:0 0 38px}
+.ai-intro .ai-t{font-size:13px;font-weight:620;margin-bottom:3px}
+.ai-intro .ai-d{font-size:11.5px;color:var(--muted);line-height:1.6}
+
+
 /* ===== 充值弹窗 ===== */
 .modal-mask{position:fixed;inset:0;background:rgba(18,20,24,.46);display:none;align-items:center;
   justify-content:center;z-index:60;padding:24px}
@@ -226,7 +285,7 @@ button.ghost{background:var(--soft);border:1px solid var(--line);border-radius:9
       <button class="nav-item" data-page="p-trade">
         <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5-6 4 3 5-8 4 5"/><path d="M3 21h18"/></svg>交易</button>
       <button class="nav-item" data-page="p-strategy">
-        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 20v-9M12 20V5M17 20v-4"/><path d="M3 20h18"/></svg>策略广场<span class="come">规划中</span></button>
+        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 20v-9M12 20V5M17 20v-4"/><path d="M3 20h18"/></svg>策略广场<span class="come">新</span></button>
       <button class="nav-item" data-page="p-ai">
         <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 4.6L18.5 9l-4.6 1.4L12 15l-1.9-4.6L5.5 9l4.6-1.4z"/><path d="M19 15l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/></svg>AI 副驾驶</button>
       <button class="nav-item" data-page="p-settings">
@@ -365,27 +424,44 @@ button.ghost{background:var(--soft);border:1px solid var(--line);border-radius:9
 
       <!-- ========== 策略广场（规划中，不放无效按钮） ========== -->
       <section class="page" id="p-strategy">
-        <div class="page-s">策略方挂牌 · 业绩可查 · 一键跟单</div>
+        <div class="page-s">策略资产库 · 候选待回测 · 上架需过四道门槛</div>
+        <div class="strat-stats" id="stratStats"></div>
         <div class="card">
-          <div class="coming">
-            <div class="ci"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 20v-9M12 20V5M17 20v-4"/><path d="M3 20h18"/></svg></div>
-            <b>策略广场规划中</b>
-            <span>设计已定稿（年化 / 资金曲线 / 夏普 / 回撤 / 交易笔数的卡片化榜单 + 跟单链路）。
-            需要先跑通策略方实盘业绩接入，再对客户开放——在业绩可验证之前，不开放入口。</span>
+          <h3><span class="dot live"></span>候选资产库（待审）</h3>
+          <div class="filter-chips" id="stratFilter">
+            <button class="on" data-f="all">全部</button>
+            <button data-f="candidate">候选 15</button>
+            <button data-f="deferred">暂缓 4</button>
+            <button data-f="excluded">排除 4</button>
+          </div>
+          <div class="strat-grid" id="stratGrid"></div>
+          <div class="note">候选 = 待审，不是已通过。所有资产 <b>validation_stage=research、execution_status=disabled、绩效全空</b>——没跑过回测的策略不上（模拟）盘。首批 3 个模板（NN-T01/T02/T03）已由 NiuNiuStrategy.mq5 实现，走「终端与 EA」手动挂图，见教程第 5 章。</div>
+        </div>
+        <div class="card">
+          <h3>上架四道门槛</h3>
+          <div class="strat-grid">
+            <div class="strat-card"><div class="sc-h"><b>① 机制合规</b></div><div class="sc-desc">无网格 / 马丁 / 逆势加仓 / 无止损 / 保本承诺。命中即淘汰，不允许改名重交。</div></div>
+            <div class="strat-card"><div class="sc-h"><b>② 参数可复现</b></div><div class="sc-desc">品种、周期、入场、退出、风控参数全部落成 manifest，可被同一 EA 复跑。</div></div>
+            <div class="strat-card"><div class="sc-h"><b>③ 回测可查</b></div><div class="sc-desc">真实 tick 回测，指标 + 资金曲线 + 参数指纹一起公示，禁填漂亮数字。</div></div>
+            <div class="strat-card"><div class="sc-h"><b>④ 模拟验证</b></div><div class="sc-desc">回测通过后先在模拟盘跑一段，再谈上架与跟单。</div></div>
           </div>
         </div>
       </section>
 
       <!-- ========== AI 副驾驶 ========== -->
       <section class="page" id="p-ai">
-        <div class="page-s">连接 AI 网关后按用量扣积分，未连接时整条不显示</div>
+        <div class="page-s">AI 给建议 → 一键下单 → 二次确认 → 桥接 EA 执行（人工确认链）</div>
         <div class="card">
-          <h3>AI 积分与充值</h3>
-          <div class="note" style="margin-top:0">
-            AI 状态与充值入口显示在上方状态条（连接成功才出现「充值」，未连接则显示令牌输入框）。
-            未配置 AI 服务地址时，整条状态栏不显示——不放点了没反应的按钮。
+          <div class="ai-intro">
+            <div class="ai-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 4.6L18.5 9l-4.6 1.4L12 15l-1.9-4.6L5.5 9l4.6-1.4z"/><path d="M19 15l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/></svg></div>
+            <div>
+              <div class="ai-t">AI 下单建议 · 人工确认链</div>
+              <div class="ai-d">AI 只给<b>方向、点位、止损止盈、风险%</b>，手数由系统按「风险% × 余额 ÷ 止损距离」确定性计算，AI 不碰数字。<b>止损必带</b>，无止损不出按钮。点「一键下单」后仍需二次确认，才会通过桥接 EA 下单。</div>
+            </div>
           </div>
-          <div class="ai-off">AI 分析 / 风控审核 / 持仓巡查 —— v1 未开放。交易链独立交付，避免出现无效按钮。</div>
+          <div class="note" style="margin-top:14px">AI 模型网关尚未接入，当前为<b>链路演示模式</b>：下方「生成示例建议」用一条示范建议走通「建议卡 → 一键下单 → 二次确认 → 回执」全流程，字段与真实 AI 输出同构。</div>
+          <button class="ghost" id="aiDemoBtn" style="margin-top:14px">生成示例建议（演示）</button>
+          <div id="suggestBox"></div>
         </div>
       </section>
 
@@ -442,6 +518,31 @@ button.ghost{background:var(--soft);border:1px solid var(--line);border-radius:9
     <div class="m-actions">
       <button class="ghost" id="topupCancel">取消</button>
       <button class="primary" id="topupGo">去支付</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 下单二次确认弹窗（AI 一键下单 / 人工链最后一步） ============ -->
+<div class="modal-mask" id="confirmModal">
+  <div class="modal">
+    <h2>确认下单</h2>
+    <div class="m-sub">请核对完整参数，确认后将通过桥接 EA 发送到券商。</div>
+    <div class="m-row">
+      <div class="ticket" style="margin-top:0">
+        <div class="t-h" id="cfmTitle">—</div>
+        <div class="t-r"><span>品种</span><b id="cfmSymbol">—</b></div>
+        <div class="t-r"><span>方向</span><b id="cfmSide">—</b></div>
+        <div class="t-r"><span>手数</span><b id="cfmLots">—</b></div>
+        <div class="t-r"><span>止损</span><b id="cfmSl">—</b></div>
+        <div class="t-r"><span>止盈</span><b id="cfmTp">—</b></div>
+        <div class="t-r"><span>单笔风险</span><b id="cfmRisk">—</b></div>
+        <div class="warn" id="cfmWarn"></div>
+      </div>
+    </div>
+    <div class="m-note" id="cfmNote">市价单，带止损。手数由系统按「风险% × 余额 ÷ 止损距离」计算。</div>
+    <div class="m-actions">
+      <button class="ghost" id="cfmCancel">取消</button>
+      <button class="primary" id="cfmGo">确认下单</button>
     </div>
   </div>
 </div>

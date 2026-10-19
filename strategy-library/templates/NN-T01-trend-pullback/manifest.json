@@ -1,0 +1,90 @@
+{
+  "schema_version": "1.0",
+  "template_id": "NN-T01-trend-pullback",
+  "version": "1.0.0",
+  "name_zh": "趋势回撤",
+  "name_en": "Trend Pullback",
+  "one_liner_zh": "顺着趋势的方向，等价格回踩到快线附近再进，不追高不抄底。",
+  "provider_id": null,
+  "maintainer": null,
+  "classification": {
+    "decision_mode": "rule_based",
+    "style": "trend",
+    "risk_tier": "unassessed",
+    "direction": "both_selective"
+  },
+  "compatibility": {
+    "account_modes": ["hedging", "netting"],
+    "symbols": ["XAUUSD", "EURUSD", "NAS100"],
+    "timeframes": ["H1"],
+    "ea_version": null,
+    "notes": [
+      "执行引擎：NiuNiuStrategy.mq5（strategy_enum=NN_TREND_PULLBACK）。",
+      "Netting 账户下同品种只有一个净头寸，同品种仅允许一个策略实例；跑多策略用不同品种或改用对冲账户。",
+      "避开点差长期大于 30 point 的品种与流动性枯竭时段（周五尾盘、节假日前后）。"
+    ]
+  },
+  "publication_status": "draft",
+  "validation_stage": "research",
+  "execution_status": "disabled",
+  "required_capabilities": [
+    "account_risk_check",
+    "deterministic_position_sizing",
+    "initial_stop_loss_verified"
+  ],
+  "prohibited_mechanisms_review": "passed",
+  "performance": {
+    "backtest": null,
+    "demo": null,
+    "live": null
+  },
+  "evidence_refs": [],
+  "subscription": {
+    "enabled": false,
+    "offer_id": null
+  },
+  "parameters": {
+    "InpStrategy": 0,
+    "InpDirection": 0,
+    "InpMagic": 810001,
+    "InpTag": "NNS",
+    "InpFastPeriod": 20,
+    "InpSlowPeriod": 60,
+    "InpChannelPeriod": 20,
+    "InpStdK": 2.0,
+    "InpAtrPeriod": 14,
+    "InpAtrSlMult": 2.0,
+    "InpAtrTpMult": 3.0,
+    "InpFixedSlPoints": 0,
+    "InpFixedTpPoints": 0,
+    "InpPullbackTolAtr": 0.5,
+    "InpMinChannelAtr": 0.8,
+    "InpRiskPct": 0.5,
+    "InpFixedLots": 0.0,
+    "InpMaxPositions": 1,
+    "InpMaxDailyLossPct": 2.0,
+    "InpMaxSpreadPoints": 30,
+    "InpMaxDeviationPoints": 20,
+    "InpMaxHoldBars": 0,
+    "InpUseTrailing": false,
+    "InpTrailPoints": 0,
+    "InpSessionFromHour": 0,
+    "InpSessionToHour": 0,
+    "InpVerbose": true,
+    "InpCloseOnStop": false
+  },
+  "fixed_protections": [
+    "止损强制（stop_is_mandatory=true，ATR 动态止损 InpAtrSlMult=2.0）",
+    "单笔风险上限 InpRiskPct=0.5%（余额百分比，由程序算手数）",
+    "日内亏损熔断 InpMaxDailyLossPct=2.0%",
+    "并发持仓上限 InpMaxPositions=1",
+    "点差上限 InpMaxSpreadPoints=30",
+    "滑点上限 InpMaxDeviationPoints=20"
+  ],
+  "pending_verification": [
+    "尚未回测：lifecycle.state=backtest_pending，绩效字段禁止填任何数字",
+    "初始止损提交与券商校验链路未核验（蓝图 0.1）",
+    "所需 EA 版本未核验（ea_version=null）"
+  ],
+  "source_ref": "strategies/NN-T01-trend-pullback.json"
+}

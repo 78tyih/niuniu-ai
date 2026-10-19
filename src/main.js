@@ -28,6 +28,9 @@ const pending = new Map();
 const LICENSE_PATH = path.join(app.getPath('userData'), 'license.json');
 let licenseState = { ok: false, reason: '未激活' };
 
+// 策略广场目录：打包后 asar=false，__dirname 是 resources/app/src，'..' 即 app 根。
+const STRATEGY_LIBRARY_DIR = path.join(__dirname, '..', 'strategy-library');
+
 function loadLicense() {
   try {
     if (fs.existsSync(LICENSE_PATH)) {
@@ -250,11 +253,20 @@ function call(method, params = {}) {
 }
 
 // ---------- IPC 白名单（只暴露业务方法，不暴露任意路径/任意命令） ----------
+// 策略广场目录：只读 catalog.json，返回结构化数据给渲染层，不暴露真实文件路径。
+function readStrategyCatalog() {
+  const file = path.join(STRATEGY_LIBRARY_DIR, 'catalog.json');
+  if (!fs.existsSync(file)) return { ok: true, catalog: null, reason: 'catalog.json 缺失' };
+  try { return { ok: true, catalog: JSON.parse(fs.readFileSync(file, 'utf8')) }; }
+  catch (e) { return { ok: false, error: 'catalog.json 损坏：' + e.message }; }
+}
+
 const ALLOWED = {
   licenseStatus: () => ({ ok: true, license: licenseState }),
   licenseActivate: (p) => activateLicense(String(p?.key || '')),
   discover:      () => call('discover'),
   installEA:     (p) => call('installEA', { terminalPath: String(p?.terminalPath || '') }),
+  getStrategyCatalog: () => readStrategyCatalog(),
   // 重新绑定：换账户 / 重新授权后调用。会换密钥 + epoch 自增，旧命令全部作废。
   // 密钥在这里生成后下发给桥，桥只写文件、不再回传 —— 密钥永不流向渲染进程。
   rebind: async (p) => {

@@ -1,0 +1,91 @@
+{
+  "schema_version": "1.0",
+  "template_id": "NN-T03-bounded-mean-reversion",
+  "version": "1.0.0",
+  "name_zh": "有界均值回归",
+  "name_en": "Bounded Mean Reversion",
+  "one_liner_zh": "价格插到轨道外不算信号，收回轨道内才算；强制止损 + 强制最长持有时间。",
+  "provider_id": null,
+  "maintainer": null,
+  "classification": {
+    "decision_mode": "rule_based",
+    "style": "mean_reversion",
+    "risk_tier": "unassessed",
+    "direction": "both_selective"
+  },
+  "compatibility": {
+    "account_modes": ["hedging", "netting"],
+    "symbols": ["EURUSD", "GBPUSD", "AUDUSD"],
+    "timeframes": ["H1"],
+    "ea_version": null,
+    "notes": [
+      "执行引擎：NiuNiuStrategy.mq5（strategy_enum=NN_BOUNDED_MEANREV）。",
+      "Netting 账户下同品种只有一个净头寸，同品种仅允许一个策略实例。",
+      "避开单边趋势强烈的行情与有隔夜跳空风险的持有时段。"
+    ]
+  },
+  "publication_status": "draft",
+  "validation_stage": "research",
+  "execution_status": "disabled",
+  "required_capabilities": [
+    "account_risk_check",
+    "deterministic_position_sizing",
+    "initial_stop_loss_verified"
+  ],
+  "prohibited_mechanisms_review": "passed",
+  "performance": {
+    "backtest": null,
+    "demo": null,
+    "live": null
+  },
+  "evidence_refs": [],
+  "subscription": {
+    "enabled": false,
+    "offer_id": null
+  },
+  "parameters": {
+    "InpStrategy": 2,
+    "InpDirection": 0,
+    "InpMagic": 810003,
+    "InpTag": "NNS",
+    "InpFastPeriod": 20,
+    "InpSlowPeriod": 60,
+    "InpChannelPeriod": 20,
+    "InpStdK": 2.0,
+    "InpAtrPeriod": 14,
+    "InpAtrSlMult": 2.0,
+    "InpAtrTpMult": 2.0,
+    "InpFixedSlPoints": 0,
+    "InpFixedTpPoints": 0,
+    "InpPullbackTolAtr": 0.5,
+    "InpMinChannelAtr": 0.8,
+    "InpRiskPct": 0.5,
+    "InpFixedLots": 0.0,
+    "InpMaxPositions": 1,
+    "InpMaxDailyLossPct": 2.0,
+    "InpMaxSpreadPoints": 30,
+    "InpMaxDeviationPoints": 20,
+    "InpMaxHoldBars": 48,
+    "InpUseTrailing": false,
+    "InpTrailPoints": 0,
+    "InpSessionFromHour": 0,
+    "InpSessionToHour": 0,
+    "InpVerbose": true,
+    "InpCloseOnStop": false
+  },
+  "fixed_protections": [
+    "止损强制（stop_is_mandatory=true，ATR 动态止损 InpAtrSlMult=2.0）",
+    "强制最长持有 InpMaxHoldBars=48（H1 下约一天半，到点无条件平仓）——「有界」落在这条，禁止改成 0",
+    "反马丁三件套同时生效：持仓上限 1 + 强制止损 + 强制最长持有时间，禁止任何形式的逆势加仓",
+    "单笔风险上限 InpRiskPct=0.5%（余额百分比，由程序算手数）",
+    "日内亏损熔断 InpMaxDailyLossPct=2.0%",
+    "点差上限 InpMaxSpreadPoints=30",
+    "滑点上限 InpMaxDeviationPoints=20"
+  ],
+  "pending_verification": [
+    "尚未回测：lifecycle.state=backtest_pending，绩效字段禁止填任何数字",
+    "初始止损提交与券商校验链路未核验（蓝图 0.1）",
+    "所需 EA 版本未核验（ea_version=null）"
+  ],
+  "source_ref": "strategies/NN-T03-bounded-mean-reversion.json"
+}
