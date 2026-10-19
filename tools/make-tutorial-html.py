@@ -156,11 +156,12 @@ chapters = re.split(r'\n(?=## \d+)', md)
 # 第一段是标题 + 引言
 header = chapters[0]
 
-# 构建目录
+# 构建目录（右侧）：锚点直接指向整章 section（滚动高亮才稳定），编号用徽章单独展示
 toc = []
-for ch in chapters[1:]:
-    title = re.match(r'##\s+(.*)', ch).group(1).strip()
-    toc.append((slugify(title), title))
+for n, ch in enumerate(chapters[1:], 1):
+    full = re.match(r'##\s+(.*)', ch).group(1).strip()
+    disp = re.sub(r'^\d+[\.．、]?\s*', '', full)
+    toc.append((f'sec-{n}', disp))
 
 # 渲染每章
 # 章节配图：真实界面截图（docs/shots-v2/），base64 内嵌，避免外链。
@@ -168,15 +169,17 @@ import base64
 
 SHOTS_DIR = os.path.join(ROOT, 'docs', 'shots-v2')
 
-# 视频教程：dist/video/牛牛AI-上手教程.mp4 → base64 内嵌（单文件交付）
-VIDEO_FILE = os.path.join(ROOT, 'dist', 'video', '牛牛AI-上手教程.mp4')
+# 视频教程：优先用 hyperframes 新版（带鼠标高光），否则回落旧版
+VIDEO_NEW = os.path.join(ROOT, 'video', 'renders', 'tutorial-web.mp4')
+VIDEO_OLD = os.path.join(ROOT, 'dist', 'video', '牛牛AI-上手教程.mp4')
+VIDEO_FILE = VIDEO_NEW if os.path.exists(VIDEO_NEW) else VIDEO_OLD
 VIDEO_SECTION = ''
 if os.path.exists(VIDEO_FILE):
     v64 = base64.b64encode(open(VIDEO_FILE, 'rb').read()).decode('ascii')
     VIDEO_SECTION = '''
     <section class="video-sec">
-      <h2 id="video"><span class="no">▶</span>视频教程 · 22 秒看完整流程</h2>
-      <p class="vd-s">概览 → 终端与 EA → 交易 → 策略广场 → AI 一键下单 → 回执，一镜到底。</p>
+      <h2 id="video"><span class="no">▶</span>视频演示 · 66 秒跑通全流程</h2>
+      <p class="vd-s">每一步都有光标指示和点击高亮：连接 MT5 → 挂 EA → 自检 → 人工下单 → AI 一键下单 → 二次确认。看不清的按钮会自动放大。</p>
       <video controls preload="metadata" playsinline src="data:video/mp4;base64,__VIDEO_B64__"></video>
     </section>'''.replace('__VIDEO_B64__', v64)
 SHOTS = {
@@ -191,6 +194,21 @@ SHOTS = {
         ('07-suggestion.png', 'AI 建议卡：方向 / 止损 / 止盈 / 手数（系统算）'),
         ('08-confirm.png', '二次确认弹窗：完整参数核对后下单')],
     7: [('02-terminal.png', '终端与 EA 页：重新绑定（换账户）')],
+}
+
+
+# 每章「一句话」摘要（通俗版，放在章节标题下方）
+SUM = {
+    1: '牛牛 AI 自己不下单，它把你点的按钮交给 MT5 里的桥接 EA 去执行。',
+    2: '装 MT5 → 装牛牛 AI → 一键装桥接 EA → 手动把 EA 拖到图表，四步缺一不可、顺序不能乱。',
+    3: '六个页面各管一件事：看账户、管连接、下单、选策略、用 AI、调外观。',
+    4: '策略广场是「候选资产库」——能看能筛，但没跑过回测就不上盘。',
+    5: '三个现成模板共用一个策略 EA，编译一次，靠参数切换品种与风控。',
+    6: '填好方向手数、核对小票、点确认下单；回执「已成交」才算数，「待核对」要去 MT5 看真仓。',
+    7: '右上角一键停用是主进程真闸门；换账户后必须点「重新绑定」。',
+    8: '出问题先看这张「现象 → 原因 → 解决」对照表，九成能对上。',
+    9: '它是执行工具、不是投资建议；测试阶段只用模拟账户。',
+    10: '反馈时贴原文截图和回执，别转述。',
 }
 
 
@@ -216,7 +234,13 @@ for idx, ch in enumerate(chapters[1:], start=1):
     rendered = re.sub(r'<h2([^>]*)>(\d+)[\.．、]?\s*',
                       lambda m: '<h2%s><span class="no">%s</span>' % (m.group(1), m.group(2)),
                       rendered, count=1)
-    body.append('<section>' + rendered + '</section>')
+    # 标题下方插「一句话」摘要条
+    ssum = SUM.get(idx)
+    if ssum:
+        rendered = re.sub(r'(<h2[^>]*>.*?</h2>)',
+                          lambda m: m.group(1) + f'<div class="sum"><i>一句话</i><span>{esc(ssum)}</span></div>',
+                          rendered, count=1)
+    body.append(f'<section id="sec-{idx}">' + rendered + '</section>')
 
 # EN 精简版（章节标题 + 一句话要点）
 EN = {
@@ -278,12 +302,17 @@ a{color:var(--accent-deep);text-decoration:none}
 
 /* 主体布局 */
 .wrap{display:flex;max-width:1180px;margin:0 auto}
-.toc{position:sticky;top:68px;align-self:flex-start;width:230px;flex:0 0 230px;
-  padding:26px 16px 40px;max-height:calc(100vh - 68px);overflow-y:auto}
-.toc a{display:block;padding:7px 12px;font-size:13px;color:var(--muted);border-radius:8px;
-  border-left:2px solid transparent;transition:.15s}
+.toc{position:sticky;top:68px;align-self:flex-start;width:248px;flex:0 0 248px;
+  padding:26px 14px 40px 22px;max-height:calc(100vh - 68px);overflow-y:auto;
+  border-left:1px solid var(--line-strong)}
+.toc a{display:flex;align-items:flex-start;gap:9px;padding:8px 12px;font-size:13px;color:var(--muted);
+  border-radius:9px;border-left:2px solid transparent;transition:.15s;line-height:1.4}
+.toc a i{flex:0 0 auto;width:20px;height:20px;border-radius:6px;background:var(--soft);border:1px solid var(--line);
+  color:var(--faint);font-style:normal;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:1px}
+.toc a span{flex:1;min-width:0}
 .toc a:hover{color:var(--ink);background:var(--soft)}
 .toc a.on{color:var(--accent);background:var(--tint);border-left-color:var(--accent);font-weight:600}
+.toc a.on i{background:var(--accent);border-color:var(--accent);color:#fff}
 .toc .toc-h{font-size:10.5px;letter-spacing:.08em;color:var(--faint);padding:0 12px 8px;font-weight:700}
 
 .content{flex:1;min-width:0;padding:28px 40px 80px}
@@ -292,11 +321,22 @@ a{color:var(--accent-deep);text-decoration:none}
 .hero .sub{font-size:13px;color:var(--muted);line-height:1.7}
 .hero .meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
 .hero .meta span{font-size:11px;padding:4px 11px;border-radius:999px;background:var(--soft);border:1px solid var(--line);color:var(--muted)}
+.quick{margin-top:18px;border-top:1px solid var(--line-strong);padding-top:16px}
+.qh{font-size:11px;letter-spacing:.06em;font-weight:700;color:var(--accent);margin-bottom:12px}
+.safe{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.safe span{font-size:11.5px;padding:5px 12px;border-radius:999px;font-weight:600;
+  color:var(--danger);background:color-mix(in srgb,var(--danger) 8%,var(--panel));border:1px solid color-mix(in srgb,var(--danger) 22%,transparent)}
 
-section{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:26px 30px;margin-bottom:20px;box-shadow:var(--shadow)}
+section{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:26px 30px;margin-bottom:20px;box-shadow:var(--shadow);scroll-margin-top:84px}
 section h2{font-size:18px;font-weight:660;letter-spacing:-.01em;margin-bottom:4px;display:flex;align-items:center;gap:10px}
 section h2 .no{font-size:12px;color:var(--accent);font-weight:700;background:var(--tint);
   border-radius:8px;padding:2px 9px;flex:0 0 auto}
+.sum{display:flex;gap:10px;align-items:flex-start;margin:14px 0 2px;padding:12px 16px;
+  background:var(--tint);border:1px solid color-mix(in srgb,var(--accent) 20%,transparent);
+  border-radius:11px;font-size:13.5px;line-height:1.65;color:var(--accent-deep)}
+.sum i{flex:0 0 auto;font-style:normal;font-size:10.5px;letter-spacing:.05em;font-weight:700;
+  color:#fff;background:var(--accent);border-radius:6px;padding:2px 9px;margin-top:2px}
+.sum span{flex:1;min-width:0}
 section h3{font-size:14.5px;font-weight:640;margin:22px 0 10px;color:var(--ink)}
 section h3::before{content:'';display:inline-block;width:8px;height:8px;border-radius:2px;
   background:var(--accent);margin-right:8px;vertical-align:1px}
@@ -374,17 +414,22 @@ footer{padding:30px 40px 60px;text-align:center;color:var(--faint);font-size:12p
   </div>
 </div>
 <div class="wrap">
-  <nav class="toc">
-    <div class="toc-h">目录</div>
-    <div class="zh">''' + ''.join(f'<a href="#{sid}" data-toc="{sid}">{esc(t)}</a>' for sid, t in toc) + '''</div>
-    <div class="en" style="display:none">''' + ''.join(f'<a href="#{sid}" data-toc="{sid}">{esc(EN[k][0])}</a>' for k, (sid, t) in zip([str(n) for n in range(1, 11)], toc)) + '''</div>
-  </nav>
   <main class="content">
     <div class="hero zh">
       <h1>牛牛 AI 客户端使用教程（新手版）</h1>
       <div class="sub">适用版本 v1.0 · 仅 Windows 64 位 · <strong style="color:var(--danger)">测试阶段请只用模拟账户</strong>。<br>
       目标：照着做，30 分钟内在模拟盘跑通全流程。第 1 章搞懂是什么 → 第 2 章装好（四步闭环）→ 第 3~7 章按页面用 → 出问题查第 8 章。</div>
       <div class="meta"><span>v1.0</span><span>Windows x64</span><span>模拟盘优先</span><span>协议 v1</span></div>
+      <div class="quick">
+        <div class="qh">60 秒速览 · 四步闭环</div>
+        <div class="flow">
+          <div class="stp"><div class="n">1</div><b>装 MT5</b><span>券商官网下载，登录模拟账户</span></div>
+          <div class="stp"><div class="n">2</div><b>装牛牛 AI</b><span>双击安装包，粘贴密钥激活</span></div>
+          <div class="stp"><div class="n">3</div><b>装桥接 EA</b><span>「终端与 EA」页一键安装</span></div>
+          <div class="stp"><div class="n">4</div><b>拖 EA 到图表</b><span>InpAutoTrade 改 true</span></div>
+        </div>
+        <div class="safe"><span>止损必带</span><span>下单必二次确认</span><span>结果以 MT5 为准</span></div>
+      </div>
     </div>
     <div class="hero en" style="display:none">
       <h1>NiuNiu AI · User Guide (Beginner)</h1>
@@ -394,6 +439,11 @@ footer{padding:30px 40px 60px;text-align:center;color:var(--faint);font-size:12p
 __VIDEO_SECTION__
 ''' + '\n'.join(body) + '''
   </main>
+  <nav class="toc">
+    <div class="toc-h">目录 · CONTENTS</div>
+    <div class="zh">''' + ''.join(f'<a href="#{sid}" data-toc="{sid}"><i>{i}</i><span>{esc(t)}</span></a>' for i, (sid, t) in enumerate(toc, 1)) + '''</div>
+    <div class="en" style="display:none">''' + ''.join(f'<a href="#{sid}" data-toc="{sid}"><i>{k}</i><span>{esc(EN[k][0])}</span></a>' for k, (sid, t) in zip([str(n) for n in range(1, 11)], toc)) + '''</div>
+  </nav>
 </div>
 <footer>牛牛 AI · 执行工具，不构成投资建议 · 测试阶段仅限模拟账户</footer>
 <script>
@@ -408,12 +458,18 @@ function setLang(l){document.body.setAttribute('data-lang',l);
 function toggleTheme(){var b=document.body;var n=b.getAttribute('data-theme')==='dark'?'light':'dark';
   b.setAttribute('data-theme',n);try{localStorage.setItem('nn-tut-theme',n);}catch(e){}}
 try{var t=localStorage.getItem('nn-tut-theme');if(t)document.body.setAttribute('data-theme',t);}catch(e){}
-var tocLinks=document.querySelectorAll('.toc a');
-var secs=[].map.call(tocLinks,function(a){return document.querySelector(a.getAttribute('href'));});
-var observer=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){
-  tocLinks.forEach(function(a){a.classList.toggle('on',a.getAttribute('data-toc')===e.target.id);});}});},
-  {rootMargin:'-15% 0px -70% 0px'});
-secs.forEach(function(s){if(s)observer.observe(s);});
+var tocLinks=[].slice.call(document.querySelectorAll('.toc a'));
+var secs=tocLinks.map(function(a){return document.querySelector(a.getAttribute('href'));});
+function spy(){
+  var y=window.scrollY+140;
+  var cur=null;
+  for(var i=0;i<secs.length;i++){ if(secs[i]&&secs[i].offsetTop<=y) cur=secs[i].id; }
+  tocLinks.forEach(function(a){a.classList.toggle('on',a.getAttribute('data-toc')===cur);});
+}
+window.addEventListener('scroll',spy,{passive:true});
+window.addEventListener('resize',spy);
+spy();
+setLang('zh');
 </script>
 </body>
 </html>

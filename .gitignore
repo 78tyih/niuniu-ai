@@ -29,3 +29,11 @@ ai-gateway/data-test/
 # ---- 测试数据 ----
 # 含测试用 secret。缺失时 tools/verify-ecosystem.js 的 A07 自动跳过，不判失败。
 test/vectors.json
+
+# ---- 视频工程（video/）----
+# 成片与音频是大二进制，一律本地/网盘留存，不进仓库。
+# mp4 已被上面 *.mp4 覆盖；这里补 wav 与抽帧。
+video/assets/vo/
+video/assets/bgm/
+video/snapshots/
+video/.tmpvo/

@@ -1,0 +1,487 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <title>牛牛 AI · 终端上手演示</title>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      :root {
+        --paper: #fbfaf7;
+        --ink: #141413;
+        --sub: #5c5b57;
+        --mut: #6d6b64;
+        --line: #e7e5e0;
+        --grid: #e2dfd8;
+        --coral: #e85d2b;
+        --coral-d: #b84418;
+        --pink: #fdeee7;
+        --green: #5c8a5e;
+        --green-d: #3f6a41;
+        --grn: #eaf1e8;
+        --amber: #b8892f;
+        --amb: #f8f1de;
+        --sans: -apple-system, "SF Pro Text", "PingFang SC", "Hiragino Sans GB", "Heiti SC", system-ui, sans-serif;
+        --mono: ui-monospace, "SF Mono", Menlo, monospace;
+      }
+      html, body { width: 1920px; height: 1080px; overflow: hidden; background: var(--paper); }
+      body { font-family: var(--sans); color: var(--ink); -webkit-font-smoothing: antialiased; }
+      #root { position: relative; width: 1920px; height: 1080px; overflow: hidden; background: var(--paper); }
+
+      .ground {
+        position: absolute; inset: 0; z-index: 0;
+        background-image: radial-gradient(circle at 1px 1px, var(--grid) 1.5px, transparent 0),
+          linear-gradient(180deg, #fcfbf9 0%, #f7f5f1 100%);
+        background-size: 46px 46px, 100% 100%;
+      }
+      .progress { position: absolute; left: 140px; bottom: 8px; width: 1640px; height: 3px; background: var(--line); z-index: 6; }
+      .progress > i { display: block; height: 3px; background: var(--coral); }
+
+      .scene { position: absolute; inset: 0; z-index: 1; background: transparent; }
+
+      /* ---------- 步骤徽章（不随缩放） ---------- */
+      .chip {
+        position: absolute; left: 44px; bottom: 22px; z-index: 30;
+        font-family: var(--mono); font-size: 21px; font-weight: 650; letter-spacing: 0.05em;
+        color: var(--ink); background: rgba(255, 255, 255, 0.95);
+        border: 1.5px solid var(--line); border-radius: 999px; padding: 11px 22px;
+        box-shadow: 0 8px 28px rgba(20, 20, 19, 0.12); white-space: nowrap;
+      }
+      .chip b { color: var(--coral-d); }
+
+      /* ---------- 截图缩放容器 ---------- */
+      .zoomer { position: absolute; left: 96px; top: 0; width: 1728px; height: 1080px; }
+      .zoomer img.shot { position: absolute; left: 0; top: 0; width: 1728px; height: 1080px; display: block; }
+
+      /* ---------- 光标 ---------- */
+      .cursor {
+        position: absolute; left: 0; top: 0; z-index: 60; opacity: 0;
+        filter: drop-shadow(0 6px 14px rgba(20, 20, 19, 0.35));
+      }
+
+      /* ---------- 点击光圈 ---------- */
+      .ring {
+        position: absolute; width: 64px; height: 64px; margin: -32px 0 0 -32px;
+        border: 5px solid var(--coral); border-radius: 50%; opacity: 0; z-index: 55;
+        box-shadow: 0 0 0 6px rgba(232, 93, 43, 0.14), 0 6px 22px rgba(232, 93, 43, 0.3);
+      }
+      .ring.soft { border-width: 4px; }
+
+      /* ---------- 高亮标注框 ---------- */
+      .co {
+        position: absolute; border: 3px solid var(--coral); border-radius: 12px; opacity: 0; z-index: 56;
+        box-shadow: 0 0 0 4px rgba(232, 93, 43, 0.12), 0 12px 44px rgba(232, 93, 43, 0.28);
+      }
+      .co span {
+        position: absolute; left: -3px; top: -48px; background: var(--coral); color: #fff;
+        font-size: 21px; font-weight: 650; padding: 8px 18px; border-radius: 9px; white-space: nowrap;
+        box-shadow: 0 6px 18px rgba(232, 93, 43, 0.35);
+      }
+
+      /* ---------- 文本场景公共 ---------- */
+      .eyebrow {
+        position: absolute; left: 140px; top: 96px; font-family: var(--mono);
+        font-size: 22px; letter-spacing: 0.22em; color: var(--mut); text-transform: uppercase; white-space: nowrap;
+      }
+      .headline {
+        position: absolute; left: 140px; top: 140px; font-size: 56px; font-weight: 700;
+        letter-spacing: -0.012em; line-height: 1.1; color: var(--ink); white-space: nowrap;
+      }
+      .headline em { font-style: normal; color: var(--coral-d); }
+
+      /* ---------- S0 封面 ---------- */
+      #s0-kicker {
+        position: absolute; left: 0; right: 0; top: 150px; text-align: center;
+        font-family: var(--mono); font-size: 23px; letter-spacing: 0.24em; text-transform: uppercase; color: var(--mut);
+      }
+      #s0-title {
+        position: absolute; left: 0; right: 0; top: 232px; text-align: center;
+        font-size: 136px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.05; color: var(--ink); white-space: nowrap;
+      }
+      #s0-rule { position: absolute; left: 870px; top: 420px; width: 180px; height: 5px; background: var(--coral); transform-origin: 50% 50%; }
+      #s0-thesis { position: absolute; left: 0; right: 0; top: 470px; text-align: center; font-size: 46px; font-weight: 600; color: var(--ink); }
+      #s0-thesis em { font-style: normal; color: var(--coral-d); }
+      #s0-map { position: absolute; left: 0; right: 0; top: 640px; text-align: center; font-size: 28px; color: var(--sub); }
+      #s0-map span { display: inline-block; padding: 12px 26px; margin: 0 5px; border: 1.5px solid var(--line); border-radius: 999px; background: #fff; }
+      #s0-map i { font-style: normal; color: var(--mut); margin: 0 4px; }
+      #s0-foot { position: absolute; right: 140px; top: 150px; text-align: right; font-family: var(--mono); font-size: 20px; letter-spacing: 0.14em; color: var(--mut); }
+
+      /* ---------- S2 挂 EA 三卡 ---------- */
+      .s2-card {
+        position: absolute; top: 380px; width: 500px; height: 260px;
+        background: #fff; border: 2px solid var(--line); border-radius: 20px; padding: 32px 36px;
+        box-shadow: 0 18px 50px rgba(20, 20, 19, 0.06);
+      }
+      #s2-c1 { left: 140px; }
+      #s2-c2 { left: 710px; }
+      #s2-c3 { left: 1280px; border-color: var(--coral); background: var(--pink); }
+      .s2-no { font-family: var(--mono); font-size: 22px; letter-spacing: 0.16em; color: var(--coral-d); font-weight: 700; }
+      .s2-t { margin-top: 16px; font-size: 33px; font-weight: 700; color: var(--ink); white-space: nowrap; }
+      .s2-s { margin-top: 16px; font-size: 23px; line-height: 1.55; color: var(--mut); }
+      #s2-c3 .s2-t, #s2-c3 .s2-s { color: var(--coral-d); }
+      #s2-note {
+        position: absolute; left: 140px; top: 710px; width: 1640px; padding: 24px 36px;
+        border-left: 5px solid var(--amber); background: var(--amb); border-radius: 0 14px 14px 0;
+        font-size: 29px; color: #8a6415; font-weight: 600; white-space: nowrap;
+      }
+
+      /* ---------- S7 结论 ---------- */
+      #s7-keys { position: absolute; left: 140px; top: 330px; display: flex; gap: 26px; }
+      .kchip { font-size: 35px; font-weight: 700; padding: 20px 38px; border-radius: 16px; white-space: nowrap; }
+      #s7-k1 { color: var(--coral-d); background: var(--pink); border: 2px solid #f0cabc; }
+      #s7-k2 { color: #8a6415; background: var(--amb); border: 2px solid #e4d5ae; }
+      #s7-k3 { color: var(--green-d); background: var(--grn); border: 2px solid #cbdcc9; }
+      #s7-cta {
+        position: absolute; left: 140px; top: 540px; width: 1640px; height: 130px;
+        display: flex; align-items: center; gap: 30px; padding: 0 42px;
+        border: 2px solid var(--ink); border-radius: 18px; background: #fff;
+        box-shadow: 0 20px 60px rgba(20, 20, 19, 0.08);
+      }
+      #s7-cta .cc-lab { flex: 0 0 auto; padding: 9px 20px; border-radius: 9px; background: var(--ink); color: #fff; font-family: var(--mono); font-size: 22px; letter-spacing: 0.16em; }
+      #s7-cta .cc-txt { flex: 1 1 auto; font-size: 40px; font-weight: 700; color: var(--ink); white-space: nowrap; }
+      #s7-cta .cc-txt b { color: var(--coral-d); }
+      #s7-cta .cc-note { flex: 0 0 auto; font-size: 24px; color: var(--sub); white-space: nowrap; }
+      #s7-foot { position: absolute; left: 0; right: 0; top: 740px; text-align: center; font-size: 24px; color: var(--mut); }
+
+      /* ---------- 字幕轨 ---------- */
+      .subbar { position: absolute; left: 110px; right: 110px; bottom: 84px; height: 132px; z-index: 40; }
+      .sline {
+        position: absolute; left: 0; right: 0; top: 0; text-align: center;
+        font-size: 40px; font-weight: 500; line-height: 1.32; color: var(--ink); opacity: 0;
+        text-shadow: 0 1px 0 rgba(251, 250, 247, 0.92), 0 -1px 0 rgba(251, 250, 247, 0.92), 0 0 16px rgba(251, 250, 247, 0.96);
+      }
+      .sline b { color: var(--coral-d); font-weight: 650; }
+    </style>
+  </head>
+  <body>
+    <div
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-width="1920"
+      data-height="1080"
+      data-duration="66.42"
+    >
+      <div class="ground"></div>
+      <div class="progress"><i id="prog"></i></div>
+
+      <div class="subbar" id="subbar">
+        <!-- SUBS:BEGIN -->
+        <div class="sline" id="sub-S0-1">这是牛牛 AI，装在你自己电脑上的 MT5 交易副驾驶。</div>
+        <div class="sline" id="sub-S0-2">两分钟，带你跑通从连接到下单的完整流程。</div>
+        <div class="sline" id="sub-S1-1">第一步，点「终端与EA」。</div>
+        <div class="sline" id="sub-S1-2">再点「安装桥接EA」，密钥自动写进MT5。</div>
+        <div class="sline" id="sub-S2-1">最后一步要手动：把牛牛桥接EA，拖到任意一张图表上。</div>
+        <div class="sline" id="sub-S2-2">勾选允许算法交易，把InpAutoTrade改成true。</div>
+        <div class="sline" id="sub-S3-1">回到概览页，余额和行情都有数字，就说明连上了。</div>
+        <div class="sline" id="sub-S4-1">人工下单，点「交易」页，填好方向和手数。</div>
+        <div class="sline" id="sub-S4-2">点「确认下单」，回执显示已成交，才算数。</div>
+        <div class="sline" id="sub-S5-1">也可以让AI帮你，点「生成示例建议」。</div>
+        <div class="sline" id="sub-S5-2">方向、点位、止损，一张卡片看全。</div>
+        <div class="sline" id="sub-S6-1">点「一键下单」，二次确认后，命令才会交给EA。</div>
+        <div class="sline" id="sub-S6-2">手数由系统按风险计算，AI不碰数字。</div>
+        <div class="sline" id="sub-S7-1">记住三件事：止损必带，下单必二次确认，结果以MT5为准。</div>
+        <div class="sline" id="sub-S7-2">现在，去策略广场挑一个模板，跑起你的第一笔模拟单吧。</div>
+        <!-- SUBS:END -->
+      </div>
+
+      <audio
+        id="bgm"
+        data-start="0"
+        data-duration="66.42"
+        data-track-index="2"
+        data-volume="0.8"
+        src="assets/bgm/track.wav"
+      ></audio>
+
+      <!-- VO:BEGIN -->
+      <audio id="vo1" data-start="0.4" data-duration="7.3" data-track-index="1" src="assets/vo/s0.wav"></audio>
+      <audio id="vo2" data-start="9.5" data-duration="5.14" data-track-index="1" src="assets/vo/s1.wav"></audio>
+      <audio id="vo3" data-start="16.34" data-duration="7.3" data-track-index="1" src="assets/vo/s2.wav"></audio>
+      <audio id="vo4" data-start="25.14" data-duration="3.76" data-track-index="1" src="assets/vo/s3.wav"></audio>
+      <audio id="vo5" data-start="30.9" data-duration="6.58" data-track-index="1" src="assets/vo/s4.wav"></audio>
+      <audio id="vo6" data-start="39.38" data-duration="5.94" data-track-index="1" src="assets/vo/s5.wav"></audio>
+      <audio id="vo7" data-start="47.02" data-duration="6.34" data-track-index="1" src="assets/vo/s6.wav"></audio>
+      <audio id="vo8" data-start="55.16" data-duration="8.66" data-track-index="1" src="assets/vo/s7.wav"></audio>
+      <!-- VO:END -->
+
+      <audio id="sfx-whoosh" data-start="0.2" data-duration="2.0" data-track-index="3" data-volume="0.18" src="assets/sfx/whoosh-cinematic.mp3"></audio>
+      <audio id="sfx-c01" data-start="10.35" data-duration="0.37" data-track-index="3" data-volume="0.30" src="assets/sfx/click-soft.mp3"></audio>
+      <audio id="sfx-c02" data-start="11.79" data-duration="0.37" data-track-index="3" data-volume="0.30" src="assets/sfx/click-soft.mp3"></audio>
+      <audio id="sfx-c03" data-start="16.74" data-duration="0.37" data-track-index="3" data-volume="0.30" src="assets/sfx/click-soft.mp3"></audio>
+      <audio id="sfx-c04" data-start="19.6" data-duration="0.37" data-track-index="3" data-volume="0.30" src="assets/sfx/click-soft.mp3"></audio>
+      <audio id="sfx-c05" data-start="21.1" data-duration="0.37" data-track-index="3" data-volume="0.30" src="assets/sfx/click-soft.mp3"></audio>
+      <audio id="sfx-c06" data-start="26.44" data-duration="0.37" data-track-index="3" data-volume="0.30" src="assets/sfx/click-soft.mp3"></audio>
+      <audio id="sfx-c07" data-start="31.65" data-duration="0.37" data-track-index="3" data-volume="0.30" src="assets/sfx/click-soft.mp3"></audio>
+      <audio id="sfx-c08" data-start="34.1" data-duration="0.37" data-track-index="3" data-volume="0.30" src="assets/sfx/click-soft.mp3"></audio>
+      <audio id="sfx-c09" data-start="40.13" data-duration="0.37" data-track-index="3" data-volume="0.30" src="assets/sfx/click-soft.mp3"></audio>
+      <audio id="sfx-c10" data-start="41.89" data-duration="0.37" data-track-index="3" data-volume="0.30" src="assets/sfx/click-soft.mp3"></audio>
+      <audio id="sfx-c11" data-start="43.54" data-duration="0.37" data-track-index="3" data-volume="0.30" src="assets/sfx/click-soft.mp3"></audio>
+      <audio id="sfx-c12" data-start="48.62" data-duration="0.37" data-track-index="3" data-volume="0.30" src="assets/sfx/click-soft.mp3"></audio>
+      <audio id="sfx-c13" data-start="50.78" data-duration="0.37" data-track-index="3" data-volume="0.30" src="assets/sfx/click-soft.mp3"></audio>
+      <audio id="sfx-sparkle" data-start="59.68" data-duration="1.8" data-track-index="3" data-volume="0.30" src="assets/sfx/sparkle.mp3"></audio>
+      <audio id="sfx-chime" data-start="61.48" data-duration="2.5" data-track-index="3" data-volume="0.34" src="assets/sfx/chime.mp3"></audio>
+
+      <!-- ===== S0 · 封面 ===== -->
+      <section class="scene clip" id="s0" data-start="0.0" data-duration="9.1">
+        <div id="s0-kicker">niuniu ai &middot; mt5 trading copilot</div>
+        <div id="s0-title">牛牛 AI</div>
+        <div id="s0-rule"></div>
+        <div id="s0-thesis">装在你自己电脑上的 <em>MT5 交易副驾驶</em></div>
+        <div id="s0-map">
+          <span>连接 MT5</span><i>&rarr;</i><span>人工下单</span><i>&rarr;</i><span>AI 一键下单</span><i>&rarr;</i><span>安全底线</span>
+        </div>
+        <div id="s0-foot">v1.0 &middot; 模拟演示</div>
+      </section>
+
+      <!-- ===== S1 · 连接 MT5（终端与 EA 页） ===== -->
+      <section class="scene clip" id="s1" data-start="9.1" data-duration="6.84">
+        <div class="zoomer" id="s1-zoom">
+          <img class="shot" src="assets/shots/02-terminal.png" alt="" />
+          <div class="ring" id="s1-ring1" style="left: 103px; top: 150px"></div>
+          <div class="ring" id="s1-ring2" style="left: 406px; top: 511px"></div>
+          <div class="co" id="s1-co" style="left: 330px; top: 486px; width: 165px; height: 52px"><span>点这里 · 安装桥接 EA</span></div>
+          <div class="cursor" id="s1-cur" style="transform: translate(620px, 900px)">
+            <svg width="44" height="44" viewBox="0 0 24 24"><path d="M5 3l14 7.5-6.3 1.8L9 19z" fill="#E85D2B" stroke="#fff" stroke-width="1.6"/></svg>
+          </div>
+        </div>
+        <div class="chip" id="s1-chip"><b>第 1 步</b> · 连接 MT5</div>
+      </section>
+
+      <!-- ===== S2 · 挂 EA 到图表 ===== -->
+      <section class="scene clip" id="s2" data-start="15.94" data-duration="8.8">
+        <div class="eyebrow" id="s2-eyebrow">attach the ea in mt5</div>
+        <div class="headline" id="s2-head">最后一步，在 MT5 里<em>手动</em>挂上 EA</div>
+        <div class="s2-card" id="s2-c1">
+          <div class="s2-no">01</div>
+          <div class="s2-t">拖 EA 到任意图表</div>
+          <div class="s2-s">导航器 &rarr; EA 交易 &rarr; NiuNiuBridge，拖到比如 EURUSD 图表上</div>
+        </div>
+        <div class="s2-card" id="s2-c2">
+          <div class="s2-no">02</div>
+          <div class="s2-t">勾「允许算法交易」</div>
+          <div class="s2-s">EA 属性 &rarr; 常用页，勾上允许算法交易；工具栏「自动交易」保持绿色</div>
+        </div>
+        <div class="s2-card" id="s2-c3">
+          <div class="s2-no">03</div>
+          <div class="s2-t">InpAutoTrade = true</div>
+          <div class="s2-s">输入参数页，把 InpAutoTrade 改成 true —— 不改这个，下单一定失败</div>
+        </div>
+        <div id="s2-note">最常见的坑：装完就下单，被 EA 拒收。先去第 03 步把开关改 true。</div>
+        <div class="chip" id="s2-chip"><b>第 2 步</b> · 挂 EA 到图表</div>
+      </section>
+
+      <!-- ===== S3 · 确认连接成功（概览页） ===== -->
+      <section class="scene clip" id="s3" data-start="24.74" data-duration="5.76">
+        <div class="zoomer" id="s3-zoom">
+          <img class="shot" src="assets/shots/01-overview.png" alt="" />
+          <div class="ring soft" id="s3-ring" style="left: 330px; top: 430px"></div>
+          <div class="co" id="s3-co" style="left: 250px; top: 385px; width: 250px; height: 95px"><span>余额有数字 = 已连上</span></div>
+          <div class="cursor" id="s3-cur" style="transform: translate(620px, 900px)">
+            <svg width="44" height="44" viewBox="0 0 24 24"><path d="M5 3l14 7.5-6.3 1.8L9 19z" fill="#E85D2B" stroke="#fff" stroke-width="1.6"/></svg>
+          </div>
+        </div>
+        <div class="chip" id="s3-chip"><b>第 3 步</b> · 确认连接成功</div>
+      </section>
+
+      <!-- ===== S4 · 人工下单（交易页） ===== -->
+      <section class="scene clip" id="s4" data-start="30.5" data-duration="8.48">
+        <div class="zoomer" id="s4-zoom">
+          <img class="shot" src="assets/shots/03-trade.png" alt="" />
+          <div class="ring" id="s4-ring1" style="left: 98px; top: 187px"></div>
+          <div class="ring" id="s4-ring2" style="left: 605px; top: 848px"></div>
+          <div class="co" id="s4-co" style="left: 228px; top: 822px; width: 385px; height: 54px"><span>核对参数，再点确认下单</span></div>
+          <div class="cursor" id="s4-cur" style="transform: translate(620px, 900px)">
+            <svg width="44" height="44" viewBox="0 0 24 24"><path d="M5 3l14 7.5-6.3 1.8L9 19z" fill="#E85D2B" stroke="#fff" stroke-width="1.6"/></svg>
+          </div>
+        </div>
+        <div class="chip" id="s4-chip"><b>第 4 步</b> · 人工下单</div>
+      </section>
+
+      <!-- ===== S5 · AI 一键下单（AI 副驾驶页） ===== -->
+      <section class="scene clip" id="s5" data-start="38.98" data-duration="7.64">
+        <div class="zoomer" id="s5-zoom">
+          <img class="shot" src="assets/shots/07-suggestion.png" alt="" />
+          <div class="ring" id="s5-ring1" style="left: 103px; top: 264px"></div>
+          <div class="ring" id="s5-ring2" style="left: 347px; top: 443px"></div>
+          <div class="ring soft" id="s5-ring3" style="left: 700px; top: 560px"></div>
+          <div class="co" id="s5-co" style="left: 270px; top: 418px; width: 158px; height: 50px"><span>生成示例建议</span></div>
+          <div class="cursor" id="s5-cur" style="transform: translate(620px, 900px)">
+            <svg width="44" height="44" viewBox="0 0 24 24"><path d="M5 3l14 7.5-6.3 1.8L9 19z" fill="#E85D2B" stroke="#fff" stroke-width="1.6"/></svg>
+          </div>
+        </div>
+        <div class="chip" id="s5-chip"><b>第 5 步</b> · AI 一键下单</div>
+      </section>
+
+      <!-- ===== S6 · 二次确认 ===== -->
+      <section class="scene clip" id="s6" data-start="46.62" data-duration="8.14">
+        <div class="zoomer" id="s6-zoom">
+          <img class="shot" src="assets/shots/08-confirm.png" alt="" />
+          <div class="ring" id="s6-ring1" style="left: 982px; top: 749px"></div>
+          <div class="ring soft" id="s6-ring2" style="left: 658px; top: 499px"></div>
+          <div class="co" id="s6-co" style="left: 868px; top: 718px; width: 236px; height: 60px"><span>确认后命令才交给 EA</span></div>
+          <div class="cursor" id="s6-cur" style="transform: translate(620px, 900px)">
+            <svg width="44" height="44" viewBox="0 0 24 24"><path d="M5 3l14 7.5-6.3 1.8L9 19z" fill="#E85D2B" stroke="#fff" stroke-width="1.6"/></svg>
+          </div>
+        </div>
+        <div class="chip" id="s6-chip"><b>第 6 步</b> · 二次确认</div>
+      </section>
+
+      <!-- ===== S7 · 结论 ===== -->
+      <section class="scene clip" id="s7" data-start="54.76" data-duration="11.66">
+        <div class="eyebrow" id="s7-eyebrow">safety baseline</div>
+        <div class="headline" id="s7-head">最后，记住<em>三件事</em></div>
+        <div id="s7-keys">
+          <div class="kchip" id="s7-k1">止损必带</div>
+          <div class="kchip" id="s7-k2">下单必二次确认</div>
+          <div class="kchip" id="s7-k3">结果以 MT5 为准</div>
+        </div>
+        <div id="s7-cta">
+          <span class="cc-lab">下一步</span>
+          <span class="cc-txt">去策略广场，挑一个模板，<b>跑起第一笔模拟单</b>。</span>
+          <span class="cc-note">测试阶段仅限模拟账户</span>
+        </div>
+        <div id="s7-foot">牛牛 AI 是执行工具，不构成投资建议 &middot; v1.0</div>
+        <div class="chip" id="s7-chip"><b>小结</b> · 安全底线</div>
+      </section>
+    </div>
+
+    <script src="assets/vendor/gsap.min.js"></script>
+    <script>
+      (function () {
+        var tl = gsap.timeline({ paused: true });
+        var F = function (sel, t, vars) {
+          return tl.from(sel, Object.assign({ opacity: 0, duration: 0.65, ease: "power3.out" }, vars || {}), t);
+        };
+
+        /* CUES:BEGIN */
+        tl.from("#prog", { width: 0, duration: 66.42, ease: "none" }, 0);
+
+        /* ---------- s0 · 封面 (0.0 – 9.1) ---------- */
+        F("#s0-kicker", 0.1, { opacity: 0, duration: 0.6, ease: "power3.out", y: -20 });
+        F("#s0-title", 0.45, { opacity: 0, duration: 0.9, ease: "power3.out", y: 34 });
+        tl.from("#s0-rule", { scaleX: 0, opacity: 0, duration: 0.7, ease: "power2.out" }, 1.2);
+        F("#s0-thesis", 0.7, { opacity: 0, duration: 0.7, ease: "power3.out", y: 22 });
+        F("#s0-map", 3.8, { opacity: 0, duration: 0.6, ease: "power3.out", y: 18 });
+        F("#s0-foot", 4.9, { opacity: 0, duration: 0.5, ease: "power3.out", y: 14 });
+
+        /* ---------- s1 · 连接 MT5 (9.1 – 15.94) ---------- */
+        F("#s1-chip", 9.15, { opacity: 0, duration: 0.5, ease: "power3.out", y: -14 });
+        tl.fromTo("#s1-cur", { opacity: 0, y: 0 }, { opacity: 1, y: 0, duration: 0.65, ease: "power3.out", immediateRender: false }, 9.15);
+        tl.fromTo("#s1-cur", { x: 620, y: 900 }, { x: 103, y: 150, duration: 0.95, ease: "power2.inOut", immediateRender: false }, 9.35);
+        tl.fromTo("#s1-ring1", { scale: 0.3, opacity: 0.95 }, { scale: 1.7, opacity: 0, duration: 0.8, repeat: 2, repeatDelay: 0.25, ease: "power1.out", immediateRender: false }, 10.35);
+        tl.fromTo("#s1-cur", { x: 103, y: 150 }, { x: 406, y: 511, duration: 0.85, ease: "power2.inOut", immediateRender: false }, 10.9);
+        tl.fromTo("#s1-ring2", { scale: 0.3, opacity: 0.95 }, { scale: 1.7, opacity: 0, duration: 0.8, repeat: 2, repeatDelay: 0.25, ease: "power1.out", immediateRender: false }, 11.79);
+        tl.fromTo("#s1-zoom", { scale: 1 }, { scale: 1.55, transformOrigin: "406px 511px", duration: 0.85, ease: "power2.inOut", immediateRender: false }, 11.99);
+        tl.fromTo("#s1-co", { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.65, ease: "power3.out", immediateRender: false }, 12.34);
+        tl.fromTo("#s1-zoom", { scale: 1 }, { scale: 1.0, transformOrigin: "406px 511px", duration: 0.7, ease: "power2.inOut", immediateRender: false }, 14.22);
+        tl.fromTo("#s1-co", { opacity: 1 }, { opacity: 0.35, duration: 0.6, ease: "power2.inOut", immediateRender: false }, 14.304);
+
+        /* ---------- s2 · 挂 EA (15.94 – 24.74) ---------- */
+        F("#s2-chip", 15.99, { opacity: 0, duration: 0.5, ease: "power3.out", y: -14 });
+        F("#s2-eyebrow", 16.04, { opacity: 0, duration: 0.6, ease: "power3.out", y: -20 });
+        F("#s2-head", 16.29, { opacity: 0, duration: 0.7, ease: "power3.out", y: 24 });
+        F("#s2-c1", 16.74, { opacity: 0, duration: 0.7, ease: "power3.out", y: 30 });
+        F("#s2-c2", 19.6, { opacity: 0, duration: 0.7, ease: "power3.out", y: 30 });
+        F("#s2-c3", 21.1, { opacity: 0, duration: 0.7, ease: "power3.out", y: 30 });
+        tl.fromTo("#s2-c3", { scale: 1 }, { scale: 1.015, duration: 0.5, ease: "power2.out", immediateRender: false }, 23.032);
+        F("#s2-note", 23.184, { opacity: 0, duration: 0.6, ease: "power3.out", y: 16 });
+
+        /* ---------- s3 · 自检 (24.74 – 30.5) ---------- */
+        F("#s3-chip", 24.79, { opacity: 0, duration: 0.5, ease: "power3.out", y: -14 });
+        tl.fromTo("#s3-cur", { opacity: 0, y: 0 }, { opacity: 1, y: 0, duration: 0.65, ease: "power3.out", immediateRender: false }, 24.79);
+        tl.fromTo("#s3-cur", { x: 620, y: 900 }, { x: 330, y: 430, duration: 1.05, ease: "power2.inOut", immediateRender: false }, 25.29);
+        tl.fromTo("#s3-ring", { scale: 0.3, opacity: 0.95 }, { scale: 1.7, opacity: 0, duration: 0.8, repeat: 1, repeatDelay: 0.25, ease: "power1.out", immediateRender: false }, 26.44);
+        tl.fromTo("#s3-zoom", { scale: 1 }, { scale: 1.32, transformOrigin: "330px 430px", duration: 0.8, ease: "power2.inOut", immediateRender: false }, 26.64);
+        tl.fromTo("#s3-co", { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.65, ease: "power3.out", immediateRender: false }, 26.84);
+        tl.fromTo("#s3-zoom", { scale: 1 }, { scale: 1.0, transformOrigin: "330px 430px", duration: 0.7, ease: "power2.inOut", immediateRender: false }, 28.336);
+        tl.fromTo("#s3-co", { opacity: 1 }, { opacity: 0.35, duration: 0.6, ease: "power2.inOut", immediateRender: false }, 28.449);
+
+        /* ---------- s4 · 人工下单 (30.5 – 38.98) ---------- */
+        F("#s4-chip", 30.55, { opacity: 0, duration: 0.5, ease: "power3.out", y: -14 });
+        tl.fromTo("#s4-cur", { opacity: 0, y: 0 }, { opacity: 1, y: 0, duration: 0.65, ease: "power3.out", immediateRender: false }, 30.55);
+        tl.fromTo("#s4-cur", { x: 620, y: 900 }, { x: 98, y: 187, duration: 0.9, ease: "power2.inOut", immediateRender: false }, 30.7);
+        tl.fromTo("#s4-ring1", { scale: 0.3, opacity: 0.95 }, { scale: 1.7, opacity: 0, duration: 0.8, repeat: 2, repeatDelay: 0.25, ease: "power1.out", immediateRender: false }, 31.65);
+        tl.fromTo("#s4-cur", { x: 98, y: 187 }, { x: 605, y: 848, duration: 1.0, ease: "power2.inOut", immediateRender: false }, 32.8);
+        tl.fromTo("#s4-ring2", { scale: 0.3, opacity: 0.95 }, { scale: 1.7, opacity: 0, duration: 0.8, repeat: 2, repeatDelay: 0.25, ease: "power1.out", immediateRender: false }, 34.1);
+        tl.fromTo("#s4-zoom", { scale: 1 }, { scale: 1.5, transformOrigin: "605px 1000px", duration: 0.8, ease: "power2.inOut", immediateRender: false }, 34.3);
+        tl.fromTo("#s4-co", { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.65, ease: "power3.out", immediateRender: false }, 34.7);
+        tl.fromTo("#s4-zoom", { scale: 1 }, { scale: 1.0, transformOrigin: "605px 1000px", duration: 0.7, ease: "power2.inOut", immediateRender: false }, 37.048);
+        tl.fromTo("#s4-co", { opacity: 1 }, { opacity: 0.35, duration: 0.6, ease: "power2.inOut", immediateRender: false }, 37.106);
+
+        /* ---------- s5 · AI 建议 (38.98 – 46.62) ---------- */
+        F("#s5-chip", 39.03, { opacity: 0, duration: 0.5, ease: "power3.out", y: -14 });
+        tl.fromTo("#s5-cur", { opacity: 0, y: 0 }, { opacity: 1, y: 0, duration: 0.65, ease: "power3.out", immediateRender: false }, 39.03);
+        tl.fromTo("#s5-cur", { x: 620, y: 900 }, { x: 103, y: 264, duration: 0.9, ease: "power2.inOut", immediateRender: false }, 39.18);
+        tl.fromTo("#s5-ring1", { scale: 0.3, opacity: 0.95 }, { scale: 1.7, opacity: 0, duration: 0.8, repeat: 1, repeatDelay: 0.25, ease: "power1.out", immediateRender: false }, 40.13);
+        tl.fromTo("#s5-cur", { x: 103, y: 264 }, { x: 347, y: 443, duration: 0.8, ease: "power2.inOut", immediateRender: false }, 40.74);
+        tl.fromTo("#s5-ring2", { scale: 0.3, opacity: 0.95 }, { scale: 1.7, opacity: 0, duration: 0.8, repeat: 2, repeatDelay: 0.25, ease: "power1.out", immediateRender: false }, 41.89);
+        tl.fromTo("#s5-co", { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.65, ease: "power3.out", immediateRender: false }, 42.09);
+        tl.fromTo("#s5-cur", { x: 347, y: 443 }, { x: 700, y: 560, duration: 0.9, ease: "power2.inOut", immediateRender: false }, 42.54);
+        tl.fromTo("#s5-ring3", { scale: 0.3, opacity: 0.95 }, { scale: 1.7, opacity: 0, duration: 0.8, repeat: 1, repeatDelay: 0.25, ease: "power1.out", immediateRender: false }, 43.54);
+        tl.fromTo("#s5-zoom", { scale: 1 }, { scale: 1.28, transformOrigin: "700px 560px", duration: 0.8, ease: "power2.inOut", immediateRender: false }, 43.74);
+        tl.fromTo("#s5-zoom", { scale: 1 }, { scale: 1.0, transformOrigin: "700px 560px", duration: 0.6, ease: "power2.inOut", immediateRender: false }, 44.974);
+        tl.fromTo("#s5-co", { opacity: 1 }, { opacity: 0.35, duration: 0.6, ease: "power2.inOut", immediateRender: false }, 44.168);
+
+        /* ---------- s6 · 二次确认 (46.62 – 54.76) ---------- */
+        F("#s6-chip", 46.67, { opacity: 0, duration: 0.5, ease: "power3.out", y: -14 });
+        tl.fromTo("#s6-cur", { opacity: 0, y: 0 }, { opacity: 1, y: 0, duration: 0.65, ease: "power3.out", immediateRender: false }, 46.67);
+        tl.fromTo("#s6-cur", { x: 620, y: 900 }, { x: 982, y: 749, duration: 1.0, ease: "power2.inOut", immediateRender: false }, 47.52);
+        tl.fromTo("#s6-ring1", { scale: 0.3, opacity: 0.95 }, { scale: 1.7, opacity: 0, duration: 0.8, repeat: 2, repeatDelay: 0.25, ease: "power1.out", immediateRender: false }, 48.62);
+        tl.fromTo("#s6-zoom", { scale: 1 }, { scale: 1.45, transformOrigin: "982px 749px", duration: 0.85, ease: "power2.inOut", immediateRender: false }, 48.82);
+        tl.fromTo("#s6-co", { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.65, ease: "power3.out", immediateRender: false }, 49.22);
+        tl.fromTo("#s6-ring2", { scale: 0.3, opacity: 0.95 }, { scale: 1.7, opacity: 0, duration: 0.8, repeat: 1, repeatDelay: 0.25, ease: "power1.out", immediateRender: false }, 50.78);
+        tl.fromTo("#s6-zoom", { scale: 1 }, { scale: 1.0, transformOrigin: "982px 749px", duration: 0.7, ease: "power2.inOut", immediateRender: false }, 52.784);
+        tl.fromTo("#s6-co", { opacity: 1 }, { opacity: 0.35, duration: 0.6, ease: "power2.inOut", immediateRender: false }, 52.842);
+
+        /* ---------- s7 · 结论 (54.76 – 66.42) ---------- */
+        F("#s7-chip", 54.81, { opacity: 0, duration: 0.5, ease: "power3.out", y: -14 });
+        F("#s7-eyebrow", 54.86, { opacity: 0, duration: 0.6, ease: "power3.out", y: -20 });
+        F("#s7-head", 55.11, { opacity: 0, duration: 0.7, ease: "power3.out", y: 24 });
+        F("#s7-k1", 55.66, { opacity: 0, duration: 0.6, ease: "power3.out", y: 26 });
+        F("#s7-k2", 56.86, { opacity: 0, duration: 0.6, ease: "power3.out", y: 26 });
+        F("#s7-k3", 58.16, { opacity: 0, duration: 0.6, ease: "power3.out", y: 26 });
+        F("#s7-cta", 59.68, { opacity: 0, duration: 0.75, ease: "power3.out", y: 22 });
+        tl.fromTo("#s7-cta", { scale: 1 }, { scale: 1.012, duration: 0.5, ease: "power2.out", immediateRender: false }, 60.98);
+        F("#s7-foot", 61.28, { opacity: 0, duration: 0.5, ease: "power3.out", y: 14 });
+        /* CUES:END */
+
+        /* SUBS-TL:BEGIN */
+        tl.fromTo("#sub-S0-1", { opacity: 0 }, { opacity: 1, duration: 0.16, ease: "power1.out", immediateRender: false }, 0.4);
+        tl.fromTo("#sub-S0-1", { opacity: 1 }, { opacity: 0, duration: 0.20, ease: "power1.in", immediateRender: false }, 3.86);
+        tl.fromTo("#sub-S0-2", { opacity: 0 }, { opacity: 1, duration: 0.16, ease: "power1.out", immediateRender: false }, 4.1);
+        tl.fromTo("#sub-S0-2", { opacity: 1 }, { opacity: 0, duration: 0.20, ease: "power1.in", immediateRender: false }, 7.8);
+        tl.fromTo("#sub-S1-1", { opacity: 0 }, { opacity: 1, duration: 0.16, ease: "power1.out", immediateRender: false }, 9.5);
+        tl.fromTo("#sub-S1-1", { opacity: 1 }, { opacity: 0, duration: 0.20, ease: "power1.in", immediateRender: false }, 11.6);
+        tl.fromTo("#sub-S1-2", { opacity: 0 }, { opacity: 1, duration: 0.16, ease: "power1.out", immediateRender: false }, 11.84);
+        tl.fromTo("#sub-S1-2", { opacity: 1 }, { opacity: 0, duration: 0.20, ease: "power1.in", immediateRender: false }, 14.74);
+        tl.fromTo("#sub-S2-1", { opacity: 0 }, { opacity: 1, duration: 0.16, ease: "power1.out", immediateRender: false }, 16.34);
+        tl.fromTo("#sub-S2-1", { opacity: 1 }, { opacity: 0, duration: 0.20, ease: "power1.in", immediateRender: false }, 20.36);
+        tl.fromTo("#sub-S2-2", { opacity: 0 }, { opacity: 1, duration: 0.16, ease: "power1.out", immediateRender: false }, 20.6);
+        tl.fromTo("#sub-S2-2", { opacity: 1 }, { opacity: 0, duration: 0.20, ease: "power1.in", immediateRender: false }, 23.74);
+        tl.fromTo("#sub-S3-1", { opacity: 0 }, { opacity: 1, duration: 0.16, ease: "power1.out", immediateRender: false }, 25.14);
+        tl.fromTo("#sub-S3-1", { opacity: 1 }, { opacity: 0, duration: 0.20, ease: "power1.in", immediateRender: false }, 29.0);
+        tl.fromTo("#sub-S4-1", { opacity: 0 }, { opacity: 1, duration: 0.16, ease: "power1.out", immediateRender: false }, 30.9);
+        tl.fromTo("#sub-S4-1", { opacity: 1 }, { opacity: 0, duration: 0.20, ease: "power1.in", immediateRender: false }, 34.36);
+        tl.fromTo("#sub-S4-2", { opacity: 0 }, { opacity: 1, duration: 0.16, ease: "power1.out", immediateRender: false }, 34.6);
+        tl.fromTo("#sub-S4-2", { opacity: 1 }, { opacity: 0, duration: 0.20, ease: "power1.in", immediateRender: false }, 37.58);
+        tl.fromTo("#sub-S5-1", { opacity: 0 }, { opacity: 1, duration: 0.16, ease: "power1.out", immediateRender: false }, 39.38);
+        tl.fromTo("#sub-S5-1", { opacity: 1 }, { opacity: 0, duration: 0.20, ease: "power1.in", immediateRender: false }, 42.2);
+        tl.fromTo("#sub-S5-2", { opacity: 0 }, { opacity: 1, duration: 0.16, ease: "power1.out", immediateRender: false }, 42.44);
+        tl.fromTo("#sub-S5-2", { opacity: 1 }, { opacity: 0, duration: 0.20, ease: "power1.in", immediateRender: false }, 45.42);
+        tl.fromTo("#sub-S6-1", { opacity: 0 }, { opacity: 1, duration: 0.16, ease: "power1.out", immediateRender: false }, 47.02);
+        tl.fromTo("#sub-S6-1", { opacity: 1 }, { opacity: 0, duration: 0.20, ease: "power1.in", immediateRender: false }, 50.24);
+        tl.fromTo("#sub-S6-2", { opacity: 0 }, { opacity: 1, duration: 0.16, ease: "power1.out", immediateRender: false }, 50.48);
+        tl.fromTo("#sub-S6-2", { opacity: 1 }, { opacity: 0, duration: 0.20, ease: "power1.in", immediateRender: false }, 53.46);
+        tl.fromTo("#sub-S7-1", { opacity: 0 }, { opacity: 1, duration: 0.16, ease: "power1.out", immediateRender: false }, 55.16);
+        tl.fromTo("#sub-S7-1", { opacity: 1 }, { opacity: 0, duration: 0.20, ease: "power1.in", immediateRender: false }, 59.74);
+        tl.fromTo("#sub-S7-2", { opacity: 0 }, { opacity: 1, duration: 0.16, ease: "power1.out", immediateRender: false }, 59.98);
+        tl.fromTo("#sub-S7-2", { opacity: 1 }, { opacity: 0, duration: 0.20, ease: "power1.in", immediateRender: false }, 65.97);
+        /* SUBS-TL:END */
+
+        window.__timelines = window.__timelines || {};
+        window.__timelines["main"] = tl;
+      })();
+    </script>
+  </body>
+</html>
